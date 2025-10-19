@@ -1,0 +1,32 @@
+{
+  "name": "pepball-frontend",
+  "version": "1.0.0",
+  "description": "PEPEBALL Frontend - 8-bit South Park PEPE lottery interface",
+  "main": "index.js",
+  "scripts": {
+    "start": "live-server --port=3000 --open=/index.html",
+    "build": "echo 'Building PEPEBALL frontend...'",
+    "dev": "live-server --port=3000 --open=/index.html --watch=src"
+  },
+  "keywords": [
+    "pepball",
+    "lottery",
+    "solana",
+    "pepe",
+    "frontend"
+  ],
+  "author": "preseteth",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.87.0",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.35",
+    "@solana/wallet-adapter-wallets": "^0.19.32",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

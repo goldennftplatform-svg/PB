@@ -1,0 +1,68 @@
+{
+  "name": "PEPEBALL",
+  "symbol": "PEPE",
+  "description": "🎰 PEPEBALL - Powerball lottery token with creator fund! 8-bit meets South Park meets PEPE. Dynamic timing (72h/36h), SOL payouts, anti-rug mechanics, and perpetual 0.05% to Matt Furie! 🐸",
+  "image": "https://raw.githubusercontent.com/preseteth/pepeball/main/pump-fun/pepeball-logo.png",
+  "external_url": "https://pepball.com",
+  "attributes": [
+    {
+      "trait_type": "Token Type",
+      "value": "Lottery Token"
+    },
+    {
+      "trait_type": "Blockchain",
+      "value": "Solana"
+    },
+    {
+      "trait_type": "Creator Fund",
+      "value": "0.05% to Matt Furie"
+    },
+    {
+      "trait_type": "Jackpot Tax",
+      "value": "2.45%"
+    },
+    {
+      "trait_type": "Total Tax",
+      "value": "2.5%"
+    },
+    {
+      "trait_type": "Draw Timing",
+      "value": "Dynamic (72h/36h)"
+    },
+    {
+      "trait_type": "Payouts",
+      "value": "SOL (not tokens)"
+    },
+    {
+      "trait_type": "Anti-Rug",
+      "value": "Instant renounce + burnt LP"
+    },
+    {
+      "trait_type": "Theme",
+      "value": "8-bit South Park PEPE"
+    },
+    {
+      "trait_type": "Community",
+      "value": "PEPE Army"
+    }
+  ],
+  "properties": {
+    "files": [
+      {
+        "uri": "https://raw.githubusercontent.com/preseteth/pepeball/main/pump-fun/pepeball-logo.png",
+        "type": "image/png"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "preseteth",
+        "share": 100
+      }
+    ]
+  },
+  "collection": {
+    "name": "PEPEBALL Collection",
+    "family": "PEPE"
+  }
+}

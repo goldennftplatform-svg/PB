@@ -1,0 +1,51 @@
+{
+  "name": "pepball",
+  "version": "1.0.0",
+  "description": "PEPEBALL - Powerball lottery token with creator fund",
+  "main": "index.js",
+  "scripts": {
+    "test": "anchor test",
+    "build": "anchor build",
+    "deploy": "anchor deploy",
+    "deploy:devnet": "anchor deploy --provider.cluster devnet",
+    "deploy:mainnet": "anchor deploy --provider.cluster mainnet",
+    "start": "anchor test --skip-local-validator",
+    "lint": "cargo clippy --all-targets --all-features -- -D warnings",
+    "format": "cargo fmt --all",
+    "frontend": "cd app && npm start",
+    "frontend:build": "cd app && npm run build"
+  },
+  "keywords": [
+    "solana",
+    "anchor",
+    "lottery",
+    "pepe",
+    "powerball",
+    "defi",
+    "token",
+    "creator-fund"
+  ],
+  "author": "preseteth",
+  "license": "MIT",
+  "devDependencies": {
+    "@coral-xyz/anchor": "^0.30.1",
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^9.0.0",
+    "chai": "^4.3.0",
+    "mocha": "^9.0.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^4.9.0"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.87.0",
+    "@solana/spl-token": "^0.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/preseteth/pepeball.git"
+  },
+  "bugs": {
+    "url": "https://github.com/preseteth/pepeball/issues"
+  },
+  "homepage": "https://github.com/preseteth/pepeball#readme"
+}
