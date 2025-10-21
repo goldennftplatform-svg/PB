@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PEPEBALL Test</title>
+    <style>
+        body {
+            background: linear-gradient(45deg, #ff69b4, #ff1493, #ff69b4);
+            font-family: 'Courier New', monospace;
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 3em;
+            text-shadow: 0 0 20px #fff;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #fff; }
+            to { text-shadow: 0 0 30px #fff, 0 0 40px #ff69b4; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🐸 PEPEBALL IS LIVE! 🐸</h1>
+    <p>GitHub Pages is working!</p>
+    <p>Time: <span id="time"></span></p>
+    
+    <script>
+        document.getElementById('time').textContent = new Date().toLocaleString();
+    </script>
+</body>
+</html>
