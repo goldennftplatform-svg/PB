@@ -86,3 +86,4 @@ jobs:
         anchor deploy --provider.cluster devnet
       env:
         SOLANA_PRIVATE_KEY: ${{ secrets.SOLANA_PRIVATE_KEY }}
+

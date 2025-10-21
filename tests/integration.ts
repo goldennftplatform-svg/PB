@@ -133,10 +133,30 @@ describe("PEPEBALL Integration Tests", () => {
 
     console.log("✅ Dynamic timing tested: 72h < 200 SOL, 36h ≥ 200 SOL");
 
-    // Step 5: Test Lottery Entry
-    console.log("🎫 Step 5: Testing Lottery Entry...");
+    // Step 5: Test Dynamic Pricing Lottery Entry
+    console.log("🎫 Step 5: Testing Dynamic Pricing Lottery Entry...");
+    
+    // Test $20 entry (1 ticket)
     await lotteryProgram.methods
-      .enterLottery(new anchor.BN(5)) // 5 tickets
+      .enterLotteryWithUsdValue(new anchor.BN(2000)) // $20.00
+      .accounts({
+        lottery: lottery,
+        participant: admin.publicKey,
+      })
+      .rpc();
+
+    // Test $100 entry (4 tickets)
+    await lotteryProgram.methods
+      .enterLotteryWithUsdValue(new anchor.BN(10000)) // $100.00
+      .accounts({
+        lottery: lottery,
+        participant: admin.publicKey,
+      })
+      .rpc();
+
+    // Test $500 entry (10 tickets)
+    await lotteryProgram.methods
+      .enterLotteryWithUsdValue(new anchor.BN(50000)) // $500.00
       .accounts({
         lottery: lottery,
         participant: admin.publicKey,
@@ -144,9 +164,10 @@ describe("PEPEBALL Integration Tests", () => {
       .rpc();
 
     const updatedLottery = await lotteryProgram.account.lottery.fetch(lottery);
-    console.log("✅ Lottery entry successful:", {
+    console.log("✅ Dynamic pricing lottery entries successful:", {
       participants: updatedLottery.participants.length,
       totalParticipants: updatedLottery.totalParticipants.toString(),
+      totalTickets: updatedLottery.participants.reduce((sum, p) => sum + p.ticketCount, 0),
     });
 
     // Step 6: Test LP Manager Functions
@@ -254,3 +275,4 @@ describe("PEPEBALL Integration Tests", () => {
     console.log("📊 Performance tests passed!");
   });
 });
+

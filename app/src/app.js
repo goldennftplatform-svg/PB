@@ -136,18 +136,90 @@ class PEPEBALLApp {
         }
 
         try {
-            this.showNotification("🎲 Entering lottery...", "info");
+            // Show pricing options
+            const pricingOptions = this.getPricingOptions();
+            const selectedOption = await this.showPricingModal(pricingOptions);
+            
+            if (!selectedOption) return;
+            
+            this.showNotification(`🎲 Entering lottery with ${selectedOption.tickets} tickets ($${selectedOption.usdValue})...`, "info");
             
             // Mock lottery entry - replace with actual contract interaction
             await this.simulateLotteryEntry();
             
-            this.showNotification("🎉 Successfully entered lottery!", "success");
+            this.showNotification(`🎉 Successfully entered lottery with ${selectedOption.tickets} tickets!`, "success");
             this.updateLotteryUI();
             
         } catch (error) {
             console.error("❌ Lottery entry failed:", error);
             this.showNotification("❌ Lottery entry failed", "error");
         }
+    }
+
+    getPricingOptions() {
+        return [
+            {
+                usdValue: 20,
+                tickets: 1,
+                description: "Basic Entry",
+                bonus: "0%"
+            },
+            {
+                usdValue: 100,
+                tickets: 4,
+                description: "Value Pack",
+                bonus: "100% bonus"
+            },
+            {
+                usdValue: 500,
+                tickets: 10,
+                description: "Whale Pack",
+                bonus: "400% bonus"
+            }
+        ];
+    }
+
+    async showPricingModal(options) {
+        return new Promise((resolve) => {
+            const modal = document.createElement('div');
+            modal.className = 'pricing-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>🎰 Choose Your Lottery Entry 🎰</h2>
+                        <button class="close-btn" onclick="this.closest('.pricing-modal').remove()">×</button>
+                    </div>
+                    <div class="pricing-options">
+                        ${options.map(option => `
+                            <div class="pricing-option" data-usd="${option.usdValue}" data-tickets="${option.tickets}">
+                                <div class="option-header">
+                                    <span class="option-title">${option.description}</span>
+                                    <span class="option-bonus">${option.bonus}</span>
+                                </div>
+                                <div class="option-price">$${option.usdValue}</div>
+                                <div class="option-tickets">${option.tickets} tickets</div>
+                                <div class="option-value">$${(option.usdValue / option.tickets).toFixed(2)} per ticket</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="modal-footer">
+                        <button class="cancel-btn" onclick="this.closest('.pricing-modal').remove()">Cancel</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Add click handlers
+            modal.querySelectorAll('.pricing-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const usdValue = parseInt(option.dataset.usd);
+                    const tickets = parseInt(option.dataset.tickets);
+                    modal.remove();
+                    resolve({ usdValue, tickets });
+                });
+            });
+        });
     }
 
     async simulateLotteryEntry() {
@@ -444,5 +516,139 @@ style.textContent = `
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-20px); }
     }
+    
+    .pricing-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+    
+    .modal-content {
+        background: linear-gradient(45deg, #ff69b4, #ff1493);
+        border: 4px solid #ffff00;
+        border-radius: 15px;
+        padding: 30px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .modal-header h2 {
+        font-family: 'Press Start 2P', monospace;
+        font-size: 1.2rem;
+        color: #000;
+        margin: 0;
+    }
+    
+    .close-btn {
+        background: #ff0000;
+        border: 2px solid #fff;
+        color: #fff;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 1rem;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .pricing-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .pricing-option {
+        background: rgba(0, 0, 0, 0.8);
+        border: 3px solid #00ff00;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'Press Start 2P', monospace;
+    }
+    
+    .pricing-option:hover {
+        transform: translateY(-5px);
+        border-color: #ffff00;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+    
+    .option-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .option-title {
+        font-size: 0.8rem;
+        color: #ffff00;
+    }
+    
+    .option-bonus {
+        font-size: 0.6rem;
+        color: #00ffff;
+        background: rgba(0, 255, 255, 0.2);
+        padding: 2px 6px;
+        border-radius: 3px;
+    }
+    
+    .option-price {
+        font-size: 1.5rem;
+        color: #ff69b4;
+        margin-bottom: 5px;
+    }
+    
+    .option-tickets {
+        font-size: 1rem;
+        color: #00ffff;
+        margin-bottom: 5px;
+    }
+    
+    .option-value {
+        font-size: 0.7rem;
+        color: #ffff00;
+    }
+    
+    .modal-footer {
+        text-align: center;
+    }
+    
+    .cancel-btn {
+        background: #666;
+        border: 2px solid #fff;
+        color: #fff;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 0.8rem;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .cancel-btn:hover {
+        background: #888;
+    }
 `;
 document.head.appendChild(style);
+

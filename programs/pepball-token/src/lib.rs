@@ -198,3 +198,4 @@ pub enum ErrorCode {
     #[msg("Token transfers are paused")]
     TransfersPaused,
 }
+

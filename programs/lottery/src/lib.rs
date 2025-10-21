@@ -30,6 +30,37 @@ pub mod lottery {
         Ok(())
     }
 
+    pub fn enter_lottery_with_usd_value(
+        ctx: Context<EnterLottery>,
+        usd_value: u64, // USD value in cents (e.g., 2000 = $20.00)
+    ) -> Result<()> {
+        let lottery = &mut ctx.accounts.lottery;
+        require!(lottery.is_active, ErrorCode::LotteryInactive);
+        
+        // Calculate tickets based on USD value
+        let ticket_count = calculate_tickets_from_usd_value(usd_value);
+        require!(ticket_count > 0, ErrorCode::InsufficientValue);
+        
+        // Add participant
+        let participant = Participant {
+            wallet: ctx.accounts.participant.key(),
+            ticket_count,
+            usd_value,
+            entry_time: Clock::get()?.unix_timestamp,
+        };
+        
+        lottery.participants.push(participant);
+        lottery.total_participants += 1;
+        
+        msg!("Participant entered lottery with {} tickets (${}.{})", 
+             ticket_count, 
+             usd_value / 100, 
+             usd_value % 100);
+        msg!("Total participants: {}", lottery.total_participants);
+        
+        Ok(())
+    }
+
     pub fn enter_lottery(
         ctx: Context<EnterLottery>,
         ticket_count: u32,
@@ -41,6 +72,7 @@ pub mod lottery {
         let participant = Participant {
             wallet: ctx.accounts.participant.key(),
             ticket_count,
+            usd_value: 0, // Legacy entry without USD tracking
             entry_time: Clock::get()?.unix_timestamp,
         };
         
@@ -238,6 +270,7 @@ pub struct Lottery {
 pub struct Participant {
     pub wallet: Pubkey,
     pub ticket_count: u32,
+    pub usd_value: u64, // USD value in cents
     pub entry_time: i64,
 }
 
@@ -245,6 +278,20 @@ pub struct Participant {
 pub struct Winners {
     pub main_winner: Option<Pubkey>,
     pub minor_winners: Vec<Pubkey>,
+}
+
+// Helper function to calculate tickets from USD value
+fn calculate_tickets_from_usd_value(usd_value: u64) -> u32 {
+    match usd_value {
+        // $20.00 = 1 ticket
+        2000..=9999 => 1,
+        // $100.00 = 4 tickets (25% bonus)
+        10000..=49999 => 4,
+        // $500.00 = 10 tickets (100% bonus)
+        50000..=u64::MAX => 10,
+        // Less than $20 = 0 tickets
+        _ => 0,
+    }
 }
 
 #[error_code]
@@ -259,4 +306,7 @@ pub enum ErrorCode {
     NotEnoughParticipants,
     #[msg("Unauthorized access")]
     Unauthorized,
+    #[msg("Insufficient USD value - minimum $20 required")]
+    InsufficientValue,
 }
+
