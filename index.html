@@ -3,799 +3,407 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎰 PEPEBALL - Live Dashboard 🎰</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <title>🐸 PEPEBALL - The Ultimate Powerball Lottery Token</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Press Start 2P', monospace;
             background: linear-gradient(45deg, #ff69b4, #ff1493, #ff69b4, #ff1493);
             background-size: 400% 400%;
-            animation: gradientShift 4s ease infinite;
-            color: #00ff00;
+            animation: gradientShift 8s ease infinite;
+            font-family: 'Courier New', monospace;
+            color: white;
             overflow-x: hidden;
             min-height: 100vh;
         }
-        
+
         @keyframes gradientShift {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             position: relative;
             z-index: 10;
         }
-        
+
         .header {
             text-align: center;
             margin-bottom: 40px;
-            text-shadow: 4px 4px 0px #000;
-            animation: headerGlow 3s ease-in-out infinite alternate;
+            animation: glow 2s ease-in-out infinite alternate;
         }
-        
-        @keyframes headerGlow {
-            from { text-shadow: 4px 4px 0px #000, 0 0 20px #ffff00; }
-            to { text-shadow: 4px 4px 0px #000, 0 0 40px #ffff00, 0 0 60px #ff69b4; }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #fff, 0 0 30px #ff69b4; }
+            to { text-shadow: 0 0 30px #fff, 0 0 40px #ff69b4, 0 0 50px #ff1493; }
         }
-        
+
         .title {
-            font-size: 4rem;
-            color: #ffff00;
-            margin-bottom: 20px;
-            animation: bounce 2s infinite;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-        }
-        
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0) rotate(0deg); }
-            40% { transform: translateY(-15px) rotate(2deg); }
-            60% { transform: translateY(-8px) rotate(-1deg); }
-        }
-        
-        .pepe-emoji {
-            font-size: 6rem;
-            margin: 20px 0;
-            animation: pepeSpin 4s linear infinite;
-            filter: drop-shadow(0 0 20px #00ff00);
-        }
-        
-        @keyframes pepeSpin {
-            0% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(90deg) scale(1.1); }
-            50% { transform: rotate(180deg) scale(1); }
-            75% { transform: rotate(270deg) scale(1.1); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-        
-        .subtitle {
-            font-size: 1.5rem;
-            color: #00ffff;
+            font-size: 4em;
+            font-weight: bold;
             margin-bottom: 10px;
-            animation: pulse 2s infinite;
+            text-shadow: 0 0 20px #fff;
         }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
+
+        .subtitle {
+            font-size: 1.5em;
+            opacity: 0.9;
         }
-        
-        .dashboard-grid {
+
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
             margin-bottom: 40px;
         }
-        
-        .dashboard-card {
-            background: rgba(0, 0, 0, 0.9);
-            border: 4px solid #00ff00;
-            border-radius: 20px;
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
             padding: 25px;
             text-align: center;
-            box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
-        
-        .dashboard-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            border-color: #ffff00;
-            box-shadow: 0 0 50px rgba(255, 255, 0, 0.8);
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.3);
+            border-color: rgba(255, 255, 255, 0.6);
         }
-        
-        .dashboard-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 0, 0.1), transparent);
-            animation: shimmer 3s infinite;
-        }
-        
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-        
-        .card-title {
-            font-size: 1.3rem;
-            color: #ffff00;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 0px #000;
-        }
-        
-        .card-value {
-            font-size: 2.5rem;
-            color: #ff69b4;
-            margin-bottom: 10px;
-            text-shadow: 3px 3px 0px #000;
-            animation: valueGlow 2s ease-in-out infinite alternate;
-        }
-        
-        @keyframes valueGlow {
-            from { text-shadow: 3px 3px 0px #000, 0 0 10px #ff69b4; }
-            to { text-shadow: 3px 3px 0px #000, 0 0 20px #ff69b4, 0 0 30px #ff1493; }
-        }
-        
-        .card-description {
-            font-size: 0.9rem;
-            color: #00ffff;
-            line-height: 1.5;
-        }
-        
-        .lottery-section {
-            background: rgba(0, 0, 0, 0.95);
-            border: 6px solid #ff1493;
-            border-radius: 25px;
-            padding: 40px;
-            margin-bottom: 40px;
-            box-shadow: 0 0 40px rgba(255, 20, 147, 0.6);
-            position: relative;
-        }
-        
-        .lottery-title {
-            font-size: 2.5rem;
-            color: #ffff00;
-            text-align: center;
-            margin-bottom: 30px;
-            text-shadow: 3px 3px 0px #000;
-            animation: titlePulse 2s infinite;
-        }
-        
-        @keyframes titlePulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .jackpot-display {
-            text-align: center;
-            margin-bottom: 40px;
-            position: relative;
-        }
-        
-        .jackpot-amount {
-            font-size: 5rem;
-            color: #ff69b4;
-            text-shadow: 4px 4px 0px #000;
-            margin-bottom: 20px;
-            animation: jackpotGlow 1.5s ease-in-out infinite alternate;
-        }
-        
-        @keyframes jackpotGlow {
-            from { 
-                text-shadow: 4px 4px 0px #000, 0 0 20px #ff69b4;
-                transform: scale(1);
-            }
-            to { 
-                text-shadow: 4px 4px 0px #000, 0 0 40px #ff69b4, 0 0 60px #ff1493;
-                transform: scale(1.05);
-            }
-        }
-        
-        .jackpot-timer {
-            font-size: 1.5rem;
-            color: #00ffff;
-            margin-bottom: 10px;
-            animation: timerBlink 1s infinite;
-        }
-        
-        @keyframes timerBlink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.7; }
-        }
-        
-        .pricing-section {
-            margin: 30px 0;
-            padding: 30px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 15px;
-            border: 3px solid #ff69b4;
-        }
-        
-        .pricing-title {
-            font-size: 1.5rem;
-            color: #ffff00;
-            text-align: center;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 0px #000;
-        }
-        
-        .pricing-tiers {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-        }
-        
-        .pricing-tier {
-            background: rgba(0, 0, 0, 0.8);
-            border: 3px solid #00ff00;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .pricing-tier:hover {
-            border-color: #ffff00;
-            transform: translateY(-8px) scale(1.05);
-            box-shadow: 0 0 30px rgba(255, 255, 0, 0.6);
-        }
-        
-        .pricing-tier::before {
+
+        .stat-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 0, 0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s;
         }
-        
-        .pricing-tier:hover::before {
+
+        .stat-card:hover::before {
             left: 100%;
         }
-        
-        .tier-price {
-            display: block;
-            font-size: 1.8rem;
-            color: #ff69b4;
+
+        .stat-value {
+            font-size: 2.5em;
             font-weight: bold;
-            margin-bottom: 8px;
+            color: #ff69b4;
+            text-shadow: 0 0 10px #ff69b4;
+            margin-bottom: 10px;
         }
-        
-        .tier-tickets {
-            display: block;
-            font-size: 1.1rem;
-            color: #00ffff;
-            margin-bottom: 8px;
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
         }
-        
-        .tier-bonus {
-            display: block;
-            font-size: 0.8rem;
-            color: #ffff00;
-            background: rgba(255, 255, 0, 0.3);
-            padding: 4px 8px;
-            border-radius: 5px;
+
+        .lottery-section {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
         }
-        
+
+        .section-title {
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px #fff;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pricing-card:hover {
+            transform: scale(1.05);
+            border-color: #ff69b4;
+            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.4);
+        }
+
+        .pricing-card.selected {
+            border-color: #ff69b4;
+            background: rgba(255, 105, 180, 0.2);
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+        }
+
+        .price {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff69b4;
+            margin-bottom: 10px;
+        }
+
+        .tickets {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .bonus {
+            font-size: 0.9em;
+            color: #90EE90;
+            font-weight: bold;
+        }
+
         .action-buttons {
             display: flex;
             justify-content: center;
             gap: 20px;
-            margin-top: 30px;
             flex-wrap: wrap;
         }
-        
-        .action-btn {
+
+        .btn {
             background: linear-gradient(45deg, #ff69b4, #ff1493);
-            border: 4px solid #ffff00;
-            color: #000;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 1.1rem;
-            padding: 18px 35px;
-            border-radius: 15px;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-            position: relative;
-            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
-        .action-btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
-            background: linear-gradient(45deg, #ff1493, #ff69b4);
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 105, 180, 0.4);
         }
-        
-        .action-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
+
+        .btn:active {
+            transform: translateY(0);
         }
-        
-        .action-btn:hover::before {
-            left: 100%;
-        }
-        
-        .bubble {
-            position: fixed;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: float 8s ease-in-out infinite;
-            pointer-events: none;
-            z-index: 1;
-        }
-        
-        .bubble:nth-child(1) {
-            width: 100px;
-            height: 100px;
-            top: 10%;
-            left: 5%;
-            animation-delay: 0s;
-        }
-        
-        .bubble:nth-child(2) {
-            width: 80px;
-            height: 80px;
-            top: 30%;
-            right: 10%;
-            animation-delay: 2s;
-        }
-        
-        .bubble:nth-child(3) {
-            width: 120px;
-            height: 120px;
-            top: 60%;
-            left: 15%;
-            animation-delay: 4s;
-        }
-        
-        .bubble:nth-child(4) {
-            width: 60px;
-            height: 60px;
-            bottom: 20%;
-            right: 20%;
-            animation-delay: 6s;
-        }
-        
-        .bubble:nth-child(5) {
-            width: 90px;
-            height: 90px;
-            top: 80%;
-            left: 50%;
-            animation-delay: 1s;
-        }
-        
-        @keyframes float {
-            0%, 100% { 
-                transform: translateY(0px) rotate(0deg);
-                opacity: 0.7;
-            }
-            50% { 
-                transform: translateY(-30px) rotate(180deg);
-                opacity: 1;
-            }
-        }
-        
+
         .footer {
             text-align: center;
-            margin-top: 50px;
-            padding: 30px;
-            background: rgba(0, 0, 0, 0.9);
-            border-top: 3px solid #00ff00;
-            border-radius: 20px 20px 0 0;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
-        .footer-text {
-            font-size: 0.9rem;
-            color: #ff69b4;
-            line-height: 1.8;
-        }
-        
-        .footer-text a {
-            color: #00ffff;
-            text-decoration: none;
-        }
-        
-        .footer-text a:hover {
-            color: #ffff00;
-            text-shadow: 0 0 10px #ffff00;
-        }
-        
+
         .live-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
+            display: inline-block;
+            width: 12px;
+            height: 12px;
             background: #00ff00;
-            color: #000;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.8rem;
-            animation: livePulse 1s infinite;
-            z-index: 1000;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
         }
-        
-        @keyframes livePulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .stat-item {
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #00ff00;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .stat-item:hover {
-            border-color: #ffff00;
-            transform: translateY(-5px);
-        }
-        
-        .stat-label {
-            font-size: 0.8rem;
-            color: #ffff00;
-            margin-bottom: 8px;
-        }
-        
-        .stat-value {
-            font-size: 1.2rem;
-            color: #00ffff;
-            font-weight: bold;
-        }
-        
+
         @media (max-width: 768px) {
-            .title {
-                font-size: 2.5rem;
-            }
-            
-            .jackpot-amount {
-                font-size: 3rem;
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .action-btn {
-                width: 100%;
-                max-width: 300px;
-            }
+            .title { font-size: 2.5em; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .action-buttons { flex-direction: column; align-items: center; }
         }
     </style>
 </head>
 <body>
-    <!-- Live Indicator -->
-    <div class="live-indicator">🔴 LIVE</div>
-    
     <!-- Floating Bubbles -->
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    
+    <div class="bubble" style="width: 60px; height: 60px; top: 10%; left: 10%; animation-delay: 0s;"></div>
+    <div class="bubble" style="width: 40px; height: 40px; top: 20%; left: 80%; animation-delay: 2s;"></div>
+    <div class="bubble" style="width: 80px; height: 80px; top: 60%; left: 5%; animation-delay: 4s;"></div>
+    <div class="bubble" style="width: 30px; height: 30px; top: 80%; left: 70%; animation-delay: 1s;"></div>
+    <div class="bubble" style="width: 50px; height: 50px; top: 30%; left: 50%; animation-delay: 3s;"></div>
+
     <div class="container">
-        <!-- Header -->
         <div class="header">
-            <div class="title">🎰 PEPEBALL 🎰</div>
-            <div class="pepe-emoji">🐸</div>
-            <div class="subtitle">LIVE DASHBOARD</div>
-            <div class="subtitle">8-bit meets South Park meets PEPE</div>
+            <div class="title">🐸 PEPEBALL 🐸</div>
+            <div class="subtitle">The Ultimate Powerball Lottery Token</div>
         </div>
-        
-        <!-- Dashboard Grid -->
-        <div class="dashboard-grid">
-            <div class="dashboard-card">
-                <div class="card-title">💰 Current Jackpot</div>
-                <div class="card-value" id="current-jackpot">25.7 SOL</div>
-                <div class="card-description">Growing every transaction!</div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="jackpot">20.5 SOL</div>
+                <div class="stat-label">Current Jackpot</div>
             </div>
-            
-            <div class="dashboard-card">
-                <div class="card-title">🎲 Next Draw</div>
-                <div class="card-value" id="next-draw">47h 23m</div>
-                <div class="card-description">Dynamic timing active</div>
+            <div class="stat-card">
+                <div class="stat-value" id="participants">1,247</div>
+                <div class="stat-label">Active Participants</div>
             </div>
-            
-            <div class="dashboard-card">
-                <div class="card-title">👥 Participants</div>
-                <div class="card-value" id="participants">1,247</div>
-                <div class="card-description">Active lottery players</div>
+            <div class="stat-card">
+                <div class="stat-value" id="tickets">8,934</div>
+                <div class="stat-label">Tickets Sold</div>
             </div>
-            
-            <div class="dashboard-card">
-                <div class="card-title">🎫 Total Tickets</div>
-                <div class="card-value" id="total-tickets">3,891</div>
-                <div class="card-description">Across all entries</div>
-            </div>
-            
-            <div class="dashboard-card">
-                <div class="card-title">🐸 Creator Fund</div>
-                <div class="card-value" id="creator-fund">0.05%</div>
-                <div class="card-description">Perpetual to Matt Furie</div>
-            </div>
-            
-            <div class="dashboard-card">
-                <div class="card-title">📈 Market Cap</div>
-                <div class="card-value" id="market-cap">$125K</div>
-                <div class="card-description">Growing community</div>
+            <div class="stat-card">
+                <div class="stat-value" id="nextDraw">2d 14h</div>
+                <div class="stat-label">Next Draw</div>
             </div>
         </div>
-        
-        <!-- Lottery Section -->
+
         <div class="lottery-section">
-            <div class="lottery-title">🎲 ENTER THE LOTTERY 🎲</div>
+            <div class="section-title">🎰 Enter the Lottery</div>
             
-            <div class="jackpot-display">
-                <div class="jackpot-amount" id="jackpot-amount">25.7 SOL</div>
-                <div class="jackpot-timer" id="jackpot-timer">Next draw in: 47h 23m</div>
-            </div>
-            
-            <div class="pricing-section">
-                <div class="pricing-title">💰 Dynamic Pricing Tiers 💰</div>
-                <div class="pricing-tiers">
-                    <div class="pricing-tier" onclick="selectTier(20, 1)">
-                        <span class="tier-price">$20</span>
-                        <span class="tier-tickets">1 ticket</span>
-                        <span class="tier-bonus">Basic Entry</span>
-                    </div>
-                    <div class="pricing-tier" onclick="selectTier(100, 4)">
-                        <span class="tier-price">$100</span>
-                        <span class="tier-tickets">4 tickets</span>
-                        <span class="tier-bonus">100% bonus</span>
-                    </div>
-                    <div class="pricing-tier" onclick="selectTier(500, 10)">
-                        <span class="tier-price">$500</span>
-                        <span class="tier-tickets">10 tickets</span>
-                        <span class="tier-bonus">400% bonus</span>
-                    </div>
+            <div class="pricing-grid">
+                <div class="pricing-card" data-price="20" data-tickets="1">
+                    <div class="price">$20</div>
+                    <div class="tickets">1 Ticket</div>
+                    <div class="bonus">Standard Entry</div>
+                </div>
+                <div class="pricing-card" data-price="100" data-tickets="4">
+                    <div class="price">$100</div>
+                    <div class="tickets">4 Tickets</div>
+                    <div class="bonus">+300% Bonus!</div>
+                </div>
+                <div class="pricing-card" data-price="500" data-tickets="10">
+                    <div class="price">$500</div>
+                    <div class="tickets">10 Tickets</div>
+                    <div class="bonus">+900% Bonus!</div>
                 </div>
             </div>
-            
+
             <div class="action-buttons">
-                <button class="action-btn" onclick="connectWallet()">
-                    🔗 Connect Wallet
-                </button>
-                <button class="action-btn" onclick="enterLottery()">
-                    🎫 Enter Lottery
-                </button>
-                <button class="action-btn" onclick="buyTokens()">
-                    💰 Buy Tokens
-                </button>
-                <button class="action-btn" onclick="viewCode()">
-                    📁 View Code
-                </button>
+                <button class="btn" onclick="connectWallet()">Connect Wallet</button>
+                <button class="btn" onclick="enterLottery()">Enter Lottery</button>
             </div>
         </div>
-        
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-label">Total Supply</div>
-                <div class="stat-value">1B PEPE</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Tax Rate</div>
-                <div class="stat-value">2.5%</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Draw Timing</div>
-                <div class="stat-value">72h/36h</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Anti-Rug</div>
-                <div class="stat-value">✅ Active</div>
-            </div>
-        </div>
-        
-        <!-- Footer -->
+
         <div class="footer">
-            <div class="footer-text">
-                Built with ❤️ for the PEPE community<br>
-                Honoring Matt Furie, the creator of PEPE<br>
-                🐸 PEPEBALL - Where memes meet money 🐸<br><br>
-                <strong>GitHub:</strong> <a href="https://github.com/preseteth/pepeball">github.com/preseteth/pepeball</a><br>
-                <strong>Status:</strong> Ready for launch! 🚀<br>
-                <strong>Last Updated:</strong> <span id="last-updated">Just now</span>
-            </div>
+            <div class="live-indicator"></div>
+            <span>LIVE DASHBOARD - Updates every 30 seconds</span>
+            <br><br>
+            <div>🐸 PEPEBALL - Where memes meet money! 💰</div>
         </div>
     </div>
-    
+
     <script>
-        // Live data updates
-        function updateLiveData() {
-            // Simulate live data updates
-            const jackpot = (25.7 + Math.random() * 2).toFixed(1);
-            const participants = 1247 + Math.floor(Math.random() * 50);
-            const tickets = 3891 + Math.floor(Math.random() * 100);
-            
-            document.getElementById('current-jackpot').textContent = jackpot + ' SOL';
-            document.getElementById('jackpot-amount').textContent = jackpot + ' SOL';
-            document.getElementById('participants').textContent = participants.toLocaleString();
-            document.getElementById('total-tickets').textContent = tickets.toLocaleString();
-            
-            // Update last updated time
-            document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
-        }
-        
-        // Update countdown timer
-        function updateTimer() {
-            const nextDraw = new Date(Date.now() + 47 * 60 * 60 * 1000 + 23 * 60 * 1000);
-            const now = new Date();
-            const diff = nextDraw - now;
-            
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            
-            document.getElementById('next-draw').textContent = hours + 'h ' + minutes + 'm';
-            document.getElementById('jackpot-timer').textContent = 'Next draw in: ' + hours + 'h ' + minutes + 'm';
-        }
-        
-        // Tier selection
-        function selectTier(price, tickets) {
-            // Add visual feedback
-            event.target.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                event.target.style.transform = 'translateY(-8px) scale(1.05)';
-            }, 200);
-            
-            // Show selection feedback
-            showNotification(`Selected: $${price} for ${tickets} tickets!`, 'success');
-        }
-        
-        // Action functions
-        function connectWallet() {
-            showNotification('🔗 Connecting wallet...', 'info');
-            setTimeout(() => {
-                showNotification('✅ Wallet connected!', 'success');
-            }, 2000);
-        }
-        
-        function enterLottery() {
-            showNotification('🎲 Entering lottery...', 'info');
-            setTimeout(() => {
-                showNotification('🎉 Successfully entered lottery!', 'success');
-            }, 2000);
-        }
-        
-        function buyTokens() {
-            window.open('https://pump.fun', '_blank');
-            showNotification('🚀 Opening Pump.Fun...', 'info');
-        }
-        
-        function viewCode() {
-            window.open('https://github.com/preseteth/pepeball', '_blank');
-            showNotification('📁 Opening GitHub...', 'info');
-        }
-        
-        // Notification system
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            notification.style.cssText = `
-                position: fixed;
-                top: 80px;
-                right: 20px;
-                padding: 15px 25px;
-                border-radius: 10px;
-                color: white;
-                font-family: 'Press Start 2P', monospace;
-                font-size: 0.8rem;
-                z-index: 2000;
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
-            `;
-            
-            if (type === 'success') {
-                notification.style.background = '#00ff00';
-                notification.style.color = '#000';
-            } else if (type === 'error') {
-                notification.style.background = '#ff0000';
-            } else if (type === 'warning') {
-                notification.style.background = '#ffff00';
-                notification.style.color = '#000';
-            } else {
-                notification.style.background = '#00ffff';
-                notification.style.color = '#000';
-            }
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 100);
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-        
-        // Add interactive effects
-        document.querySelectorAll('.dashboard-card').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-10px) scale(1.02)';
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0) scale(1)';
-            });
-        });
-        
-        // Update data every 30 seconds
-        setInterval(updateLiveData, 30000);
-        
-        // Update timer every minute
-        setInterval(updateTimer, 60000);
-        
-        // Initial updates
-        updateLiveData();
-        updateTimer();
-        
-        // Add some random bubble generation
-        setInterval(() => {
+        // Create more bubbles dynamically
+        function createBubble() {
             const bubble = document.createElement('div');
             bubble.className = 'bubble';
+            bubble.style.width = Math.random() * 60 + 20 + 'px';
+            bubble.style.height = bubble.style.width;
             bubble.style.left = Math.random() * 100 + '%';
             bubble.style.top = '100%';
-            bubble.style.width = (Math.random() * 50 + 30) + 'px';
-            bubble.style.height = bubble.style.width;
-            bubble.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            bubble.style.animationDuration = Math.random() * 3 + 4 + 's';
+            bubble.style.animationDelay = Math.random() * 2 + 's';
+            
             document.body.appendChild(bubble);
             
-            setTimeout(() => bubble.remove(), 10000);
-        }, 3000);
-        
-        // Add click effects to cards
-        document.querySelectorAll('.dashboard-card, .pricing-tier').forEach(element => {
-            element.addEventListener('click', () => {
-                element.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    element.style.transform = '';
-                }, 150);
+            setTimeout(() => {
+                bubble.remove();
+            }, 8000);
+        }
+
+        // Create bubbles every 2 seconds
+        setInterval(createBubble, 2000);
+
+        // Pricing card selection
+        document.querySelectorAll('.pricing-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
             });
         });
+
+        // Simulate live data updates
+        function updateStats() {
+            const jackpot = document.getElementById('jackpot');
+            const participants = document.getElementById('participants');
+            const tickets = document.getElementById('tickets');
+            
+            // Simulate jackpot growth
+            const currentJackpot = parseFloat(jackpot.textContent);
+            const newJackpot = (currentJackpot + Math.random() * 0.5).toFixed(1);
+            jackpot.textContent = newJackpot + ' SOL';
+            
+            // Simulate participant growth
+            const currentParticipants = parseInt(participants.textContent.replace(',', ''));
+            const newParticipants = currentParticipants + Math.floor(Math.random() * 5);
+            participants.textContent = newParticipants.toLocaleString();
+            
+            // Simulate ticket sales
+            const currentTickets = parseInt(tickets.textContent.replace(',', ''));
+            const newTickets = currentTickets + Math.floor(Math.random() * 20);
+            tickets.textContent = newTickets.toLocaleString();
+        }
+
+        // Update stats every 30 seconds
+        setInterval(updateStats, 30000);
+
+        // Countdown timer
+        function updateCountdown() {
+            const nextDraw = document.getElementById('nextDraw');
+            // Simulate countdown (in real implementation, this would be calculated from blockchain data)
+            const hours = Math.floor(Math.random() * 48) + 1;
+            const days = Math.floor(hours / 24);
+            const remainingHours = hours % 24;
+            nextDraw.textContent = `${days}d ${remainingHours}h`;
+        }
+
+        // Update countdown every minute
+        setInterval(updateCountdown, 60000);
+
+        // Wallet connection simulation
+        function connectWallet() {
+            alert('🐸 Wallet connection would be implemented here!\n\nIn the live version, this will connect to Phantom, Solflare, or other Solana wallets.');
+        }
+
+        // Lottery entry simulation
+        function enterLottery() {
+            const selectedCard = document.querySelector('.pricing-card.selected');
+            if (!selectedCard) {
+                alert('🐸 Please select a pricing tier first!');
+                return;
+            }
+            
+            const price = selectedCard.dataset.price;
+            const tickets = selectedCard.dataset.tickets;
+            
+            alert(`🐸 Entering lottery with $${price} for ${tickets} ticket(s)!\n\nIn the live version, this will process the transaction on Solana blockchain.`);
+        }
+
+        // Initialize
+        updateCountdown();
     </script>
 </body>
 </html>
