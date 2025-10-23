@@ -569,13 +569,14 @@
         // Update countdown every minute
         setInterval(updateCountdown, 60000);
 
-        // Wallet connection simulation
-        function connectWallet() {
-            alert('🐸 Wallet connection would be implemented here!\n\nIn the live version, this will connect to Phantom, Solflare, or other Solana wallets.');
-        }
 
-        // Lottery entry simulation
+        // Lottery entry function
         function enterLottery() {
+            if (!isConnected) {
+                alert('🐸 Please connect your wallet first!');
+                return;
+            }
+            
             const selectedCard = document.querySelector('.pricing-card.selected');
             if (!selectedCard) {
                 alert('🐸 Please select a pricing tier first!');
@@ -585,7 +586,11 @@
             const price = selectedCard.dataset.price;
             const tickets = selectedCard.dataset.tickets;
             
-            alert(`🐸 Entering lottery with $${price} for ${tickets} ticket(s)!\n\nIn the live version, this will process the transaction on Solana blockchain.`);
+            // This would process the actual lottery entry transaction
+            console.log(`Entering lottery with wallet: ${userAddress}`);
+            console.log(`Price: $${price}, Tickets: ${tickets}`);
+            
+            alert(`🐸 Entering lottery with $${price} for ${tickets} ticket(s)!\n\nWallet: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`);
         }
 
         // Initialize
