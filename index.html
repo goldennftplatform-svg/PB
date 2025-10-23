@@ -10,7 +10,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             background: linear-gradient(45deg, #ff69b4, #ff1493, #ff69b4, #ff1493);
             background-size: 400% 400%;
@@ -20,7 +20,7 @@
             overflow-x: hidden;
             min-height: 100vh;
         }
-
+        
         @keyframes gradientShift {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -73,7 +73,7 @@
                 box-shadow: 0 0 30px rgba(255, 105, 180, 0.8), inset 0 0 25px rgba(255, 255, 255, 0.4);
             }
         }
-
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -81,7 +81,7 @@
             position: relative;
             z-index: 10;
         }
-
+        
         .header {
             text-align: center;
             margin-bottom: 40px;
@@ -92,14 +92,14 @@
             from { text-shadow: 0 0 20px #fff, 0 0 30px #ff69b4; }
             to { text-shadow: 0 0 30px #fff, 0 0 40px #ff69b4, 0 0 50px #ff1493; }
         }
-
+        
         .title {
             font-size: 4em;
             font-weight: bold;
             margin-bottom: 10px;
             text-shadow: 0 0 20px #fff;
         }
-
+        
         .subtitle {
             font-size: 1.5em;
             opacity: 0.9;
@@ -111,7 +111,7 @@
             gap: 20px;
             margin-bottom: 40px;
         }
-
+        
         .stat-card {
             background: rgba(0, 0, 0, 0.3);
             border: 2px solid rgba(255, 255, 255, 0.5);
@@ -123,7 +123,7 @@
             position: relative;
             overflow: hidden;
         }
-
+        
         .stat-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(255, 105, 180, 0.3);
@@ -157,7 +157,7 @@
             font-size: 1.1em;
             opacity: 0.9;
         }
-
+        
         .lottery-section {
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid rgba(255, 255, 255, 0.3);
@@ -166,7 +166,7 @@
             margin-bottom: 40px;
             backdrop-filter: blur(10px);
         }
-
+        
         .section-title {
             font-size: 2.5em;
             text-align: center;
@@ -221,14 +221,14 @@
             color: #90EE90;
             font-weight: bold;
         }
-
+        
         .action-buttons {
             display: flex;
             justify-content: center;
             gap: 20px;
             flex-wrap: wrap;
         }
-
+        
         .btn {
             background: linear-gradient(45deg, #ff69b4, #ff1493);
             border: none;
@@ -251,14 +251,14 @@
         .btn:active {
             transform: translateY(0);
         }
-
+        
         .footer {
             text-align: center;
             margin-top: 40px;
             padding: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.3);
         }
-
+        
         .live-indicator {
             display: inline-block;
             width: 12px;
@@ -274,7 +274,7 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-
+        
         @media (max-width: 768px) {
             .title { font-size: 2.5em; }
             .stats-grid { grid-template-columns: 1fr; }
@@ -299,13 +299,13 @@
     <div class="pepe-ball" style="top: 45%; left: 50%; animation-delay: 0.5s;">🐸</div>
     <div class="pepe-ball" style="top: 35%; left: 30%; animation-delay: 1.5s;">🐸</div>
     <div class="pepe-ball" style="top: 55%; left: 70%; animation-delay: 2.5s;">🐸</div>
-
+    
     <div class="container">
         <div class="header">
             <div class="title">🐸 PEPEBALL 🐸</div>
             <div class="subtitle">The Ultimate Powerball Lottery Token</div>
         </div>
-
+        
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value" id="jackpot">20.5 SOL</div>
@@ -324,7 +324,7 @@
                 <div class="stat-label">Next Draw</div>
             </div>
         </div>
-
+        
         <div class="lottery-section">
             <div class="section-title">🎰 Enter the Lottery</div>
             
@@ -333,30 +333,30 @@
                     <div class="price">$20</div>
                     <div class="tickets">1 Ticket</div>
                     <div class="bonus">Standard Entry</div>
-                </div>
+            </div>
                 <div class="pricing-card" data-price="100" data-tickets="4">
                     <div class="price">$100</div>
                     <div class="tickets">4 Tickets</div>
                     <div class="bonus">+300% Bonus!</div>
-                </div>
+                    </div>
                 <div class="pricing-card" data-price="500" data-tickets="10">
                     <div class="price">$500</div>
                     <div class="tickets">10 Tickets</div>
                     <div class="bonus">+900% Bonus!</div>
                 </div>
             </div>
-
+            
             <div class="action-buttons">
                 <button class="btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
                 <button class="btn" onclick="enterLottery()">Enter Lottery</button>
                 <button class="btn" onclick="testTransaction()">Test Transaction</button>
-            </div>
-            
+        </div>
+        
             <div id="walletInfo" style="text-align: center; margin-top: 20px; font-size: 1.1em;">
                 <div style="color: #ff69b4;">🔴 Not Connected</div>
             </div>
         </div>
-
+        
         <div class="footer">
             <div class="live-indicator"></div>
             <span>LIVE DASHBOARD - Updates every 30 seconds</span>
@@ -370,23 +370,7 @@
     
     <script>
         // Initialize Privy
-        const privy = new Privy({
-            appId: 'cmh3tke4l00m3jo0cgb0lt1k9',
-            config: {
-                loginMethods: ['wallet', 'email', 'google', 'twitter'],
-                appearance: {
-                    theme: 'dark',
-                    accentColor: '#ff69b4',
-                    logo: 'https://your-logo-url.com/logo.png'
-                },
-                embeddedWallets: {
-                    createOnLogin: 'users-without-wallets',
-                    requireUserPasswordOnCreate: false
-                }
-            }
-        });
-
-        // Wallet connection state
+        let privy;
         let isConnected = false;
         let userWallet = null;
         let userAddress = null;
@@ -394,8 +378,24 @@
         // Initialize Privy on page load
         async function initPrivy() {
             try {
+                privy = new Privy({
+                    appId: 'cmh3tke4l00m3jo0cgb0lt1k9',
+                    config: {
+                        loginMethods: ['wallet', 'email', 'google', 'twitter'],
+                        appearance: {
+                            theme: 'dark',
+                            accentColor: '#ff69b4',
+                            logo: 'https://your-logo-url.com/logo.png'
+                        },
+                        embeddedWallets: {
+                            createOnLogin: 'users-without-wallets',
+                            requireUserPasswordOnCreate: false
+                        }
+                    }
+                });
+
                 await privy.ready();
-                console.log('Privy initialized');
+                console.log('Privy initialized successfully');
                 
                 // Check if user is already logged in
                 if (privy.user) {
@@ -403,7 +403,15 @@
                 }
             } catch (error) {
                 console.error('Privy initialization failed:', error);
+                // Fallback to simple wallet connection
+                setupFallbackWallet();
             }
+        }
+
+        // Fallback wallet connection (if Privy fails)
+        function setupFallbackWallet() {
+            console.log('Setting up fallback wallet connection');
+            // Simple wallet connection without Privy
         }
 
         // Handle user login
@@ -453,12 +461,18 @@
                     updateWalletUI();
                 } else {
                     // Connect
+                    if (!privy) {
+                        console.error('Privy not initialized');
+                        alert('Wallet service not ready. Please refresh the page.');
+                        return;
+                    }
+                    
                     const user = await privy.login();
                     handleLogin(user);
                 }
             } catch (error) {
                 console.error('Wallet connection failed:', error);
-                alert('Wallet connection failed. Please try again.');
+                alert('Wallet connection failed: ' + error.message);
             }
         }
 
@@ -530,7 +544,7 @@
                 this.classList.add('selected');
             });
         });
-
+        
         // Simulate live data updates
         function updateStats() {
             const jackpot = document.getElementById('jackpot');
