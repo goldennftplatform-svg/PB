@@ -39,41 +39,6 @@
             50% { transform: translateY(-20px) rotate(180deg); }
         }
 
-        .pepe-ball {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #ff69b4, #ff1493, #ff69b4);
-            border: 3px solid #fff;
-            box-shadow: 0 0 20px rgba(255, 105, 180, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            animation: bounceBall 4s ease-in-out infinite;
-            z-index: 5;
-        }
-
-        @keyframes bounceBall {
-            0%, 100% { 
-                transform: translateY(0px) rotate(0deg) scale(1);
-                box-shadow: 0 0 20px rgba(255, 105, 180, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.3);
-            }
-            25% { 
-                transform: translateY(-30px) rotate(90deg) scale(1.1);
-                box-shadow: 0 0 30px rgba(255, 105, 180, 0.8), inset 0 0 25px rgba(255, 255, 255, 0.4);
-            }
-            50% { 
-                transform: translateY(-60px) rotate(180deg) scale(1.2);
-                box-shadow: 0 0 40px rgba(255, 105, 180, 1), inset 0 0 30px rgba(255, 255, 255, 0.5);
-            }
-            75% { 
-                transform: translateY(-30px) rotate(270deg) scale(1.1);
-                box-shadow: 0 0 30px rgba(255, 105, 180, 0.8), inset 0 0 25px rgba(255, 255, 255, 0.4);
-            }
-        }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -113,8 +78,8 @@
         }
 
         .stat-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 15px;
             padding: 25px;
             text-align: center;
@@ -148,8 +113,8 @@
         .stat-value {
             font-size: 2.5em;
             font-weight: bold;
-            color: #ffffff;
-            text-shadow: 0 0 15px #ff69b4, 0 0 25px #ff1493, 2px 2px 4px rgba(0,0,0,0.8);
+            color: #ff69b4;
+            text-shadow: 0 0 10px #ff69b4;
             margin-bottom: 10px;
         }
 
@@ -206,8 +171,7 @@
         .price {
             font-size: 2em;
             font-weight: bold;
-            color: #ffffff;
-            text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff1493, 2px 2px 4px rgba(0,0,0,0.8);
+            color: #ff69b4;
             margin-bottom: 10px;
         }
 
@@ -291,15 +255,6 @@
     <div class="bubble" style="width: 30px; height: 30px; top: 80%; left: 70%; animation-delay: 1s;"></div>
     <div class="bubble" style="width: 50px; height: 50px; top: 30%; left: 50%; animation-delay: 3s;"></div>
 
-    <!-- PEPE Balls -->
-    <div class="pepe-ball" style="top: 15%; left: 20%; animation-delay: 0s;">🐸</div>
-    <div class="pepe-ball" style="top: 25%; left: 75%; animation-delay: 1s;">🐸</div>
-    <div class="pepe-ball" style="top: 65%; left: 10%; animation-delay: 2s;">🐸</div>
-    <div class="pepe-ball" style="top: 75%; left: 80%; animation-delay: 3s;">🐸</div>
-    <div class="pepe-ball" style="top: 45%; left: 50%; animation-delay: 0.5s;">🐸</div>
-    <div class="pepe-ball" style="top: 35%; left: 30%; animation-delay: 1.5s;">🐸</div>
-    <div class="pepe-ball" style="top: 55%; left: 70%; animation-delay: 2.5s;">🐸</div>
-
     <div class="container">
         <div class="header">
             <div class="title">🐸 PEPEBALL 🐸</div>
@@ -347,13 +302,8 @@
             </div>
 
             <div class="action-buttons">
-                <button class="btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+                <button class="btn" onclick="connectWallet()">Connect Wallet</button>
                 <button class="btn" onclick="enterLottery()">Enter Lottery</button>
-                <button class="btn" onclick="testTransaction()">Test Transaction</button>
-            </div>
-            
-            <div id="walletInfo" style="text-align: center; margin-top: 20px; font-size: 1.1em;">
-                <div style="color: #ff69b4;">🔴 Not Connected</div>
             </div>
         </div>
 
@@ -365,123 +315,7 @@
         </div>
     </div>
 
-    <!-- Privy SDK -->
-    <script src="https://cdn.privy.io/privy-js/privy.js"></script>
-    
     <script>
-        // Initialize Privy
-        const privy = new Privy({
-            appId: 'YOUR_PRIVY_APP_ID', // We'll get this from Privy dashboard
-            config: {
-                loginMethods: ['wallet', 'email', 'google', 'twitter'],
-                appearance: {
-                    theme: 'dark',
-                    accentColor: '#ff69b4',
-                    logo: 'https://your-logo-url.com/logo.png'
-                },
-                embeddedWallets: {
-                    createOnLogin: 'users-without-wallets',
-                    requireUserPasswordOnCreate: false
-                }
-            }
-        });
-
-        // Wallet connection state
-        let isConnected = false;
-        let userWallet = null;
-        let userAddress = null;
-
-        // Initialize Privy on page load
-        async function initPrivy() {
-            try {
-                await privy.ready();
-                console.log('Privy initialized');
-                
-                // Check if user is already logged in
-                if (privy.user) {
-                    handleLogin(privy.user);
-                }
-            } catch (error) {
-                console.error('Privy initialization failed:', error);
-            }
-        }
-
-        // Handle user login
-        function handleLogin(user) {
-            isConnected = true;
-            userWallet = user.wallet;
-            userAddress = user.wallet.address;
-            
-            // Update UI
-            updateWalletUI();
-            console.log('User connected:', userAddress);
-        }
-
-        // Update wallet UI
-        function updateWalletUI() {
-            const connectBtn = document.getElementById('connectBtn');
-            const walletInfo = document.getElementById('walletInfo');
-            
-            if (isConnected) {
-                connectBtn.textContent = 'Connected';
-                connectBtn.style.background = 'linear-gradient(45deg, #00ff00, #00cc00)';
-                walletInfo.innerHTML = `
-                    <div style="color: #00ff00; font-weight: bold;">
-                        🟢 Connected: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}
-                    </div>
-                `;
-            } else {
-                connectBtn.textContent = 'Connect Wallet';
-                connectBtn.style.background = 'linear-gradient(45deg, #ff69b4, #ff1493)';
-                walletInfo.innerHTML = `
-                    <div style="color: #ff69b4;">
-                        🔴 Not Connected
-                    </div>
-                `;
-            }
-        }
-
-        // Connect wallet function
-        async function connectWallet() {
-            try {
-                if (isConnected) {
-                    // Disconnect
-                    await privy.logout();
-                    isConnected = false;
-                    userWallet = null;
-                    userAddress = null;
-                    updateWalletUI();
-                } else {
-                    // Connect
-                    const user = await privy.login();
-                    handleLogin(user);
-                }
-            } catch (error) {
-                console.error('Wallet connection failed:', error);
-                alert('Wallet connection failed. Please try again.');
-            }
-        }
-
-        // Test transaction function
-        async function testTransaction() {
-            if (!isConnected) {
-                alert('Please connect your wallet first!');
-                return;
-            }
-
-            try {
-                // This would be a test transaction on devnet
-                console.log('Testing transaction with wallet:', userAddress);
-                alert('Test transaction initiated! Check console for details.');
-            } catch (error) {
-                console.error('Transaction failed:', error);
-                alert('Transaction failed. Please try again.');
-            }
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', initPrivy);
-
         // Create more bubbles dynamically
         function createBubble() {
             const bubble = document.createElement('div');
@@ -500,28 +334,8 @@
             }, 8000);
         }
 
-        // Create PEPE balls dynamically
-        function createPepeBall() {
-            const pepeBall = document.createElement('div');
-            pepeBall.className = 'pepe-ball';
-            pepeBall.innerHTML = '🐸';
-            pepeBall.style.left = Math.random() * 100 + '%';
-            pepeBall.style.top = '100%';
-            pepeBall.style.animationDuration = Math.random() * 2 + 3 + 's';
-            pepeBall.style.animationDelay = Math.random() * 2 + 's';
-            
-            document.body.appendChild(pepeBall);
-            
-            setTimeout(() => {
-                pepeBall.remove();
-            }, 10000);
-        }
-
         // Create bubbles every 2 seconds
         setInterval(createBubble, 2000);
-        
-        // Create PEPE balls every 3 seconds
-        setInterval(createPepeBall, 3000);
 
         // Pricing card selection
         document.querySelectorAll('.pricing-card').forEach(card => {
