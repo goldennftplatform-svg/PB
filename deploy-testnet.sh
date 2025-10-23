@@ -6,11 +6,9 @@ echo "🐸 PEPEBALL Testnet Deployment Starting..."
 # Set Solana to devnet
 solana config set --url devnet
 
-# Check if wallet exists, create if not
-if [ ! -f ~/.config/solana/id.json ]; then
-    echo "Creating new wallet..."
-    solana-keygen new --outfile ~/.config/solana/id.json --no-bip39-passphrase
-fi
+# Use the provided private key
+echo "Using provided private key..."
+cp testnet-key.json ~/.config/solana/id.json
 
 # Get wallet address
 WALLET_ADDRESS=$(solana address)
