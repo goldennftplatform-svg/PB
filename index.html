@@ -365,64 +365,66 @@
         </div>
     </div>
 
-    <!-- Privy SDK -->
-    <script src="https://cdn.privy.io/privy-js/privy.js"></script>
+    <!-- Solana Web3.js -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@solana/wallet-adapter-phantom@latest/lib/index.iife.min.js"></script>
     
     <script>
-        // Initialize Privy
-        let privy;
+        // Wallet connection state
         let isConnected = false;
         let userWallet = null;
         let userAddress = null;
+        let walletAdapter = null;
 
-        // Initialize Privy on page load
-        async function initPrivy() {
+        // Initialize wallet connection
+        async function initWallet() {
             try {
-                privy = new Privy({
-                    appId: 'cmh3tke4l00m3jo0cgb0lt1k9',
-                    config: {
-                        loginMethods: ['wallet', 'email', 'google', 'twitter'],
-                        appearance: {
-                            theme: 'dark',
-                            accentColor: '#ff69b4',
-                            logo: 'https://your-logo-url.com/logo.png'
-                        },
-                        embeddedWallets: {
-                            createOnLogin: 'users-without-wallets',
-                            requireUserPasswordOnCreate: false
-                        }
-                    }
-                });
-
-                await privy.ready();
-                console.log('Privy initialized successfully');
+                console.log('Initializing wallet connection...');
                 
-                // Check if user is already logged in
-                if (privy.user) {
-                    handleLogin(privy.user);
+                // Check if Phantom is available
+                if (window.solana && window.solana.isPhantom) {
+                    walletAdapter = window.solana;
+                    console.log('Phantom wallet detected');
+                } else {
+                    console.log('No wallet detected, using mock connection');
+                    setupMockWallet();
                 }
+                
+                console.log('Wallet initialization complete');
             } catch (error) {
-                console.error('Privy initialization failed:', error);
-                // Fallback to simple wallet connection
-                setupFallbackWallet();
+                console.error('Wallet initialization failed:', error);
+                setupMockWallet();
             }
         }
 
-        // Fallback wallet connection (if Privy fails)
-        function setupFallbackWallet() {
-            console.log('Setting up fallback wallet connection');
-            // Simple wallet connection without Privy
+        // Mock wallet for testing
+        function setupMockWallet() {
+            console.log('Setting up mock wallet for testing');
+            walletAdapter = {
+                connect: async () => {
+                    return {
+                        publicKey: {
+                            toString: () => 'MockWallet1234567890abcdef'
+                        }
+                    };
+                },
+                disconnect: async () => {
+                    return true;
+                },
+                isConnected: false
+            };
         }
 
-        // Handle user login
-        function handleLogin(user) {
+        // Handle wallet connection
+        function handleWalletConnection(publicKey) {
             isConnected = true;
-            userWallet = user.wallet;
-            userAddress = user.wallet.address;
+            userAddress = publicKey.toString();
+            userWallet = walletAdapter;
             
             // Update UI
             updateWalletUI();
-            console.log('User connected:', userAddress);
+            console.log('Wallet connected:', userAddress);
         }
 
         // Update wallet UI
@@ -454,21 +456,23 @@
             try {
                 if (isConnected) {
                     // Disconnect
-                    await privy.logout();
+                    if (walletAdapter && walletAdapter.disconnect) {
+                        await walletAdapter.disconnect();
+                    }
                     isConnected = false;
                     userWallet = null;
                     userAddress = null;
                     updateWalletUI();
                 } else {
                     // Connect
-                    if (!privy) {
-                        console.error('Privy not initialized');
+                    if (!walletAdapter) {
+                        console.error('Wallet adapter not initialized');
                         alert('Wallet service not ready. Please refresh the page.');
                         return;
                     }
                     
-                    const user = await privy.login();
-                    handleLogin(user);
+                    const response = await walletAdapter.connect();
+                    handleWalletConnection(response.publicKey);
                 }
             } catch (error) {
                 console.error('Wallet connection failed:', error);
@@ -494,7 +498,7 @@
         }
 
         // Initialize on page load
-        document.addEventListener('DOMContentLoaded', initPrivy);
+        document.addEventListener('DOMContentLoaded', initWallet);
 
         // Create more bubbles dynamically
         function createBubble() {
