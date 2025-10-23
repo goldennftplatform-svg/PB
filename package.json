@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "anchor test",
-    "build": "anchor build",
+    "build": "echo 'Static HTML - no build needed'",
     "deploy": "anchor deploy",
     "deploy:devnet": "anchor deploy --provider.cluster devnet",
     "deploy:mainnet": "anchor deploy --provider.cluster mainnet",
