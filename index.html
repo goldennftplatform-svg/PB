@@ -334,44 +334,38 @@
         </div>
         
         <div class="lottery-section">
-            <div class="section-title">🎰 Enter the Lottery</div>
+            <div class="section-title">🎰 How to Win</div>
             
             <div style="background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 30px; text-align: center;">
                 <div style="font-size: 1.3em; font-weight: bold; color: #ff69b4; margin-bottom: 10px;">
-                    🎯 Qualification Requirements
+                    🎯 Just Hold Tokens
                 </div>
                 <div style="font-size: 1.1em; margin-bottom: 15px;">
                     Hold tokens worth <span style="color: #ffffff; font-weight: bold;">$20.00 USD</span> to qualify for lottery drawings
                 </div>
-                <div style="font-size: 1em; color: #90EE90;">
+                <div style="font-size: 1em; color: #90EE90; margin-bottom: 15px;">
                     Required: <span id="qualifyTokens" style="color: #ffffff; font-weight: bold;">1,000,000 PEPE</span> tokens
                 </div>
-                <div style="font-size: 0.9em; color: #ff69b4; margin-top: 10px;">
-                    💡 Token amount adjusts with price - always $20 USD minimum!
+                
+                <div style="background: rgba(0, 255, 0, 0.1); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                    <div style="font-size: 1em; font-weight: bold; color: #00ff00; margin-bottom: 10px;">
+                        ✅ THAT'S IT!
+                    </div>
+                    <div style="font-size: 0.9em; color: #ffffff;">
+                        • Hold tokens in ANY wallet<br>
+                        • No registration, no tickets, no bullshit<br>
+                        • Blockchain automatically detects your balance<br>
+                        • Qualify instantly when you reach $20 USD value
+                    </div>
                 </div>
-            </div>
-            
-            <div class="pricing-grid">
-                <div class="pricing-card" data-price="20" data-tickets="1" data-pepe="1000000">
-                    <div class="price">$20</div>
-                    <div class="tickets">1M PEPE Tokens</div>
-                    <div class="bonus">1 Ticket - Qualifies!</div>
-                    </div>
-                <div class="pricing-card" data-price="100" data-tickets="4" data-pepe="5000000">
-                    <div class="price">$100</div>
-                    <div class="tickets">5M PEPE Tokens</div>
-                    <div class="bonus">4 Tickets - +300% Bonus!</div>
-                    </div>
-                <div class="pricing-card" data-price="500" data-tickets="10" data-pepe="25000000">
-                    <div class="price">$500</div>
-                    <div class="tickets">25M PEPE Tokens</div>
-                    <div class="bonus">10 Tickets - +900% Bonus!</div>
+                
+                <div style="font-size: 0.9em; color: #ff69b4;">
+                    💡 Token amount adjusts with price - always $20 USD minimum!
                 </div>
             </div>
             
             <div class="action-buttons">
                 <button class="btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
-                <button class="btn" onclick="enterLottery()">Enter Lottery</button>
                 <button class="btn" onclick="checkBalance()">Check Balance</button>
                 <button class="btn" onclick="buyTokens()">Buy PEPE Tokens</button>
             </div>
@@ -671,13 +665,6 @@
         // Create PEPE balls every 3 seconds
         setInterval(createPepeBall, 3000);
 
-        // Pricing card selection
-        document.querySelectorAll('.pricing-card').forEach(card => {
-            card.addEventListener('click', function() {
-                document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
-                this.classList.add('selected');
-            });
-        });
         
         // Simulate live data updates
         function updateStats() {
@@ -752,29 +739,6 @@
         setInterval(updateCountdown, 60000);
 
 
-        // Lottery entry function
-        function enterLottery() {
-            if (!isConnected) {
-                alert('🐸 Please connect your wallet first!');
-                return;
-            }
-            
-            const selectedCard = document.querySelector('.pricing-card.selected');
-            if (!selectedCard) {
-                alert('🐸 Please select a pricing tier first!');
-                return;
-            }
-            
-            const price = selectedCard.dataset.price;
-            const tickets = selectedCard.dataset.tickets;
-            const pepeAmount = selectedCard.dataset.pepe;
-            
-            // This would process the actual lottery entry transaction
-            console.log(`Entering lottery with wallet: ${userAddress}`);
-            console.log(`Price: $${price}, Tickets: ${tickets}, PEPE: ${pepeAmount}`);
-            
-            alert(`🐸 Entering lottery with $${price}!\n\n💰 ${pepeAmount} PEPE Tokens\n🎫 ${tickets} Lottery Ticket(s)\n🔗 Wallet: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}\n\n✅ You qualify for the next draw!`);
-        }
 
         // Initialize
         updateCountdown();
