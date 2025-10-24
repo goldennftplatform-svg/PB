@@ -323,26 +323,49 @@
                 <div class="stat-value" id="nextDraw">2d 14h</div>
                 <div class="stat-label">Next Draw</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-value" id="tokenPrice">$0.000020</div>
+                <div class="stat-label">PEPE Token Price</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="qualifyAmount">1M PEPE</div>
+                <div class="stat-label">Qualify for Draw</div>
+            </div>
         </div>
         
         <div class="lottery-section">
             <div class="section-title">🎰 Enter the Lottery</div>
             
-            <div class="pricing-grid">
-                <div class="pricing-card" data-price="20" data-tickets="1">
-                    <div class="price">$20</div>
-                    <div class="tickets">1 Ticket</div>
-                    <div class="bonus">Standard Entry</div>
+            <div style="background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 30px; text-align: center;">
+                <div style="font-size: 1.3em; font-weight: bold; color: #ff69b4; margin-bottom: 10px;">
+                    🎯 Qualification Requirements
+                </div>
+                <div style="font-size: 1.1em; margin-bottom: 15px;">
+                    Hold <span style="color: #ffffff; font-weight: bold;">1,000,000 PEPE</span> tokens to qualify for lottery drawings
+                </div>
+                <div style="font-size: 1em; color: #90EE90;">
+                    Current Value: <span id="qualifyValue" style="color: #ffffff; font-weight: bold;">$20.00</span> USD
+                </div>
+                <div style="font-size: 0.9em; color: #ff69b4; margin-top: 10px;">
+                    💡 Token price fluctuates - check current value before buying!
+                </div>
             </div>
-                <div class="pricing-card" data-price="100" data-tickets="4">
+            
+            <div class="pricing-grid">
+                <div class="pricing-card" data-price="20" data-tickets="1" data-pepe="1000000">
+                    <div class="price">$20</div>
+                    <div class="tickets">1M PEPE Tokens</div>
+                    <div class="bonus">1 Ticket - Qualifies!</div>
+                </div>
+                <div class="pricing-card" data-price="100" data-tickets="4" data-pepe="5000000">
                     <div class="price">$100</div>
-                    <div class="tickets">4 Tickets</div>
-                    <div class="bonus">+300% Bonus!</div>
-                    </div>
-                <div class="pricing-card" data-price="500" data-tickets="10">
+                    <div class="tickets">5M PEPE Tokens</div>
+                    <div class="bonus">4 Tickets - +300% Bonus!</div>
+                </div>
+                <div class="pricing-card" data-price="500" data-tickets="10" data-pepe="25000000">
                     <div class="price">$500</div>
-                    <div class="tickets">10 Tickets</div>
-                    <div class="bonus">+900% Bonus!</div>
+                    <div class="tickets">25M PEPE Tokens</div>
+                    <div class="bonus">10 Tickets - +900% Bonus!</div>
                 </div>
             </div>
             
@@ -554,6 +577,8 @@
             const jackpot = document.getElementById('jackpot');
             const participants = document.getElementById('participants');
             const tickets = document.getElementById('tickets');
+            const tokenPrice = document.getElementById('tokenPrice');
+            const qualifyValue = document.getElementById('qualifyValue');
             
             // Simulate jackpot growth
             const currentJackpot = parseFloat(jackpot.textContent);
@@ -569,6 +594,17 @@
             const currentTickets = parseInt(tickets.textContent.replace(',', ''));
             const newTickets = currentTickets + Math.floor(Math.random() * 20);
             tickets.textContent = newTickets.toLocaleString();
+            
+            // Simulate token price changes
+            const currentPrice = parseFloat(tokenPrice.textContent.replace('$', ''));
+            const priceChange = (Math.random() - 0.5) * 0.000005; // ±0.000005 price change
+            const newPrice = Math.max(0.000001, currentPrice + priceChange);
+            tokenPrice.textContent = '$' + newPrice.toFixed(6);
+            
+            // Update qualification value (1M tokens * current price)
+            const qualifyTokens = 1000000;
+            const qualifyUSD = (qualifyTokens * newPrice).toFixed(2);
+            qualifyValue.textContent = '$' + qualifyUSD;
         }
 
         // Update stats every 30 seconds
@@ -603,12 +639,13 @@
             
             const price = selectedCard.dataset.price;
             const tickets = selectedCard.dataset.tickets;
+            const pepeAmount = selectedCard.dataset.pepe;
             
             // This would process the actual lottery entry transaction
             console.log(`Entering lottery with wallet: ${userAddress}`);
-            console.log(`Price: $${price}, Tickets: ${tickets}`);
+            console.log(`Price: $${price}, Tickets: ${tickets}, PEPE: ${pepeAmount}`);
             
-            alert(`🐸 Entering lottery with $${price} for ${tickets} ticket(s)!\n\nWallet: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`);
+            alert(`🐸 Entering lottery with $${price}!\n\n💰 ${pepeAmount} PEPE Tokens\n🎫 ${tickets} Lottery Ticket(s)\n🔗 Wallet: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}\n\n✅ You qualify for the next draw!`);
         }
 
         // Initialize
