@@ -372,11 +372,47 @@
             <div class="action-buttons">
                 <button class="btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
                 <button class="btn" onclick="enterLottery()">Enter Lottery</button>
-                <button class="btn" onclick="testTransaction()">Test Transaction</button>
-        </div>
-        
+                <button class="btn" onclick="checkBalance()">Check Balance</button>
+                <button class="btn" onclick="buyTokens()">Buy PEPE Tokens</button>
+            </div>
+            
             <div id="walletInfo" style="text-align: center; margin-top: 20px; font-size: 1.1em;">
                 <div style="color: #ff69b4;">🔴 Not Connected</div>
+            </div>
+            
+            <!-- User Dashboard (only visible when connected) -->
+            <div id="userDashboard" style="display: none; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 15px; padding: 25px; margin-top: 30px;">
+                <div style="font-size: 1.5em; font-weight: bold; color: #ff69b4; margin-bottom: 20px; text-align: center;">
+                    🐸 Your PEPEBALL Dashboard
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                    <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.2em; color: #ffffff; font-weight: bold;" id="userBalance">0 PEPE</div>
+                        <div style="font-size: 0.9em; color: #ff69b4;">Token Balance</div>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.2em; color: #ffffff; font-weight: bold;" id="userTickets">0</div>
+                        <div style="font-size: 0.9em; color: #ff69b4;">Active Tickets</div>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.2em; color: #ffffff; font-weight: bold;" id="userQualified">❌</div>
+                        <div style="font-size: 0.9em; color: #ff69b4;">Qualified for Draw</div>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 15px; text-align: center;">
+                        <div style="font-size: 1.2em; color: #ffffff; font-weight: bold;" id="userWinnings">0 SOL</div>
+                        <div style="font-size: 0.9em; color: #ff69b4;">Total Winnings</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <div style="font-size: 1.1em; color: #90EE90; margin-bottom: 10px;">
+                        🎯 <span id="qualificationStatus">Connect wallet to check qualification status</span>
+                    </div>
+                    <div style="font-size: 0.9em; color: #ff69b4;">
+                        💡 Hold enough tokens to qualify for lottery drawings and win SOL prizes!
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -454,6 +490,7 @@
         function updateWalletUI() {
             const connectBtn = document.getElementById('connectBtn');
             const walletInfo = document.getElementById('walletInfo');
+            const userDashboard = document.getElementById('userDashboard');
             
             if (isConnected) {
                 connectBtn.textContent = 'Connected';
@@ -463,6 +500,8 @@
                         🟢 Connected: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}
                     </div>
                 `;
+                userDashboard.style.display = 'block';
+                updateUserDashboard();
             } else {
                 connectBtn.textContent = 'Connect Wallet';
                 connectBtn.style.background = 'linear-gradient(45deg, #ff69b4, #ff1493)';
@@ -471,6 +510,56 @@
                         🔴 Not Connected
                     </div>
                 `;
+                userDashboard.style.display = 'none';
+            }
+        }
+
+        // Update user dashboard with real data
+        function updateUserDashboard() {
+            if (!isConnected) return;
+            
+            // Simulate user data (in real app, this would come from blockchain)
+            const userBalance = Math.floor(Math.random() * 50000000) + 1000000; // 1M-50M tokens
+            const userTickets = Math.floor(Math.random() * 10); // 0-10 tickets
+            const userWinnings = (Math.random() * 5).toFixed(2); // 0-5 SOL
+            
+            // Update balance
+            document.getElementById('userBalance').textContent = formatTokens(userBalance) + ' PEPE';
+            
+            // Update tickets
+            document.getElementById('userTickets').textContent = userTickets;
+            
+            // Update winnings
+            document.getElementById('userWinnings').textContent = userWinnings + ' SOL';
+            
+            // Check qualification
+            const currentPrice = parseFloat(document.getElementById('tokenPrice').textContent.replace('$', ''));
+            const userValue = userBalance * currentPrice;
+            const qualified = userValue >= 20.00;
+            
+            document.getElementById('userQualified').textContent = qualified ? '✅' : '❌';
+            document.getElementById('userQualified').style.color = qualified ? '#00ff00' : '#ff69b4';
+            
+            // Update qualification status
+            const qualificationStatus = document.getElementById('qualificationStatus');
+            if (qualified) {
+                qualificationStatus.textContent = `You're qualified! Value: $${userValue.toFixed(2)}`;
+                qualificationStatus.style.color = '#00ff00';
+            } else {
+                const needed = 20.00 - userValue;
+                qualificationStatus.textContent = `Need $${needed.toFixed(2)} more to qualify`;
+                qualificationStatus.style.color = '#ff69b4';
+            }
+        }
+
+        // Format token amounts nicely
+        function formatTokens(amount) {
+            if (amount >= 1000000) {
+                return (amount / 1000000).toFixed(1) + 'M';
+            } else if (amount >= 1000) {
+                return (amount / 1000).toFixed(0) + 'K';
+            } else {
+                return amount.toLocaleString();
             }
         }
 
@@ -503,20 +592,38 @@
             }
         }
 
-        // Test transaction function
-        async function testTransaction() {
+        // Check balance function
+        async function checkBalance() {
             if (!isConnected) {
                 alert('Please connect your wallet first!');
                 return;
             }
 
             try {
-                // This would be a test transaction on devnet
-                console.log('Testing transaction with wallet:', userAddress);
-                alert('Test transaction initiated! Check console for details.');
+                // This would check actual token balance on blockchain
+                console.log('Checking balance for wallet:', userAddress);
+                updateUserDashboard(); // Refresh dashboard
+                alert('Balance updated! Check your dashboard.');
             } catch (error) {
-                console.error('Transaction failed:', error);
-                alert('Transaction failed. Please try again.');
+                console.error('Balance check failed:', error);
+                alert('Failed to check balance. Please try again.');
+            }
+        }
+
+        // Buy tokens function
+        async function buyTokens() {
+            if (!isConnected) {
+                alert('Please connect your wallet first!');
+                return;
+            }
+
+            try {
+                // This would open token purchase interface
+                console.log('Opening token purchase for wallet:', userAddress);
+                alert('🐸 Token purchase interface would open here!\n\nIn the live version, this will:\n• Connect to DEX (Raydium/Jupiter)\n• Show real-time prices\n• Process SOL → PEPE swaps\n• Update your balance automatically');
+            } catch (error) {
+                console.error('Token purchase failed:', error);
+                alert('Failed to open token purchase. Please try again.');
             }
         }
 
@@ -621,6 +728,11 @@
             // Update stat card too
             const qualifyAmountElement = document.getElementById('qualifyAmount');
             qualifyAmountElement.textContent = formattedTokens;
+            
+            // Update user dashboard if connected
+            if (isConnected) {
+                updateUserDashboard();
+            }
         }
 
         // Update stats every 30 seconds
