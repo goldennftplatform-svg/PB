@@ -12,19 +12,16 @@
         }
         
         body {
-            background: linear-gradient(45deg, #ff69b4, #ff1493, #ff69b4, #ff1493);
-            background-size: 400% 400%;
-            animation: gradientShift 8s ease infinite;
+            background: #000000;
+            background-image: 
+                radial-gradient(circle at 20% 80%, #ff0000 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, #00ff00 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, #0000ff 0%, transparent 50%);
             font-family: 'Courier New', monospace;
-            color: white;
+            color: #00ff00;
             overflow-x: hidden;
             min-height: 100vh;
-        }
-        
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            text-shadow: 0 0 10px #00ff00;
         }
 
         .bubble {
@@ -44,33 +41,35 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #ff69b4, #ff1493, #ff69b4);
-            border: 3px solid #fff;
-            box-shadow: 0 0 20px rgba(255, 105, 180, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.3);
+            background: #000000;
+            border: 3px solid #00ff00;
+            box-shadow: 0 0 20px #00ff00, inset 0 0 20px rgba(0, 255, 0, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
             animation: bounceBall 4s ease-in-out infinite;
             z-index: 5;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
         }
 
         @keyframes bounceBall {
             0%, 100% { 
                 transform: translateY(0px) rotate(0deg) scale(1);
-                box-shadow: 0 0 20px rgba(255, 105, 180, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.3);
+                box-shadow: 0 0 20px #00ff00, inset 0 0 20px rgba(0, 255, 0, 0.3);
             }
             25% { 
                 transform: translateY(-30px) rotate(90deg) scale(1.1);
-                box-shadow: 0 0 30px rgba(255, 105, 180, 0.8), inset 0 0 25px rgba(255, 255, 255, 0.4);
+                box-shadow: 0 0 30px #00ff00, inset 0 0 25px rgba(0, 255, 0, 0.4);
             }
             50% { 
                 transform: translateY(-60px) rotate(180deg) scale(1.2);
-                box-shadow: 0 0 40px rgba(255, 105, 180, 1), inset 0 0 30px rgba(255, 255, 255, 0.5);
+                box-shadow: 0 0 40px #00ff00, inset 0 0 30px rgba(0, 255, 0, 0.5);
             }
             75% { 
                 transform: translateY(-30px) rotate(270deg) scale(1.1);
-                box-shadow: 0 0 30px rgba(255, 105, 180, 0.8), inset 0 0 25px rgba(255, 255, 255, 0.4);
+                box-shadow: 0 0 30px #00ff00, inset 0 0 25px rgba(0, 255, 0, 0.4);
             }
         }
         
@@ -97,7 +96,9 @@
             font-size: 4em;
             font-weight: bold;
             margin-bottom: 10px;
-            text-shadow: 0 0 20px #fff;
+            text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
         }
         
         .subtitle {
@@ -113,21 +114,21 @@
         }
         
         .stat-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 0px;
             padding: 25px;
             text-align: center;
-            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
         }
         
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(255, 105, 180, 0.3);
-            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.6);
+            border-color: #00ff00;
         }
 
         .stat-card::before {
@@ -313,15 +314,15 @@
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="participants">1,247</div>
-                <div class="stat-label">Active Participants</div>
+                <div class="stat-label">Qualified Holders</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="tickets">8,934</div>
-                <div class="stat-label">Tickets Sold</div>
+                <div class="stat-value" id="feesCollected">45.2 SOL</div>
+                <div class="stat-label">Fees Collected</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="nextDraw">2d 14h</div>
-                <div class="stat-label">Next Draw</div>
+                <div class="stat-value" id="nextSnapshot">2d 14h</div>
+                <div class="stat-label">Next Snapshot</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="tokenPrice">$0.000020</div>
@@ -336,19 +337,19 @@
         <div class="lottery-section">
             <div class="section-title">🎰 How to Win</div>
             
-            <div style="background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 30px; text-align: center;">
-                <div style="font-size: 1.3em; font-weight: bold; color: #ff69b4; margin-bottom: 10px;">
+            <div style="background: rgba(0, 0, 0, 0.8); border: 2px solid #00ff00; border-radius: 0px; padding: 20px; margin-bottom: 30px; text-align: center; box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);">
+                <div style="font-size: 1.3em; font-weight: bold; color: #00ff00; margin-bottom: 10px; text-shadow: 0 0 10px #00ff00;">
                     🎯 Just Hold Tokens
                 </div>
-                <div style="font-size: 1.1em; margin-bottom: 15px;">
-                    Hold tokens worth <span style="color: #ffffff; font-weight: bold;">$20.00 USD</span> to qualify for lottery drawings
+                <div style="font-size: 1.1em; margin-bottom: 15px; color: #ffffff;">
+                    Hold tokens worth <span style="color: #00ff00; font-weight: bold; text-shadow: 0 0 5px #00ff00;">$20.00 USD</span> to qualify for lottery drawings
                 </div>
-                <div style="font-size: 1em; color: #90EE90; margin-bottom: 15px;">
+                <div style="font-size: 1em; color: #00ff00; margin-bottom: 15px;">
                     Required: <span id="qualifyTokens" style="color: #ffffff; font-weight: bold;">1,000,000 PEPE</span> tokens
                 </div>
                 
-                <div style="background: rgba(0, 255, 0, 0.1); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
-                    <div style="font-size: 1em; font-weight: bold; color: #00ff00; margin-bottom: 10px;">
+                <div style="background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; border-radius: 0px; padding: 15px; margin-bottom: 15px;">
+                    <div style="font-size: 1em; font-weight: bold; color: #00ff00; margin-bottom: 10px; text-shadow: 0 0 5px #00ff00;">
                         ✅ THAT'S IT!
                     </div>
                     <div style="font-size: 0.9em; color: #ffffff;">
@@ -359,8 +360,43 @@
                     </div>
                 </div>
                 
-                <div style="font-size: 0.9em; color: #ff69b4;">
+                <div style="font-size: 0.9em; color: #00ff00; text-shadow: 0 0 5px #00ff00;">
                     💡 Token amount adjusts with price - always $20 USD minimum!
+                </div>
+            </div>
+            
+            <!-- Snapshot System -->
+            <div style="background: rgba(0, 0, 0, 0.8); border: 2px solid #ff0000; border-radius: 0px; padding: 20px; margin-bottom: 30px; text-align: center; box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);">
+                <div style="font-size: 1.3em; font-weight: bold; color: #ff0000; margin-bottom: 15px; text-shadow: 0 0 10px #ff0000;">
+                    📸 SNAPSHOT SYSTEM
+                </div>
+                <div style="font-size: 1.1em; color: #ffffff; margin-bottom: 15px;">
+                    Randomized snapshots determine lottery winners
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <div style="background: rgba(255, 0, 0, 0.1); border: 1px solid #ff0000; padding: 15px;">
+                        <div style="font-size: 1em; font-weight: bold; color: #ff0000; margin-bottom: 5px;">
+                            🕐 Normal Mode
+                        </div>
+                        <div style="font-size: 0.9em; color: #ffffff;">
+                            ~72 hours<br>
+                            Randomized timing
+                        </div>
+                    </div>
+                    <div style="background: rgba(255, 0, 0, 0.1); border: 1px solid #ff0000; padding: 15px;">
+                        <div style="font-size: 1em; font-weight: bold; color: #ff0000; margin-bottom: 5px;">
+                            ⚡ Fast Mode
+                        </div>
+                        <div style="font-size: 0.9em; color: #ffffff;">
+                            ~48 hours<br>
+                            When fees hit 200+ SOL
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="font-size: 0.9em; color: #ff0000; text-shadow: 0 0 5px #ff0000;">
+                    ⚠️ Snapshot timing is randomized to prevent gaming!
                 </div>
             </div>
             
@@ -666,13 +702,18 @@
         setInterval(createPepeBall, 3000);
 
         
+        // Snapshot system state
+        let snapshotInterval = 72 * 60 * 60 * 1000; // 72 hours in ms
+        let lastSnapshot = Date.now();
+        let feesCollected = 45.2; // SOL
+        let isFastMode = false;
+        
         // Simulate live data updates
         function updateStats() {
             const jackpot = document.getElementById('jackpot');
             const participants = document.getElementById('participants');
-            const tickets = document.getElementById('tickets');
+            const feesCollectedElement = document.getElementById('feesCollected');
             const tokenPrice = document.getElementById('tokenPrice');
-            const qualifyValue = document.getElementById('qualifyValue');
             
             // Simulate jackpot growth
             const currentJackpot = parseFloat(jackpot.textContent);
@@ -684,10 +725,20 @@
             const newParticipants = currentParticipants + Math.floor(Math.random() * 5);
             participants.textContent = newParticipants.toLocaleString();
             
-            // Simulate ticket sales
-            const currentTickets = parseInt(tickets.textContent.replace(',', ''));
-            const newTickets = currentTickets + Math.floor(Math.random() * 20);
-            tickets.textContent = newTickets.toLocaleString();
+            // Simulate fees collection (2.5% tax)
+            feesCollected += Math.random() * 0.1;
+            feesCollectedElement.textContent = feesCollected.toFixed(1) + ' SOL';
+            
+            // Check if we should switch to fast mode
+            if (feesCollected >= 200 && !isFastMode) {
+                isFastMode = true;
+                snapshotInterval = 48 * 60 * 60 * 1000; // 48 hours
+                console.log('🚀 Switched to FAST MODE - 48 hour snapshots!');
+            } else if (feesCollected < 200 && isFastMode) {
+                isFastMode = false;
+                snapshotInterval = 72 * 60 * 60 * 1000; // 72 hours
+                console.log('🐌 Switched to NORMAL MODE - 72 hour snapshots');
+            }
             
             // Simulate token price changes
             const currentPrice = parseFloat(tokenPrice.textContent.replace('$', ''));
@@ -725,14 +776,35 @@
         // Update stats every 30 seconds
         setInterval(updateStats, 30000);
 
-        // Countdown timer
+        // Countdown timer for snapshots
         function updateCountdown() {
-            const nextDraw = document.getElementById('nextDraw');
-            // Simulate countdown (in real implementation, this would be calculated from blockchain data)
-            const hours = Math.floor(Math.random() * 48) + 1;
-            const days = Math.floor(hours / 24);
-            const remainingHours = hours % 24;
-            nextDraw.textContent = `${days}d ${remainingHours}h`;
+            const nextSnapshotElement = document.getElementById('nextSnapshot');
+            
+            // Calculate time until next snapshot with randomization
+            const now = Date.now();
+            const timeSinceLastSnapshot = now - lastSnapshot;
+            const baseInterval = isFastMode ? 48 * 60 * 60 * 1000 : 72 * 60 * 60 * 1000;
+            
+            // Add randomization (±10% of interval)
+            const randomFactor = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
+            const randomizedInterval = baseInterval * randomFactor;
+            
+            const timeUntilNext = randomizedInterval - (timeSinceLastSnapshot % randomizedInterval);
+            
+            const days = Math.floor(timeUntilNext / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeUntilNext % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeUntilNext % (1000 * 60 * 60)) / (1000 * 60));
+            
+            nextSnapshotElement.textContent = `${days}d ${hours}h ${minutes}m`;
+            
+            // Add mode indicator
+            if (isFastMode) {
+                nextSnapshotElement.style.color = '#ff0000';
+                nextSnapshotElement.style.textShadow = '0 0 10px #ff0000';
+            } else {
+                nextSnapshotElement.style.color = '#00ff00';
+                nextSnapshotElement.style.textShadow = '0 0 10px #00ff00';
+            }
         }
 
         // Update countdown every minute

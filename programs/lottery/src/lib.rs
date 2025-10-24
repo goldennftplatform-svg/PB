@@ -14,18 +14,20 @@ pub mod lottery {
     ) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
         lottery.jackpot_amount = jackpot_amount;
-        lottery.last_draw = Clock::get()?.unix_timestamp;
-        lottery.base_draw_interval = 72 * 60 * 60; // 72 hours in seconds
-        lottery.fast_draw_interval = 36 * 60 * 60; // 36 hours in seconds
-        lottery.fast_draw_threshold = 200 * 1_000_000_000; // 200 SOL in lamports
+        lottery.last_snapshot = Clock::get()?.unix_timestamp;
+        lottery.base_snapshot_interval = 72 * 60 * 60; // 72 hours in seconds
+        lottery.fast_snapshot_interval = 48 * 60 * 60; // 48 hours in seconds
+        lottery.fast_mode_threshold = 200 * 1_000_000_000; // 200 SOL in lamports
+        lottery.fees_collected = 0;
+        lottery.is_fast_mode = false;
         lottery.is_active = true;
         lottery.admin = ctx.accounts.admin.key();
         lottery.total_participants = 0;
-        lottery.total_draws = 0;
+        lottery.total_snapshots = 0;
         
         msg!("PEPEBALL Lottery initialized!");
         msg!("Initial Jackpot: {} SOL", jackpot_amount / 1_000_000_000);
-        msg!("Draw Timing: 72 hours (< 200 SOL), 36 hours (≥ 200 SOL)");
+        msg!("Snapshot Timing: 72 hours (< 200 SOL fees), 48 hours (≥ 200 SOL fees)");
         
         Ok(())
     }
@@ -85,21 +87,21 @@ pub mod lottery {
         Ok(())
     }
 
-    pub fn draw_winners(ctx: Context<DrawWinners>) -> Result<()> {
+    pub fn take_snapshot(ctx: Context<TakeSnapshot>) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
         let clock = Clock::get()?;
         
         require!(lottery.is_active, ErrorCode::LotteryInactive);
         
-        // Dynamic timing based on jackpot size
-        let draw_interval = if lottery.jackpot_amount >= lottery.fast_draw_threshold {
-            lottery.fast_draw_interval // 36 hours for 200+ SOL
+        // Dynamic timing based on fees collected
+        let snapshot_interval = if lottery.fees_collected >= lottery.fast_mode_threshold {
+            lottery.fast_snapshot_interval // 48 hours for 200+ SOL fees
         } else {
-            lottery.base_draw_interval  // 72 hours for < 200 SOL
+            lottery.base_snapshot_interval  // 72 hours for < 200 SOL fees
         };
         
         require!(
-            clock.unix_timestamp - lottery.last_draw >= draw_interval as i64,
+            clock.unix_timestamp - lottery.last_snapshot >= snapshot_interval as i64,
             ErrorCode::DrawTooEarly
         );
         
@@ -109,25 +111,29 @@ pub mod lottery {
         let seed = clock.unix_timestamp as u64;
         let random = (seed % 1000) as u32;
         
-        // Select winners (simplified for MVP)
+        // Select winners from snapshot (simplified for MVP)
         lottery.winners.main_winner = Some(lottery.participants[0].wallet);
         for i in 1..6 {
             lottery.winners.minor_winners.push(lottery.participants[i].wallet);
         }
         
-        lottery.last_draw = clock.unix_timestamp;
-        lottery.total_draws += 1;
+        lottery.last_snapshot = clock.unix_timestamp;
+        lottery.total_snapshots += 1;
         
-        // Log the draw
-        let timing = if lottery.jackpot_amount >= lottery.fast_draw_threshold {
-            "36-hour"
+        // Update fast mode status
+        lottery.is_fast_mode = lottery.fees_collected >= lottery.fast_mode_threshold;
+        
+        // Log the snapshot
+        let timing = if lottery.is_fast_mode {
+            "48-hour"
         } else {
             "72-hour"
         };
         
-        msg!("🎰 LOTTERY DRAW COMPLETE! 🎰");
+        msg!("📸 SNAPSHOT TAKEN! 📸");
         msg!("Jackpot: {} SOL", lottery.jackpot_amount / 1_000_000_000);
-        msg!("Timing: {} draws", timing);
+        msg!("Fees Collected: {} SOL", lottery.fees_collected / 1_000_000_000);
+        msg!("Timing: {} snapshots", timing);
         msg!("Main Winner: {}", lottery.winners.main_winner.unwrap());
         msg!("Minor Winners: {}", lottery.winners.minor_winners.len());
         
@@ -159,21 +165,25 @@ pub mod lottery {
         Ok(())
     }
 
-    pub fn update_jackpot_amount(
-        ctx: Context<UpdateJackpotAmount>,
-        new_amount: u64,
+    pub fn update_fees_collected(
+        ctx: Context<UpdateFeesCollected>,
+        new_fees: u64,
     ) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
-        let old_amount = lottery.jackpot_amount;
-        lottery.jackpot_amount = new_amount;
+        let old_fees = lottery.fees_collected;
+        lottery.fees_collected = new_fees;
         
-        // Log the timing change if threshold is crossed
-        if new_amount >= lottery.fast_draw_threshold && old_amount < lottery.fast_draw_threshold {
-            msg!("🚀 JACKPOT REACHED {} SOL! Switching to 36-hour draws! 🚀", new_amount / 1_000_000_000);
-        } else if new_amount < lottery.fast_draw_threshold && old_amount >= lottery.fast_draw_threshold {
-            msg!("📉 Jackpot dropped to {} SOL. Back to 72-hour draws.", new_amount / 1_000_000_000);
+        // Update fast mode status
+        let was_fast_mode = lottery.is_fast_mode;
+        lottery.is_fast_mode = lottery.fees_collected >= lottery.fast_mode_threshold;
+        
+        // Log the mode change if threshold is crossed
+        if lottery.is_fast_mode && !was_fast_mode {
+            msg!("🚀 FEES REACHED {} SOL! Switching to 48-hour snapshots! 🚀", new_fees / 1_000_000_000);
+        } else if !lottery.is_fast_mode && was_fast_mode {
+            msg!("📉 Fees dropped to {} SOL. Back to 72-hour snapshots.", new_fees / 1_000_000_000);
         } else {
-            msg!("Jackpot updated to {} SOL", new_amount / 1_000_000_000);
+            msg!("Fees updated to {} SOL", new_fees / 1_000_000_000);
         }
         
         Ok(())
@@ -219,7 +229,15 @@ pub struct EnterLottery<'info> {
 }
 
 #[derive(Accounts)]
-pub struct DrawWinners<'info> {
+pub struct TakeSnapshot<'info> {
+    #[account(mut)]
+    pub lottery: Account<'info, Lottery>,
+    
+    pub admin: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateFeesCollected<'info> {
     #[account(mut)]
     pub lottery: Account<'info, Lottery>,
     
@@ -252,19 +270,21 @@ pub struct EmergencyPauseLottery<'info> {
 
 #[account]
 #[derive(InitSpace)]
-pub struct Lottery {
-    pub jackpot_amount: u64,
-    pub last_draw: i64,
-    pub base_draw_interval: u64,    // 72 hours in seconds
-    pub fast_draw_interval: u64,    // 36 hours in seconds
-    pub fast_draw_threshold: u64,   // 200 SOL threshold
-    pub is_active: bool,
-    pub admin: Pubkey,
-    pub participants: Vec<Participant>,
-    pub winners: Winners,
-    pub total_participants: u64,
-    pub total_draws: u64,
-}
+        pub struct Lottery {
+            pub jackpot_amount: u64,
+            pub last_snapshot: i64,
+            pub base_snapshot_interval: u64,    // 72 hours in seconds
+            pub fast_snapshot_interval: u64,     // 48 hours in seconds
+            pub fast_mode_threshold: u64,       // 200 SOL threshold
+            pub fees_collected: u64,            // Total fees collected in SOL
+            pub is_fast_mode: bool,
+            pub is_active: bool,
+            pub admin: Pubkey,
+            pub participants: Vec<Participant>,
+            pub winners: Winners,
+            pub total_participants: u64,
+            pub total_snapshots: u64,
+        }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace)]
 pub struct Participant {
