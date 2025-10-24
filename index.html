@@ -329,7 +329,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="qualifyAmount">1M PEPE</div>
-                <div class="stat-label">Qualify for Draw</div>
+                <div class="stat-label">Qualify ($20 USD)</div>
             </div>
         </div>
         
@@ -341,13 +341,13 @@
                     🎯 Qualification Requirements
                 </div>
                 <div style="font-size: 1.1em; margin-bottom: 15px;">
-                    Hold <span style="color: #ffffff; font-weight: bold;">1,000,000 PEPE</span> tokens to qualify for lottery drawings
+                    Hold tokens worth <span style="color: #ffffff; font-weight: bold;">$20.00 USD</span> to qualify for lottery drawings
                 </div>
                 <div style="font-size: 1em; color: #90EE90;">
-                    Current Value: <span id="qualifyValue" style="color: #ffffff; font-weight: bold;">$20.00</span> USD
+                    Required: <span id="qualifyTokens" style="color: #ffffff; font-weight: bold;">1,000,000 PEPE</span> tokens
                 </div>
                 <div style="font-size: 0.9em; color: #ff69b4; margin-top: 10px;">
-                    💡 Token price fluctuates - check current value before buying!
+                    💡 Token amount adjusts with price - always $20 USD minimum!
                 </div>
             </div>
             
@@ -356,12 +356,12 @@
                     <div class="price">$20</div>
                     <div class="tickets">1M PEPE Tokens</div>
                     <div class="bonus">1 Ticket - Qualifies!</div>
-                </div>
+                    </div>
                 <div class="pricing-card" data-price="100" data-tickets="4" data-pepe="5000000">
                     <div class="price">$100</div>
                     <div class="tickets">5M PEPE Tokens</div>
                     <div class="bonus">4 Tickets - +300% Bonus!</div>
-                </div>
+                    </div>
                 <div class="pricing-card" data-price="500" data-tickets="10" data-pepe="25000000">
                     <div class="price">$500</div>
                     <div class="tickets">25M PEPE Tokens</div>
@@ -601,10 +601,26 @@
             const newPrice = Math.max(0.000001, currentPrice + priceChange);
             tokenPrice.textContent = '$' + newPrice.toFixed(6);
             
-            // Update qualification value (1M tokens * current price)
-            const qualifyTokens = 1000000;
-            const qualifyUSD = (qualifyTokens * newPrice).toFixed(2);
-            qualifyValue.textContent = '$' + qualifyUSD;
+            // Calculate required tokens for $20 USD qualification
+            const qualifyUSD = 20.00;
+            const requiredTokens = Math.ceil(qualifyUSD / newPrice);
+            const qualifyTokensElement = document.getElementById('qualifyTokens');
+            
+            // Format token amount nicely
+            let formattedTokens;
+            if (requiredTokens >= 1000000) {
+                formattedTokens = (requiredTokens / 1000000).toFixed(1) + 'M PEPE';
+            } else if (requiredTokens >= 1000) {
+                formattedTokens = (requiredTokens / 1000).toFixed(0) + 'K PEPE';
+            } else {
+                formattedTokens = requiredTokens.toLocaleString() + ' PEPE';
+            }
+            
+            qualifyTokensElement.textContent = formattedTokens;
+            
+            // Update stat card too
+            const qualifyAmountElement = document.getElementById('qualifyAmount');
+            qualifyAmountElement.textContent = formattedTokens;
         }
 
         // Update stats every 30 seconds
