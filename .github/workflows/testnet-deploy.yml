@@ -1,6 +1,9 @@
 name: PEPEBALL Testnet Deployment
 
 on:
+  push:
+    branches: [ main ]
+    paths: [ 'DEPLOY_NOW.md' ]
   workflow_dispatch:
     inputs:
       deploy_type:
