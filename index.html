@@ -12,16 +12,13 @@
         }
         
         body {
-            background: #000000;
-            background-image: 
-                radial-gradient(circle at 20% 80%, #ff0000 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, #00ff00 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, #0000ff 0%, transparent 50%);
-            font-family: 'Courier New', monospace;
-            color: #00ff00;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Arial', sans-serif;
+            color: #ffffff;
             overflow-x: hidden;
             min-height: 100vh;
-            text-shadow: 0 0 10px #00ff00;
+            margin: 0;
+            padding: 0;
         }
 
         .bubble {
@@ -36,40 +33,55 @@
             50% { transform: translateY(-20px) rotate(180deg); }
         }
 
-        .pepe-ball {
+        .lottery-ball {
             position: absolute;
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            background: #000000;
-            border: 3px solid #00ff00;
-            box-shadow: 0 0 20px #00ff00, inset 0 0 20px rgba(0, 255, 0, 0.3);
+            background: radial-gradient(circle at 30% 30%, #ffffff, #e0e0e0, #c0c0c0);
+            border: 3px solid #333;
+            box-shadow: 
+                inset -10px -10px 20px rgba(0,0,0,0.3),
+                inset 10px 10px 20px rgba(255,255,255,0.3),
+                0 5px 15px rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            animation: bounceBall 4s ease-in-out infinite;
-            z-index: 5;
-            color: #00ff00;
-            text-shadow: 0 0 10px #00ff00;
+            font-size: 32px;
+            font-weight: bold;
+            color: #000;
+            animation: rollBall 6s ease-in-out infinite;
+            z-index: 10;
         }
 
-        @keyframes bounceBall {
+        @keyframes rollBall {
             0%, 100% { 
                 transform: translateY(0px) rotate(0deg) scale(1);
-                box-shadow: 0 0 20px #00ff00, inset 0 0 20px rgba(0, 255, 0, 0.3);
+                box-shadow: 
+                    inset -10px -10px 20px rgba(0,0,0,0.3),
+                    inset 10px 10px 20px rgba(255,255,255,0.3),
+                    0 5px 15px rgba(0,0,0,0.5);
             }
             25% { 
-                transform: translateY(-30px) rotate(90deg) scale(1.1);
-                box-shadow: 0 0 30px #00ff00, inset 0 0 25px rgba(0, 255, 0, 0.4);
+                transform: translateY(-40px) rotate(90deg) scale(1.1);
+                box-shadow: 
+                    inset -15px -15px 25px rgba(0,0,0,0.4),
+                    inset 15px 15px 25px rgba(255,255,255,0.4),
+                    0 10px 25px rgba(0,0,0,0.6);
             }
             50% { 
-                transform: translateY(-60px) rotate(180deg) scale(1.2);
-                box-shadow: 0 0 40px #00ff00, inset 0 0 30px rgba(0, 255, 0, 0.5);
+                transform: translateY(-80px) rotate(180deg) scale(1.2);
+                box-shadow: 
+                    inset -20px -20px 30px rgba(0,0,0,0.5),
+                    inset 20px 20px 30px rgba(255,255,255,0.5),
+                    0 15px 35px rgba(0,0,0,0.7);
             }
             75% { 
-                transform: translateY(-30px) rotate(270deg) scale(1.1);
-                box-shadow: 0 0 30px #00ff00, inset 0 0 25px rgba(0, 255, 0, 0.4);
+                transform: translateY(-40px) rotate(270deg) scale(1.1);
+                box-shadow: 
+                    inset -15px -15px 25px rgba(0,0,0,0.4),
+                    inset 15px 15px 25px rgba(255,255,255,0.4),
+                    0 10px 25px rgba(0,0,0,0.6);
             }
         }
         
@@ -96,14 +108,134 @@
             font-size: 4em;
             font-weight: bold;
             margin-bottom: 10px;
-            text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 20px #ff6b35, 0 0 40px #ff6b35;
+            color: #ff6b35;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
         }
         
-        .subtitle {
-            font-size: 1.5em;
-            opacity: 0.9;
+        .winning-numbers-section {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border: 2px solid #3498db;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .winning-numbers {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .winning-ball {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #e0e0e0, #c0c0c0);
+            border: 3px solid #333;
+            box-shadow: 
+                inset -8px -8px 15px rgba(0,0,0,0.3),
+                inset 8px 8px 15px rgba(255,255,255,0.3),
+                0 4px 12px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .powerball {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff6b35, #e55a2b, #cc4a1f);
+            border: 3px solid #333;
+            box-shadow: 
+                inset -8px -8px 15px rgba(0,0,0,0.3),
+                inset 8px 8px 15px rgba(255,255,255,0.2),
+                0 4px 12px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .draw-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #ecf0f1;
+        }
+
+        .draw-date {
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .how-to-play {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .step {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border: 2px solid #3498db;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(52, 152, 219, 0.6);
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #ff6b35, #e55a2b);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .step-content h3 {
+            color: #3498db;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .step-content p {
+            color: #ecf0f1;
+            font-size: 0.9em;
+            line-height: 1.4;
         }
 
         .stats-grid {
@@ -114,21 +246,21 @@
         }
         
         .stat-card {
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #00ff00;
-            border-radius: 0px;
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border: 2px solid #3498db;
+            border-radius: 15px;
             padding: 25px;
             text-align: center;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
         
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.6);
-            border-color: #00ff00;
+            box-shadow: 0 15px 35px rgba(52, 152, 219, 0.6);
+            border-color: #3498db;
         }
 
         .stat-card::before {
@@ -305,6 +437,23 @@
         <div class="header">
             <div class="title">🐸 PEPEBALL 🐸</div>
             <div class="subtitle">The Ultimate Powerball Lottery Token</div>
+            
+            <!-- Powerball-style winning numbers display -->
+            <div class="winning-numbers-section">
+                <div class="section-title">🎰 Last Winning Numbers</div>
+                <div class="winning-numbers">
+                    <div class="winning-ball">🐸</div>
+                    <div class="winning-ball">🐸</div>
+                    <div class="winning-ball">🐸</div>
+                    <div class="winning-ball">🐸</div>
+                    <div class="winning-ball">🐸</div>
+                    <div class="powerball">🐸</div>
+                </div>
+                <div class="draw-info">
+                    <div class="draw-date">Draw Date: December 15, 2024</div>
+                    <div class="jackpot-won">Jackpot: 20.5 SOL</div>
+                </div>
+            </div>
         </div>
         
         <div class="stats-grid">
@@ -335,21 +484,53 @@
         </div>
         
         <div class="lottery-section">
-            <div class="section-title">🎰 How to Win</div>
+            <div class="section-title">🎰 How to Play PEPEBALL</div>
             
-            <div style="background: rgba(0, 0, 0, 0.8); border: 2px solid #00ff00; border-radius: 0px; padding: 20px; margin-bottom: 30px; text-align: center; box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);">
-                <div style="font-size: 1.3em; font-weight: bold; color: #00ff00; margin-bottom: 10px; text-shadow: 0 0 10px #00ff00;">
-                    🎯 Just Hold Tokens
+            <!-- Powerball-style instructions -->
+            <div class="how-to-play">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Buy PEPE Tokens</h3>
+                        <p>Purchase PEPEBALL tokens from any DEX (Raydium, Jupiter, etc.)</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Hold $20 Worth</h3>
+                        <p>Maintain tokens worth at least $20 USD in your wallet</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Auto-Qualify</h3>
+                        <p>You're automatically entered in every lottery drawing!</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Win SOL Prizes</h3>
+                        <p>Win SOL directly to your wallet - no token selling needed!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: linear-gradient(145deg, #2c3e50, #34495e); border: 2px solid #3498db; border-radius: 15px; padding: 20px; margin-bottom: 30px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.3);">
+                <div style="font-size: 1.3em; font-weight: bold; color: #3498db; margin-bottom: 10px;">
+                    🎯 Qualification Requirements
                 </div>
                 <div style="font-size: 1.1em; margin-bottom: 15px; color: #ffffff;">
-                    Hold tokens worth <span style="color: #00ff00; font-weight: bold; text-shadow: 0 0 5px #00ff00;">$20.00 USD</span> to qualify for lottery drawings
+                    Hold tokens worth <span style="color: #e74c3c; font-weight: bold;">$20.00 USD</span> to qualify for lottery drawings
                 </div>
-                <div style="font-size: 1em; color: #00ff00; margin-bottom: 15px;">
+                <div style="font-size: 1em; color: #3498db; margin-bottom: 15px;">
                     Required: <span id="qualifyTokens" style="color: #ffffff; font-weight: bold;">1,000,000 PEPE</span> tokens
                 </div>
                 
-                <div style="background: rgba(0, 255, 0, 0.1); border: 1px solid #00ff00; border-radius: 0px; padding: 15px; margin-bottom: 15px;">
-                    <div style="font-size: 1em; font-weight: bold; color: #00ff00; margin-bottom: 10px; text-shadow: 0 0 5px #00ff00;">
+                <div style="background: rgba(52, 152, 219, 0.1); border: 1px solid #3498db; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                    <div style="font-size: 1em; font-weight: bold; color: #3498db; margin-bottom: 10px;">
                         ✅ THAT'S IT!
                     </div>
                     <div style="font-size: 0.9em; color: #ffffff;">
@@ -360,7 +541,7 @@
                     </div>
                 </div>
                 
-                <div style="font-size: 0.9em; color: #00ff00; text-shadow: 0 0 5px #00ff00;">
+                <div style="font-size: 0.9em; color: #3498db;">
                     💡 Token amount adjusts with price - always $20 USD minimum!
                 </div>
             </div>
@@ -678,28 +859,32 @@
             }, 8000);
         }
 
-        // Create PEPE balls dynamically
-        function createPepeBall() {
-            const pepeBall = document.createElement('div');
-            pepeBall.className = 'pepe-ball';
-            pepeBall.innerHTML = '🐸';
-            pepeBall.style.left = Math.random() * 100 + '%';
-            pepeBall.style.top = '100%';
-            pepeBall.style.animationDuration = Math.random() * 2 + 3 + 's';
-            pepeBall.style.animationDelay = Math.random() * 2 + 's';
-            
-            document.body.appendChild(pepeBall);
-            
-            setTimeout(() => {
-                pepeBall.remove();
-            }, 10000);
-        }
+            // Create lottery balls dynamically
+            function createLotteryBall() {
+                const lotteryBall = document.createElement('div');
+                lotteryBall.className = 'lottery-ball';
+                
+                // Random PEPE emoji or number
+                const ballContent = Math.random() > 0.5 ? '🐸' : Math.floor(Math.random() * 69) + 1;
+                lotteryBall.innerHTML = ballContent;
+                
+                lotteryBall.style.left = Math.random() * 100 + '%';
+                lotteryBall.style.top = '100%';
+                lotteryBall.style.animationDuration = Math.random() * 3 + 4 + 's';
+                lotteryBall.style.animationDelay = Math.random() * 2 + 's';
+                
+                document.body.appendChild(lotteryBall);
+                
+                setTimeout(() => {
+                    lotteryBall.remove();
+                }, 12000);
+            }
 
         // Create bubbles every 2 seconds
         setInterval(createBubble, 2000);
         
-        // Create PEPE balls every 3 seconds
-        setInterval(createPepeBall, 3000);
+        // Create lottery balls every 4 seconds
+        setInterval(createLotteryBall, 4000);
 
         
         // Snapshot system state
