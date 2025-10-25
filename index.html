@@ -271,9 +271,21 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
             margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
         .stat-card {
@@ -286,6 +298,28 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .priority-card {
+            background: linear-gradient(145deg, #1a252f, #2c3e50);
+            border: 3px solid #e74c3c;
+            box-shadow: 0 12px 35px rgba(231, 76, 60, 0.3);
+            transform: scale(1.02);
+        }
+
+        .priority-card::before {
+            content: '⭐';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            color: #f39c12;
+            animation: sparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.2) rotate(180deg); opacity: 0.7; }
         }
         
         .stat-card:hover {
@@ -304,11 +338,11 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s;
         }
-
+        
         .stat-card:hover::before {
             left: 100%;
         }
-
+        
         .stat-value {
             font-size: 2.5em;
             font-weight: bold;
@@ -496,21 +530,24 @@
             </div>
             
         <div class="stats-grid">
-            <div class="stat-card">
+            <!-- Row 1: Most Important Stats -->
+            <div class="stat-card priority-card">
                 <div class="stat-value" id="jackpot">20.5 SOL</div>
                 <div class="stat-label">Current Jackpot</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="participants">1,247</div>
-                <div class="stat-label">Qualified Holders</div>
-            </div>
-            <div class="stat-card">
+            <div class="stat-card priority-card">
                 <div class="stat-value" id="feesCollected">45.2 SOL</div>
                 <div class="stat-label">Fees Collected</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card priority-card">
                 <div class="stat-value" id="nextSnapshot">2d 14h</div>
                 <div class="stat-label">Next Snapshot</div>
+            </div>
+            
+            <!-- Row 2: Secondary Stats -->
+            <div class="stat-card">
+                <div class="stat-value" id="participants">1,247</div>
+                <div class="stat-label">Qualified Holders</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="tokenPrice">$0.000020</div>
@@ -520,7 +557,7 @@
                 <div class="stat-value" id="qualifyAmount">1M PEPE</div>
                 <div class="stat-label">Qualify ($20 USD)</div>
             </div>
-            </div>
+        </div>
             
         <div class="lottery-section">
             <div class="section-title">🎰 How to Play PEPEBALL</div>
