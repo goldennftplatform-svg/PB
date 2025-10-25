@@ -1,0 +1,122 @@
+name: PEPEBALL Testnet Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_type:
+        description: 'Deployment type'
+        required: true
+        default: 'testnet'
+        type: choice
+        options:
+        - testnet
+        - devnet
+
+jobs:
+  deploy-testnet:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+        override: true
+    
+    - name: Install Solana CLI
+      run: |
+        sh -c "$(curl -sSfL https://release.solana.com/v1.18.0/install)"
+        echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+    
+    - name: Install Anchor
+      run: |
+        cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+        avm install latest
+        avm use latest
+    
+    - name: Set Solana to Devnet
+      run: |
+        solana config set --url devnet
+        solana config set --keypair ~/.config/solana/id.json
+    
+    - name: Create Test Wallet
+      run: |
+        solana-keygen new --no-bip39-passphrase --outfile ~/.config/solana/id.json
+        WALLET_ADDRESS=$(solana address)
+        echo "WALLET_ADDRESS=$WALLET_ADDRESS" >> $GITHUB_ENV
+        echo "Created wallet: $WALLET_ADDRESS"
+    
+    - name: Request Airdrop
+      run: |
+        solana airdrop 2 $WALLET_ADDRESS
+        BALANCE=$(solana balance)
+        echo "Wallet balance: $BALANCE SOL"
+    
+    - name: Build Contracts
+      run: anchor build
+    
+    - name: Deploy PEPEBALL Token Contract
+      run: |
+        anchor deploy --program-name pepball-token --provider.cluster devnet
+        echo "✅ PEPEBALL Token deployed!"
+    
+    - name: Deploy Lottery Contract
+      run: |
+        anchor deploy --program-name lottery --provider.cluster devnet
+        echo "✅ Lottery contract deployed!"
+    
+    - name: Deploy LP Manager Contract
+      run: |
+        anchor deploy --program-name lp-manager --provider.cluster devnet
+        echo "✅ LP Manager deployed!"
+    
+    - name: Create Testnet Token
+      run: |
+        # Create token mint
+        TOKEN_MINT=$(spl-token create-token --decimals 9)
+        echo "TOKEN_MINT=$TOKEN_MINT" >> $GITHUB_ENV
+        echo "Token Mint: $TOKEN_MINT"
+        
+        # Create token account
+        TOKEN_ACCOUNT=$(spl-token create-account $TOKEN_MINT)
+        echo "TOKEN_ACCOUNT=$TOKEN_ACCOUNT" >> $GITHUB_ENV
+        echo "Token Account: $TOKEN_ACCOUNT"
+        
+        # Mint initial supply
+        spl-token mint $TOKEN_MINT 1000000000
+        echo "Minted 1 billion tokens"
+    
+    - name: Initialize Lottery
+      run: |
+        # Initialize lottery with 20 SOL jackpot
+        anchor run initialize-lottery --provider.cluster devnet
+        echo "✅ Lottery initialized with 20 SOL jackpot!"
+    
+    - name: Deploy Summary
+      run: |
+        echo "🎰 PEPEBALL TESTNET DEPLOYMENT COMPLETE! 🎰"
+        echo "=========================================="
+        echo "Wallet Address: $WALLET_ADDRESS"
+        echo "Token Mint: $TOKEN_MINT"
+        echo "Token Account: $TOKEN_ACCOUNT"
+        echo "Devnet Explorer: https://explorer.solana.com/?cluster=devnet"
+        echo "=========================================="
+        echo "✅ Ready for testing!"
+    
+    - name: Upload Deployment Info
+      run: |
+        cat > deployment-info.json << EOF
+        {
+          "wallet_address": "$WALLET_ADDRESS",
+          "token_mint": "$TOKEN_MINT",
+          "token_account": "$TOKEN_ACCOUNT",
+          "deployment_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "cluster": "devnet",
+          "status": "deployed"
+        }
+        EOF
+        
+        echo "Deployment info saved to deployment-info.json"
