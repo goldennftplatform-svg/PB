@@ -170,7 +170,7 @@
             color: #fff;
             animation: pulse 2s ease-in-out infinite;
         }
-
+        
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -187,6 +187,37 @@
         .draw-date {
             color: #3498db;
             font-weight: bold;
+        }
+
+        .jackpot-won {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .wallet-addresses {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            border: 1px solid #3498db;
+        }
+
+        .main-winner {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .minor-winners {
+            color: #3498db;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .main-winner strong,
+        .minor-winners strong {
+            color: #ffffff;
         }
 
         .how-to-play {
@@ -306,7 +337,7 @@
             margin-bottom: 30px;
             text-shadow: 0 0 15px #fff;
         }
-
+        
         .pricing-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -438,9 +469,9 @@
             <div class="title">🐸 PEPEBALL 🐸</div>
             <div class="subtitle">The Ultimate Powerball Lottery Token</div>
             
-            <!-- Powerball-style winning numbers display -->
+            <!-- Powerball-style winning wallets display -->
             <div class="winning-numbers-section">
-                <div class="section-title">🎰 Last Winning Numbers</div>
+                <div class="section-title">🎰 Last Winning Wallets</div>
                 <div class="winning-numbers">
                     <div class="winning-ball">🐸</div>
                     <div class="winning-ball">🐸</div>
@@ -450,12 +481,20 @@
                     <div class="powerball">🐸</div>
                 </div>
                 <div class="draw-info">
-                    <div class="draw-date">Draw Date: December 15, 2024</div>
+                    <div class="draw-date">Snapshot: December 15, 2024</div>
                     <div class="jackpot-won">Jackpot: 20.5 SOL</div>
                 </div>
+                <div class="wallet-addresses">
+                    <div class="main-winner">
+                        <strong>Main Winner:</strong> 7xK8...9mP2 (12.3 SOL)
+                    </div>
+                    <div class="minor-winners">
+                        <strong>Minor Winners:</strong> 4xL2...8nQ1, 9mR5...2kL7, 6pS3...1jM9, 8tV7...5hN4, 3wX9...7bC6
+                    </div>
+                </div>
             </div>
-        </div>
-        
+            </div>
+            
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value" id="jackpot">20.5 SOL</div>
@@ -481,8 +520,8 @@
                 <div class="stat-value" id="qualifyAmount">1M PEPE</div>
                 <div class="stat-label">Qualify ($20 USD)</div>
             </div>
-        </div>
-        
+            </div>
+            
         <div class="lottery-section">
             <div class="section-title">🎰 How to Play PEPEBALL</div>
             
@@ -527,8 +566,8 @@
                 </div>
                 <div style="font-size: 1em; color: #3498db; margin-bottom: 15px;">
                     Required: <span id="qualifyTokens" style="color: #ffffff; font-weight: bold;">1,000,000 PEPE</span> tokens
-                </div>
-                
+            </div>
+            
                 <div style="background: rgba(52, 152, 219, 0.1); border: 1px solid #3498db; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
                     <div style="font-size: 1em; font-weight: bold; color: #3498db; margin-bottom: 10px;">
                         ✅ THAT'S IT!
@@ -539,13 +578,13 @@
                         • Blockchain automatically detects your balance<br>
                         • Qualify instantly when you reach $20 USD value
                     </div>
-                </div>
-                
-                <div style="font-size: 0.9em; color: #3498db;">
-                    💡 Token amount adjusts with price - always $20 USD minimum!
-                </div>
             </div>
             
+                <div style="font-size: 0.9em; color: #3498db;">
+                    💡 Token amount adjusts with price - always $20 USD minimum!
+            </div>
+        </div>
+        
             <!-- Snapshot System -->
             <div style="background: rgba(0, 0, 0, 0.8); border: 2px solid #ff0000; border-radius: 0px; padding: 20px; margin-bottom: 30px; text-align: center; box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);">
                 <div style="font-size: 1.3em; font-weight: bold; color: #ff0000; margin-bottom: 15px; text-shadow: 0 0 10px #ff0000;">
@@ -553,17 +592,17 @@
                 </div>
                 <div style="font-size: 1.1em; color: #ffffff; margin-bottom: 15px;">
                     Randomized snapshots determine lottery winners
-                </div>
-                
+            </div>
+            
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
                     <div style="background: rgba(255, 0, 0, 0.1); border: 1px solid #ff0000; padding: 15px;">
                         <div style="font-size: 1em; font-weight: bold; color: #ff0000; margin-bottom: 5px;">
                             🕐 Normal Mode
-                        </div>
+                    </div>
                         <div style="font-size: 0.9em; color: #ffffff;">
                             ~72 hours<br>
                             Randomized timing
-                        </div>
+                    </div>
                     </div>
                     <div style="background: rgba(255, 0, 0, 0.1); border: 1px solid #ff0000; padding: 15px;">
                         <div style="font-size: 1em; font-weight: bold; color: #ff0000; margin-bottom: 5px;">
@@ -589,23 +628,23 @@
             
             <div id="walletInfo" style="text-align: center; margin-top: 20px; font-size: 1.1em;">
                 <div style="color: #ff69b4;">🔴 Not Connected</div>
-            </div>
-            
+        </div>
+        
             <!-- User Dashboard (only visible when connected) -->
             <div id="userDashboard" style="display: none; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 15px; padding: 25px; margin-top: 30px;">
                 <div style="font-size: 1.5em; font-weight: bold; color: #ff69b4; margin-bottom: 20px; text-align: center;">
                     🐸 Your PEPEBALL Dashboard
-                </div>
+            </div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
                     <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 15px; text-align: center;">
                         <div style="font-size: 1.2em; color: #ffffff; font-weight: bold;" id="userBalance">0 PEPE</div>
                         <div style="font-size: 0.9em; color: #ff69b4;">Token Balance</div>
-                    </div>
+            </div>
                     <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 15px; text-align: center;">
                         <div style="font-size: 1.2em; color: #ffffff; font-weight: bold;" id="userTickets">0</div>
                         <div style="font-size: 0.9em; color: #ff69b4;">Active Tickets</div>
-                    </div>
+            </div>
                     <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 15px; text-align: center;">
                         <div style="font-size: 1.2em; color: #ffffff; font-weight: bold;" id="userQualified">❌</div>
                         <div style="font-size: 0.9em; color: #ff69b4;">Qualified for Draw</div>
@@ -613,9 +652,9 @@
                     <div style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 15px; text-align: center;">
                         <div style="font-size: 1.2em; color: #ffffff; font-weight: bold;" id="userWinnings">0 SOL</div>
                         <div style="font-size: 0.9em; color: #ff69b4;">Total Winnings</div>
-                    </div>
-                </div>
-                
+            </div>
+        </div>
+        
                 <div style="text-align: center; margin-top: 20px;">
                     <div style="font-size: 1.1em; color: #90EE90; margin-bottom: 10px;">
                         🎯 <span id="qualificationStatus">Connect wallet to check qualification status</span>
@@ -623,9 +662,9 @@
                     <div style="font-size: 0.9em; color: #ff69b4;">
                         💡 Hold enough tokens to qualify for lottery drawings and win SOL prizes!
                     </div>
-                </div>
             </div>
         </div>
+    </div>
         
         <div class="footer">
             <div class="live-indicator"></div>
