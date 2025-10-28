@@ -203,6 +203,34 @@ pub mod lottery {
         
         Ok(())
     }
+
+    // Admin-only: configure snapshot timing and fast-mode threshold for testing/devnet
+    pub fn configure_timing(
+        ctx: Context<ConfigureTiming>,
+        base_snapshot_interval: u64,
+        fast_snapshot_interval: u64,
+        fast_mode_threshold: u64,
+    ) -> Result<()> {
+        let lottery = &mut ctx.accounts.lottery;
+        require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
+
+        // Basic sanity checks
+        require!(base_snapshot_interval > 0, ErrorCode::InvalidConfig);
+        require!(fast_snapshot_interval > 0, ErrorCode::InvalidConfig);
+
+        lottery.base_snapshot_interval = base_snapshot_interval;
+        lottery.fast_snapshot_interval = fast_snapshot_interval;
+        lottery.fast_mode_threshold = fast_mode_threshold;
+
+        msg!(
+            "⏱️ Timing configured: base={}s, fast={}s, threshold={} SOL",
+            base_snapshot_interval,
+            fast_snapshot_interval,
+            fast_mode_threshold / 1_000_000_000
+        );
+
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -241,6 +269,14 @@ pub struct UpdateFeesCollected<'info> {
     #[account(mut)]
     pub lottery: Account<'info, Lottery>,
     
+    pub admin: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct ConfigureTiming<'info> {
+    #[account(mut)]
+    pub lottery: Account<'info, Lottery>,
+
     pub admin: Signer<'info>,
 }
 
@@ -328,5 +364,7 @@ pub enum ErrorCode {
     Unauthorized,
     #[msg("Insufficient USD value - minimum $20 required")]
     InsufficientValue,
+    #[msg("Invalid configuration values")]
+    InvalidConfig,
 }
 
