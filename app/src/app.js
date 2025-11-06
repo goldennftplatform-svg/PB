@@ -72,6 +72,7 @@ class PEPEBALLApp {
         document.getElementById('enter-lottery')?.addEventListener('click', () => this.enterLottery());
         document.getElementById('buy-tokens')?.addEventListener('click', () => this.buyTokens());
         document.getElementById('add-to-wallet')?.addEventListener('click', () => this.addToWallet());
+        document.getElementById('copy-contract-btn')?.addEventListener('click', () => this.copyContractAddress());
         document.getElementById('refresh-data')?.addEventListener('click', () => this.refreshData());
     }
 
@@ -221,6 +222,29 @@ class PEPEBALLApp {
         
         if (confirm(message)) {
             window.open(`https://solscan.io/token/${tokenMint}?cluster=devnet`, '_blank');
+        }
+    }
+
+    async copyContractAddress() {
+        const contractAddress = this.programIds.token;
+        try {
+            await navigator.clipboard.writeText(contractAddress);
+            this.showNotification("✅ Contract address copied to clipboard!", "success");
+            
+            // Visual feedback on button
+            const btn = document.getElementById('copy-contract-btn');
+            if (btn) {
+                const originalText = btn.textContent;
+                btn.textContent = "✅ COPIED!";
+                btn.style.background = "linear-gradient(45deg, #00ff00, #00cc00)";
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = "linear-gradient(45deg, #00ff00, #00cc00)";
+                }, 2000);
+            }
+        } catch (error) {
+            console.error("Failed to copy:", error);
+            this.showNotification("❌ Failed to copy. Address: " + contractAddress, "error");
         }
     }
 
