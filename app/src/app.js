@@ -14,6 +14,12 @@ class PEPEBALLApp {
         this.priceService = typeof PriceService !== 'undefined' ? new PriceService() : null;
         this.cluster = "devnet"; // Set to devnet for public testing
         this.connection = null;
+        // Admin whitelist - only these addresses can access admin/reporting
+        this.adminWhitelist = [
+            "Hefy8JLP947zsUACbCAtgd3TuvWDJmZDhZmob1xWdbbJ"
+        ];
+        this.isAdminAuthenticated = false;
+        this.adminWalletAddress = null;
         this.init();
     }
 
@@ -86,18 +92,12 @@ class PEPEBALLApp {
                 console.log("⚠️ Solana Web3.js not loaded - will use wallet provider only");
             }
             
-            // Load Phantom wallet
+            // Phantom wallet detection - only for admin access
             if (typeof window.solana !== 'undefined') {
-                this.wallet = window.solana;
-                console.log("✅ Phantom wallet detected");
-                
-                // Auto-connect if already authorized
-                if (this.wallet.isConnected) {
-                    await this.loadUserData();
-                }
+                console.log("✅ Phantom wallet detected (admin access available)");
+                // Don't auto-connect - admin must explicitly connect
             } else {
-                console.log("⚠️ No Solana wallet detected - Please install Phantom!");
-                this.showNotification("⚠️ Please install Phantom wallet and switch to Devnet!", "warning");
+                console.log("⚠️ No Solana wallet detected - Admin access requires Phantom!");
             }
         } catch (error) {
             console.error("❌ Error loading Solana Web3:", error);
@@ -120,10 +120,16 @@ class PEPEBALLApp {
     }
 
     setupEventListeners() {
-        // Wallet connection
-        document.getElementById('connect-wallet')?.addEventListener('click', () => this.connectWallet());
+        // Admin access button
+        document.getElementById('admin-access-btn')?.addEventListener('click', () => this.handleAdminAccess());
         
-        // Lottery entry
+        // Admin disconnect
+        document.getElementById('admin-disconnect')?.addEventListener('click', () => this.disconnectAdmin());
+        
+        // Admin refresh
+        document.getElementById('admin-refresh')?.addEventListener('click', () => this.refreshAdminData());
+        
+        // Lottery entry (removed wallet requirement for average users)
         document.getElementById('enter-lottery')?.addEventListener('click', () => this.enterLottery());
         
         // Token purchase
@@ -133,111 +139,128 @@ class PEPEBALLApp {
         document.getElementById('refresh-data')?.addEventListener('click', () => this.refreshData());
     }
 
-    async connectWallet() {
+    async handleAdminAccess() {
         try {
-            if (!this.wallet) {
+            // Check if Phantom wallet is available
+            if (!window.solana || !window.solana.isPhantom) {
                 this.showNotification("⚠️ Please install Phantom wallet first!", "warning");
                 return;
             }
 
-            const response = await this.wallet.connect();
-            console.log("✅ Wallet connected:", response.publicKey.toString());
+            // Connect wallet
+            const response = await window.solana.connect();
+            const walletAddress = response.publicKey.toString();
             
-            this.updateWalletUI(true);
-            this.showNotification("🎉 Wallet connected successfully!", "success");
+            // Check if wallet is in admin whitelist
+            const isAdmin = this.adminWhitelist.includes(walletAddress);
             
-            // Load user data
-            await this.loadUserData();
+            if (!isAdmin) {
+                this.showNotification("❌ Access Denied: This wallet is not authorized for admin access", "error");
+                await window.solana.disconnect();
+                return;
+            }
+
+            // Admin authenticated
+            this.wallet = window.solana;
+            this.isAdminAuthenticated = true;
+            this.adminWalletAddress = walletAddress;
+            
+            // Show admin section
+            this.showAdminSection();
+            this.showNotification("✅ Admin access granted!", "success");
+            
+            // Load admin data
+            await this.loadAdminData();
             
         } catch (error) {
-            console.error("❌ Wallet connection failed:", error);
-            this.showNotification("❌ Wallet connection failed", "error");
+            console.error("❌ Admin access failed:", error);
+            this.showNotification("❌ Admin access failed: " + error.message, "error");
         }
     }
 
-    async disconnectWallet() {
+    async disconnectAdmin() {
         try {
-            await this.wallet.disconnect();
-            this.updateWalletUI(false);
-            this.showNotification("👋 Wallet disconnected", "info");
+            if (this.wallet && this.wallet.disconnect) {
+                await this.wallet.disconnect();
+            }
+            this.isAdminAuthenticated = false;
+            this.adminWalletAddress = null;
+            this.wallet = null;
+            this.hideAdminSection();
+            this.showNotification("👋 Admin disconnected", "info");
         } catch (error) {
-            console.error("❌ Wallet disconnection failed:", error);
+            console.error("❌ Admin disconnection failed:", error);
         }
     }
 
-    updateWalletUI(connected) {
-        const connectBtn = document.getElementById('connect-wallet');
-        const walletInfo = document.getElementById('wallet-info');
+    showAdminSection() {
+        const adminSection = document.getElementById('admin-section');
+        if (adminSection) {
+            adminSection.classList.add('active');
+        }
+    }
+
+    hideAdminSection() {
+        const adminSection = document.getElementById('admin-section');
+        if (adminSection) {
+            adminSection.classList.remove('active');
+        }
+    }
+
+    async loadAdminData() {
+        if (!this.isAdminAuthenticated) return;
+
+        try {
+            // Update admin UI
+            const walletAddressEl = document.getElementById('admin-wallet-address');
+            const adminStatusEl = document.getElementById('admin-status');
+            
+            if (walletAddressEl) {
+                walletAddressEl.textContent = `${this.adminWalletAddress.slice(0, 8)}...${this.adminWalletAddress.slice(-8)}`;
+            }
+            
+            if (adminStatusEl) {
+                adminStatusEl.textContent = "✅ Authorized";
+                adminStatusEl.style.color = "#00ff00";
+            }
+
+            // Load reporting data (mock for now - replace with actual contract calls)
+            await this.updateAdminStats();
+            
+        } catch (error) {
+            console.error("❌ Error loading admin data:", error);
+        }
+    }
+
+    async updateAdminStats() {
+        // Mock data - replace with actual contract calls
+        const totalVolumeEl = document.getElementById('admin-total-volume');
+        const totalParticipantsEl = document.getElementById('admin-total-participants');
         
-        if (connected) {
-            connectBtn.textContent = "👛 Wallet Connected";
-            connectBtn.className = "wallet-btn connected";
-            walletInfo.style.display = "block";
-            walletInfo.innerHTML = `
-                <div class="wallet-address">
-                    ${this.wallet.publicKey.toString().slice(0, 8)}...${this.wallet.publicKey.toString().slice(-8)}
-                </div>
-                <button onclick="app.disconnectWallet()" class="disconnect-btn">Disconnect</button>
-            `;
-        } else {
-            connectBtn.textContent = "🔗 Connect Wallet";
-            connectBtn.className = "wallet-btn";
-            walletInfo.style.display = "none";
+        if (totalVolumeEl) {
+            totalVolumeEl.textContent = "1,234.56 SOL"; // Mock
+        }
+        
+        if (totalParticipantsEl) {
+            totalParticipantsEl.textContent = "1,247"; // Mock
         }
     }
 
-    async loadUserData() {
-        if (!this.wallet) return;
-
-        try {
-            // Load user's PEPEBALL balance
-            const balance = await this.getTokenBalance();
-            document.getElementById('user-balance').textContent = `${balance} PEPE`;
-            
-            // Load lottery participation
-            const participation = await this.getLotteryParticipation();
-            document.getElementById('lottery-tickets').textContent = `${participation} tickets`;
-            
-        } catch (error) {
-            console.error("❌ Error loading user data:", error);
-        }
-    }
-
-    async getTokenBalance() {
-        // Mock balance - replace with actual Solana RPC call
-        return "1,000,000";
-    }
-
-    async getLotteryParticipation() {
-        // Mock participation - replace with actual contract call
-        return "5";
-    }
-
-    async enterLottery() {
-        if (!this.wallet) {
-            this.showNotification("⚠️ Please connect wallet first!", "warning");
+    async refreshAdminData() {
+        if (!this.isAdminAuthenticated) {
+            this.showNotification("⚠️ Please authenticate as admin first", "warning");
             return;
         }
+        
+        this.showNotification("🔄 Refreshing admin data...", "info");
+        await this.loadAdminData();
+        this.showNotification("✅ Admin data refreshed!", "success");
+    }
 
-        try {
-            // Show pricing options
-            const pricingOptions = this.getPricingOptions();
-            const selectedOption = await this.showPricingModal(pricingOptions);
-            
-            if (!selectedOption) return;
-            
-            this.showNotification(`🎲 Entering lottery with ${selectedOption.tickets} tickets ($${selectedOption.usdValue})...`, "info");
-            
-            // Mock lottery entry - replace with actual contract interaction
-            await this.simulateLotteryEntry();
-            
-            this.showNotification(`🎉 Successfully entered lottery with ${selectedOption.tickets} tickets!`, "success");
-            this.updateLotteryUI();
-            
-        } catch (error) {
-            console.error("❌ Lottery entry failed:", error);
-            this.showNotification("❌ Lottery entry failed", "error");
-        }
+
+    async enterLottery() {
+        // Average users don't need to connect wallet - lottery is automatic based on holdings
+        this.showNotification("🎰 Lottery participation is automatic! Just hold $20 worth of PEPE tokens to qualify! 🎰", "info");
     }
 
     getPricingOptions() {
@@ -312,11 +335,7 @@ class PEPEBALLApp {
     }
 
     async buyTokens() {
-        if (!this.wallet) {
-            this.showNotification("⚠️ Please connect wallet first!", "warning");
-            return;
-        }
-
+        // Average users can buy tokens without connecting wallet
         try {
             this.showNotification("💰 Opening token purchase...", "info");
             
@@ -335,9 +354,9 @@ class PEPEBALLApp {
         // Refresh lottery data
         await this.updateLotteryData();
         
-        // Refresh user data
-        if (this.wallet) {
-            await this.loadUserData();
+        // Refresh admin data if authenticated
+        if (this.isAdminAuthenticated) {
+            await this.loadAdminData();
         }
         
         this.showNotification("✅ Data refreshed!", "success");
@@ -735,4 +754,5 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
 
