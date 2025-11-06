@@ -71,6 +71,7 @@ class PEPEBALLApp {
         document.getElementById('admin-refresh')?.addEventListener('click', () => this.refreshAdminData());
         document.getElementById('enter-lottery')?.addEventListener('click', () => this.enterLottery());
         document.getElementById('buy-tokens')?.addEventListener('click', () => this.buyTokens());
+        document.getElementById('add-to-wallet')?.addEventListener('click', () => this.addToWallet());
         document.getElementById('refresh-data')?.addEventListener('click', () => this.refreshData());
     }
 
@@ -174,6 +175,64 @@ class PEPEBALLApp {
             console.error("❌ Token purchase failed:", error);
             this.showNotification("❌ Token purchase failed", "error");
         }
+    }
+
+    async addToWallet() {
+        try {
+            const tokenMint = this.programIds.token;
+            
+            // Check if wallet is available
+            if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
+                // Use Phantom's addToken method if available
+                try {
+                    await window.solana.request({
+                        method: 'wallet_watchAsset',
+                        params: {
+                            type: 'SPL_TOKEN',
+                            options: {
+                                address: tokenMint,
+                                symbol: 'PEPE',
+                                decimals: 9,
+                                image: 'https://pb-n7kx.vercel.app/pepe-icon.png' // Optional: add icon later
+                            }
+                        }
+                    });
+                    this.showNotification("✅ PEPEBALL token added to wallet!", "success");
+                } catch (error) {
+                    // Fallback to URI scheme
+                    this.addToWalletViaURI(tokenMint);
+                }
+            } else {
+                // Use Solana URI scheme for other wallets
+                this.addToWalletViaURI(tokenMint);
+            }
+        } catch (error) {
+            console.error("❌ Add to wallet failed:", error);
+            this.showNotification("❌ Failed to add token. Please install Phantom wallet!", "error");
+        }
+    }
+
+    addToWalletViaURI(tokenMint) {
+        // Solana URI scheme for adding tokens
+        const uri = `https://solana.com/token/${tokenMint}`;
+        
+        // Try to open with wallet
+        if (typeof window.solana !== 'undefined') {
+            // If wallet is connected, try direct method
+            window.open(`solana:${tokenMint}`, '_blank');
+        }
+        
+        // Also provide manual instructions
+        const message = `To add PEPEBALL to your wallet:\n\n1. Open your Solana wallet (Phantom, Solflare, etc.)\n2. Click "Add Token" or "Import Token"\n3. Paste this address:\n${tokenMint}\n\nOr click OK to open Solana Explorer.`;
+        
+        if (confirm(message)) {
+            window.open(uri, '_blank');
+        }
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(tokenMint).then(() => {
+            this.showNotification("📋 Token address copied to clipboard!", "info");
+        });
     }
 
     async refreshData() {
