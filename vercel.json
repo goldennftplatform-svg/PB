@@ -1,5 +1,11 @@
 {
   "buildCommand": "echo 'Static HTML - no build needed'",
   "outputDirectory": "app",
-  "installCommand": "echo 'No install needed'"
+  "installCommand": "echo 'No install needed'",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/app/$1"
+    }
+  ]
 }
