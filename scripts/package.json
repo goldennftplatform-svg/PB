@@ -1,0 +1,26 @@
+{
+  "name": "pepball-bot-scripts",
+  "version": "1.0.0",
+  "description": "Automated bot scripts for PEPEBALL contract testing",
+  "scripts": {
+    "create-wallets": "node create-bot-wallets.js",
+    "fund-wallets": "node fund-bot-wallets.js",
+    "run-bot": "node bot-trader.js",
+    "run-all-bots": "node run-all-bots.js",
+    "test-contracts": "node run-all-bots.js",
+    "test-10m-volume": "node test-10m-volume.js",
+    "payout-status": "node test-automated-payout.js status",
+    "payout-execute": "node test-automated-payout.js payout",
+    "payout-monitor": "node test-automated-payout.js monitor",
+    "secure-init": "node secure-init-lottery.js",
+    "secure-payout-check": "node secure-payout-tool.js check",
+    "secure-payout-execute": "node secure-payout-tool.js payout"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.87.0",
+    "@solana/spl-token": "^0.3.0",
+    "@coral-xyz/anchor": "^0.30.1"
+  }
+}
+
+

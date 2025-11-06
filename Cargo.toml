@@ -1,12 +1,8 @@
-[package]
-name = "pepball"
-version = "0.1.0"
-description = "PEPEBALL - Powerball-inspired lottery token with creator fund"
-edition = "2021"
-
 [workspace]
 members = [
-    "programs/*"
+    "programs/pepball-token",
+    "programs/lottery",
+    "programs/lp-manager"
 ]
 resolver = "2"
 
@@ -19,4 +15,6 @@ codegen-units = 1
 opt-level = 3
 incremental = false
 codegen-units = 1
+
+
 

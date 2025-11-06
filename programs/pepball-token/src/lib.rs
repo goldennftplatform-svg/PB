@@ -1,8 +1,8 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
-use solana_program::clock::Clock;
+ 
 
-declare_id!("PEPEBALL111111111111111111111111111111111111");
+declare_id!("HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR");
 
 #[program]
 pub mod pepball_token {
@@ -25,7 +25,9 @@ pub mod pepball_token {
         token_info.jackpot_rate = 245; // 2.45% to jackpot
         token_info.creator_fund_address = creator_fund_address;
         token_info.is_renounced = false;
+        token_info.is_paused = false;
         token_info.admin = ctx.accounts.admin.key();
+        token_info.min_transfer_amount = 1000; // Minimum 1000 tokens (prevents dust attacks)
         
         msg!("PEPEBALL Token initialized!");
         msg!("Creator Fund Address: {}", creator_fund_address);
@@ -43,10 +45,21 @@ pub mod pepball_token {
     ) -> Result<()> {
         let token_info = &ctx.accounts.token_info;
         
+        // CRITICAL FIX 1: Check if transfers are paused
+        require!(!token_info.is_paused, ErrorCode::TransfersPaused);
+        
+        // CRITICAL FIX 2: Check minimum transfer amount
+        require!(amount >= token_info.min_transfer_amount, ErrorCode::AmountTooSmall);
+        
         // Calculate taxes
-        let creator_tax = (amount * token_info.creator_fund_rate) / 10000; // 0.05%
-        let jackpot_tax = (amount * token_info.jackpot_rate) / 10000; // 2.45%
+        let creator_tax = (amount.saturating_mul(token_info.creator_fund_rate as u64)) / 10000; // 0.05%
+        let jackpot_tax = (amount.saturating_mul(token_info.jackpot_rate as u64)) / 10000; // 2.45%
         let total_tax = creator_tax + jackpot_tax;
+        
+        // CRITICAL FIX 3: Validate tax calculation
+        require!(total_tax < amount, ErrorCode::InvalidTaxCalculation);
+        require!(total_tax > 0, ErrorCode::InvalidTaxCalculation); // Ensure tax is applied
+        
         let transfer_amount = amount - total_tax;
         
         msg!("Transfer: {} tokens", amount);
@@ -176,7 +189,9 @@ pub struct EmergencyPause<'info> {
 #[account]
 #[derive(InitSpace)]
 pub struct TokenInfo {
+    #[max_len(32)]
     pub name: String,
+    #[max_len(10)]
     pub symbol: String,
     pub decimals: u8,
     pub total_supply: u64,
@@ -187,6 +202,7 @@ pub struct TokenInfo {
     pub is_renounced: bool,
     pub is_paused: bool,
     pub admin: Pubkey,
+    pub min_transfer_amount: u64, // Minimum transfer to prevent dust attacks
 }
 
 #[error_code]
@@ -197,5 +213,9 @@ pub enum ErrorCode {
     Unauthorized,
     #[msg("Token transfers are paused")]
     TransfersPaused,
+    #[msg("Transfer amount is too small")]
+    AmountTooSmall,
+    #[msg("Invalid tax calculation")]
+    InvalidTaxCalculation,
 }
 

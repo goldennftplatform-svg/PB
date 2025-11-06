@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount};
 use anchor_spl::associated_token::AssociatedToken;
 
-declare_id!("LPMANAGER111111111111111111111111111111111");
+declare_id!("G5WidJNwmdp33kQ6AeTcrsKJdP9rvuecfyZXCmQ6oSNG");
 
 #[program]
 pub mod lp_manager {
@@ -58,7 +58,9 @@ pub mod lp_manager {
         let lp_manager = &mut ctx.accounts.lp_manager;
         
         // Calculate conversion amount (80% of fees)
-        let conversion_amount = (token_amount * lp_manager.fee_conversion_rate) / 10000;
+        let conversion_amount = token_amount
+            .saturating_mul(lp_manager.fee_conversion_rate as u64)
+            / 10000;
         
         msg!("Converting {} tokens to SOL", conversion_amount);
         msg!("Conversion rate: {}%", lp_manager.fee_conversion_rate / 100);

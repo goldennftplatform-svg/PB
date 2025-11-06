@@ -1,21 +1,24 @@
+[toolchain]
+anchor_version = "0.32.1"
+
 [features]
-seeds = false
+resolution = true
 skip-lint = false
 
-[programs.localnet]
-pepball_token = "PEPEBALL111111111111111111111111111111111111"
-lottery = "LOTTERY111111111111111111111111111111111111"
-lp_manager = "LPMANAGER111111111111111111111111111111111"
-
 [programs.devnet]
-pepball_token = "PEPEBALL111111111111111111111111111111111111"
-lottery = "LOTTERY111111111111111111111111111111111111"
-lp_manager = "LPMANAGER111111111111111111111111111111111"
+lottery = "ytKyH7viyfRmqYtS7Y3nCa8kCJXAPTN6MA8a3EmtSn1"  # Updated with new program ID
+lp_manager = "G5WidJNwmdp33kQ6AeTcrsKJdP9rvuecfyZXCmQ6oSNG"
+pepball_token = "HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR"
+
+[programs.localnet]
+lottery = "ytKyH7viyfRmqYtS7Y3nCa8kCJXAPTN6MA8a3EmtSn1"
+lp_manager = "G5WidJNwmdp33kQ6AeTcrsKJdP9rvuecfyZXCmQ6oSNG"
+pepball_token = "HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR"
 
 [programs.mainnet]
-pepball_token = "PEPEBALL111111111111111111111111111111111111"
-lottery = "LOTTERY111111111111111111111111111111111111"
-lp_manager = "LPMANAGER111111111111111111111111111111111"
+lottery = "11111111111111111111111111111111"
+lp_manager = "11111111111111111111111111111111"
+pepball_token = "11111111111111111111111111111111"
 
 [registry]
 url = "https://api.apr.dev"
@@ -26,4 +29,3 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
-

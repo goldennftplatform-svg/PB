@@ -325,3 +325,10 @@ anchor test --cluster devnet
 
 **Good luck with testing! Coordinate well and you'll have a smooth launch! 🐸🚀**
 
+
+
+
+
+
+
+

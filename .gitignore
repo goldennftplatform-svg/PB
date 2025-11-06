@@ -53,3 +53,9 @@ test-ledger/
 # Program IDs (keep these local)
 Anchor.toml.local
 
+# Bot testing wallets (keep private!)
+bots/wallets/*.json
+bots/registry.json
+bots/funding-status.json
+bots/results/*.json
+

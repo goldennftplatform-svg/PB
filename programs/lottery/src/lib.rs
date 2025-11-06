@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount};
 use solana_program::clock::Clock;
 
-declare_id!("LOTTERY111111111111111111111111111111111111");
+declare_id!("ytKyH7viyfRmqYtS7Y3nCa8kCJXAPTN6MA8a3EmtSn1");
 
 #[program]
 pub mod lottery {
@@ -12,8 +12,16 @@ pub mod lottery {
         ctx: Context<InitializeLottery>,
         jackpot_amount: u64,
     ) -> Result<()> {
+        // Security: Verify PDA is correctly derived from seeds
         let lottery = &mut ctx.accounts.lottery;
+        
+        // Security: Validate initial jackpot amount (must be reasonable)
+        require!(jackpot_amount > 0, ErrorCode::InvalidConfig);
+        require!(jackpot_amount <= 1_000_000 * 1_000_000_000, ErrorCode::InvalidConfig); // Max 1M SOL
+        
+        // Initialize lottery state
         lottery.jackpot_amount = jackpot_amount;
+        lottery.carry_over_amount = 0; // Initialize carry-over
         lottery.last_snapshot = Clock::get()?.unix_timestamp;
         lottery.base_snapshot_interval = 72 * 60 * 60; // 72 hours in seconds
         lottery.fast_snapshot_interval = 48 * 60 * 60; // 48 hours in seconds
@@ -27,6 +35,8 @@ pub mod lottery {
         
         msg!("PEPEBALL Lottery initialized!");
         msg!("Initial Jackpot: {} SOL", jackpot_amount / 1_000_000_000);
+        msg!("Admin: {}", ctx.accounts.admin.key());
+        msg!("Lottery PDA: {}", lottery.key());
         msg!("Snapshot Timing: 72 hours (< 200 SOL fees), 48 hours (≥ 200 SOL fees)");
         
         Ok(())
@@ -105,17 +115,59 @@ pub mod lottery {
             ErrorCode::DrawTooEarly
         );
         
-        require!(lottery.participants.len() >= 6, ErrorCode::NotEnoughParticipants);
+        require!(lottery.participants.len() >= 9, ErrorCode::NotEnoughParticipants); // Need 9 for 1 main + 8 minor
         
-        // Simple random number generation (replace with Chainlink VRF later)
-        let seed = clock.unix_timestamp as u64;
-        let random = (seed % 1000) as u32;
+        // CRITICAL FIX 4: Improved randomness using clock data (weighted by ticket count)
+        let seed = clock.slot
+            .wrapping_mul(clock.unix_timestamp as u64)
+            .wrapping_add(lottery.participants.len() as u64)
+            .wrapping_add(lottery.total_snapshots);
         
-        // Select winners from snapshot (simplified for MVP)
-        lottery.winners.main_winner = Some(lottery.participants[0].wallet);
-        for i in 1..6 {
-            lottery.winners.minor_winners.push(lottery.participants[i].wallet);
+        // Weighted selection based on ticket count
+        let total_tickets: u32 = lottery.participants.iter()
+            .map(|p| p.ticket_count)
+            .sum();
+        
+        require!(total_tickets > 0, ErrorCode::NotEnoughParticipants);
+        
+        // Select main winner (weighted by tickets)
+        let main_winner_ticket = (seed % total_tickets as u64) as u32;
+        let mut accumulated = 0u32;
+        let mut main_winner_idx = 0;
+        
+        for (idx, participant) in lottery.participants.iter().enumerate() {
+            accumulated += participant.ticket_count;
+            if accumulated > main_winner_ticket {
+                main_winner_idx = idx;
+                break;
+            }
         }
+        
+        lottery.winners.main_winner = Some(lottery.participants[main_winner_idx].wallet);
+        
+        // Select 8 minor winners (excluding main winner, with different randomness)
+        let mut minor_indices = Vec::new();
+        let mut remaining_seed = seed.wrapping_mul(7); // Different seed for minor winners
+        
+        for _ in 0..8 {
+            let available: Vec<usize> = (0..lottery.participants.len())
+                .filter(|&i| i != main_winner_idx && !minor_indices.contains(&i))
+                .collect();
+            
+            if available.is_empty() {
+                break;
+            }
+            
+            let winner_idx = available[(remaining_seed as usize) % available.len()];
+            minor_indices.push(winner_idx);
+            remaining_seed = remaining_seed.wrapping_mul(13).wrapping_add(1);
+        }
+        
+        let mut minor_winners = Vec::with_capacity(8);
+        for idx in minor_indices {
+            minor_winners.push(lottery.participants[idx].wallet);
+        }
+        lottery.winners.minor_winners = minor_winners;
         
         lottery.last_snapshot = clock.unix_timestamp;
         lottery.total_snapshots += 1;
@@ -146,21 +198,31 @@ pub mod lottery {
         let lottery = &mut ctx.accounts.lottery;
         require!(lottery.winners.main_winner.is_some(), ErrorCode::NoWinners);
         
-        // Calculate payouts (simplified)
-        let total_jackpot = lottery.jackpot_amount;
-        let main_payout = (total_jackpot * 60) / 100; // 60% to main winner
-        let minor_payout = (total_jackpot * 40) / 100 / 5; // 40% split among 5 minor winners
+        // NEW PAYOUT STRUCTURE: 68% Grand Prize, 8% Carry-over, 8 winners at 3% each
+        let total_jackpot = lottery.jackpot_amount + lottery.carry_over_amount; // Include carry-over
+        let grand_prize = (total_jackpot * 68) / 100; // 68% to grand prize winner
+        let carry_over = (total_jackpot * 8) / 100; // 8% carry-over to next round
+        let minor_payout_per_winner = (total_jackpot * 3) / 100; // 3% to each of 8 minor winners
         
         msg!("💰 PAYOUT DISTRIBUTION 💰");
         msg!("Total Jackpot: {} SOL", total_jackpot / 1_000_000_000);
-        msg!("Main Winner: {} SOL (60%)", main_payout / 1_000_000_000);
-        msg!("Each Minor Winner: {} SOL (8%)", minor_payout / 1_000_000_000);
+        msg!("Grand Prize Winner: {} SOL (68%)", grand_prize / 1_000_000_000);
+        msg!("Carry-over to Next Round: {} SOL (8%)", carry_over / 1_000_000_000);
+        msg!("Each Minor Winner: {} SOL (3%)", minor_payout_per_winner / 1_000_000_000);
+        msg!("Total Minor Winners: {}", lottery.winners.minor_winners.len());
+        
+        // Update carry-over for next round
+        lottery.carry_over_amount = carry_over;
         
         // Transfer SOL to winners (simplified - would need proper SOL transfer logic)
         // This is a placeholder - actual implementation would transfer SOL
         
+        // Clear winners after payout
         lottery.winners.main_winner = None;
         lottery.winners.minor_winners.clear();
+        
+        // Reset jackpot to carry-over amount for next round
+        lottery.jackpot_amount = carry_over;
         
         Ok(())
     }
@@ -170,7 +232,7 @@ pub mod lottery {
         new_fees: u64,
     ) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
-        let old_fees = lottery.fees_collected;
+        let _old_fees = lottery.fees_collected;
         lottery.fees_collected = new_fees;
         
         // Update fast mode status
@@ -231,6 +293,23 @@ pub mod lottery {
 
         Ok(())
     }
+
+    pub fn update_jackpot_amount(
+        ctx: Context<UpdateJackpotAmount>,
+        new_amount: u64,
+    ) -> Result<()> {
+        let lottery = &mut ctx.accounts.lottery;
+        require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
+        
+        let old_amount = lottery.jackpot_amount;
+        lottery.jackpot_amount = new_amount;
+        
+        msg!("💰 Jackpot updated: {} SOL → {} SOL", 
+             old_amount / 1_000_000_000,
+             new_amount / 1_000_000_000);
+        
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -238,7 +317,9 @@ pub struct InitializeLottery<'info> {
     #[account(
         init,
         payer = admin,
-        space = 8 + Lottery::INIT_SPACE
+        space = 8 + Lottery::INIT_SPACE,
+        seeds = [b"lottery"],
+        bump
     )]
     pub lottery: Account<'info, Lottery>,
     
@@ -307,19 +388,21 @@ pub struct EmergencyPauseLottery<'info> {
 #[account]
 #[derive(InitSpace)]
         pub struct Lottery {
-            pub jackpot_amount: u64,
-            pub last_snapshot: i64,
-            pub base_snapshot_interval: u64,    // 72 hours in seconds
-            pub fast_snapshot_interval: u64,     // 48 hours in seconds
-            pub fast_mode_threshold: u64,       // 200 SOL threshold
-            pub fees_collected: u64,            // Total fees collected in SOL
-            pub is_fast_mode: bool,
-            pub is_active: bool,
-            pub admin: Pubkey,
-            pub participants: Vec<Participant>,
-            pub winners: Winners,
-            pub total_participants: u64,
-            pub total_snapshots: u64,
+        pub jackpot_amount: u64,
+        pub carry_over_amount: u64,         // 8% carry-over to next prize
+        pub last_snapshot: i64,
+        pub base_snapshot_interval: u64,    // 72 hours in seconds
+        pub fast_snapshot_interval: u64,     // 48 hours in seconds
+        pub fast_mode_threshold: u64,       // 200 SOL threshold
+        pub fees_collected: u64,            // Total fees collected in SOL
+        pub is_fast_mode: bool,
+        pub is_active: bool,
+        pub admin: Pubkey,
+        #[max_len(1000)]
+        pub participants: Vec<Participant>,
+        pub winners: Winners,
+        pub total_participants: u64,
+        pub total_snapshots: u64,
         }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace)]
@@ -333,6 +416,7 @@ pub struct Participant {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace)]
 pub struct Winners {
     pub main_winner: Option<Pubkey>,
+    #[max_len(8)]
     pub minor_winners: Vec<Pubkey>,
 }
 

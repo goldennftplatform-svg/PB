@@ -6,10 +6,14 @@ class PEPEBALLApp {
         this.connection = null;
         this.wallet = null;
         this.programIds = {
-            token: "PEPEBALL111111111111111111111111111111111111",
-            lottery: "LOTTERY111111111111111111111111111111111111",
-            lpManager: "LPMANAGER111111111111111111111111111111111"
+            token: "HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR",
+            lottery: "ytKyH7viyfRmqYtS7Y3nCa8kCJXAPTN6MA8a3EmtSn1", // Updated with new program ID
+            lpManager: "G5WidJNwmdp33kQ6AeTcrsKJdP9rvuecfyZXCmQ6oSNG"
         };
+        // Initialize price service for dynamic USD conversion
+        this.priceService = typeof PriceService !== 'undefined' ? new PriceService() : null;
+        this.cluster = "devnet"; // Set to devnet for public testing
+        this.connection = null;
         this.init();
     }
 
@@ -17,22 +21,102 @@ class PEPEBALLApp {
         console.log("🎰 Initializing PEPEBALL App...");
         this.setupEventListeners();
         await this.loadSolanaWeb3();
+        
+        // Initialize price service if available
+        if (this.priceService) {
+            // Set token mint address from contract
+            // TODO: Fetch from contract or config
+            this.priceService.setTokenMint(this.programIds.token);
+            
+            // Start price updates
+            this.startPriceUpdates();
+        }
+        
         this.updateUI();
         this.startAnimations();
     }
 
+    async startPriceUpdates() {
+        if (!this.priceService) return;
+        
+        // Update price every 30 seconds
+        setInterval(async () => {
+            try {
+                const price = await this.priceService.getTokenPriceInUSDC();
+                const minTokens = await this.priceService.getMinimumTokensForEntry();
+                
+                // Update UI with current price and minimum tokens
+                const priceDisplay = document.getElementById('token-price');
+                if (priceDisplay) {
+                    priceDisplay.textContent = `$${price.toFixed(6)} per token`;
+                }
+                
+                const minTokensDisplay = document.getElementById('min-tokens-entry');
+                if (minTokensDisplay) {
+                    minTokensDisplay.textContent = `${(minTokens / 1e9).toLocaleString()} tokens ($20 min)`;
+                }
+            } catch (error) {
+                console.error('Error updating price:', error);
+            }
+        }, 30000);
+        
+        // Initial update
+        if (this.priceService) {
+            await this.priceService.getTokenPriceInUSDC();
+        }
+    }
+
     async loadSolanaWeb3() {
         try {
-            // Load Solana Web3.js
+            // Check if Solana Web3.js is loaded (via CDN or bundler)
+            if (typeof window.solanaWeb3 === 'undefined' && typeof window.anchor === 'undefined') {
+                // Try loading from CDN
+                await this.loadSolanaWeb3FromCDN();
+            }
+            
+            // Connect to devnet - use global if available
+            const solanaWeb3 = window.solanaWeb3 || window.anchor?.web3;
+            if (solanaWeb3) {
+                this.connection = new solanaWeb3.Connection(
+                    solanaWeb3.clusterApiUrl('devnet'),
+                    'confirmed'
+                );
+                console.log("✅ Connected to Solana Devnet");
+            } else {
+                console.log("⚠️ Solana Web3.js not loaded - will use wallet provider only");
+            }
+            
+            // Load Phantom wallet
             if (typeof window.solana !== 'undefined') {
                 this.wallet = window.solana;
                 console.log("✅ Phantom wallet detected");
+                
+                // Auto-connect if already authorized
+                if (this.wallet.isConnected) {
+                    await this.loadUserData();
+                }
             } else {
-                console.log("⚠️ No Solana wallet detected");
+                console.log("⚠️ No Solana wallet detected - Please install Phantom!");
+                this.showNotification("⚠️ Please install Phantom wallet and switch to Devnet!", "warning");
             }
         } catch (error) {
             console.error("❌ Error loading Solana Web3:", error);
+            this.showNotification("❌ Error connecting to Solana. Make sure you're on Devnet!", "error");
         }
+    }
+
+    async loadSolanaWeb3FromCDN() {
+        // Load Solana Web3.js from CDN for browser use
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js';
+            script.onload = () => {
+                window.solanaWeb3 = window.solana;
+                resolve();
+            };
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
     }
 
     setupEventListeners() {

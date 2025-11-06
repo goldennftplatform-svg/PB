@@ -1,0 +1,10 @@
+25M USD Volume Test Summary
+============================
+
+Date: 2025-11-04T04:29:56.316Z
+Target: $25,000,000 USD
+Actual: $25,048,000 USD
+Progress: 100.19%
+Jackpot Contribution: 4091.1733 SOL
+Transactions: 2947
+Duration: 1.1m
