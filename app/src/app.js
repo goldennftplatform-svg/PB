@@ -282,16 +282,74 @@ class PEPEBALLApp {
     }
 
     async startPriceUpdates() {
-        if (!this.priceService) return;
+        if (!this.priceService) {
+            // Fallback: use mock price if price service not available
+            this.updateTokenCounts(0.000020); // Default price
+            return;
+        }
+        
+        // Update immediately
+        await this.updatePricingWithTokenCounts();
+        
+        // Update every 30 seconds
         setInterval(async () => {
-            try {
-                await this.priceService.getTokenPriceInUSDC();
-            } catch (error) {
-                console.error('Error updating price:', error);
-            }
+            await this.updatePricingWithTokenCounts();
         }, 30000);
-        if (this.priceService) {
-            await this.priceService.getTokenPriceInUSDC();
+    }
+
+    async updatePricingWithTokenCounts() {
+        try {
+            let tokenPrice = 0.000020; // Default fallback price
+            
+            if (this.priceService) {
+                try {
+                    tokenPrice = await this.priceService.getTokenPriceInUSDC();
+                } catch (error) {
+                    console.error('Error getting token price:', error);
+                    // Use fallback price
+                }
+            }
+            
+            this.updateTokenCounts(tokenPrice);
+        } catch (error) {
+            console.error('Error updating pricing:', error);
+        }
+    }
+
+    updateTokenCounts(tokenPriceUSD) {
+        if (!tokenPriceUSD || tokenPriceUSD <= 0) {
+            tokenPriceUSD = 0.000020; // Fallback price
+        }
+        
+        // Calculate tokens needed for each tier
+        const tokens20 = Math.ceil(20 / tokenPriceUSD);
+        const tokens100 = Math.ceil(100 / tokenPriceUSD);
+        const tokens500 = Math.ceil(500 / tokenPriceUSD);
+        
+        // Format token amounts
+        const formatTokens = (amount) => {
+            if (amount >= 1000000) {
+                return (amount / 1000000).toFixed(2) + 'M';
+            } else if (amount >= 1000) {
+                return (amount / 1000).toFixed(1) + 'K';
+            } else {
+                return amount.toLocaleString();
+            }
+        };
+        
+        // Update DOM
+        const tier20El = document.getElementById('tier-20-tokens');
+        const tier100El = document.getElementById('tier-100-tokens');
+        const tier500El = document.getElementById('tier-500-tokens');
+        
+        if (tier20El) {
+            tier20El.textContent = `≈ ${formatTokens(tokens20)} PEPE`;
+        }
+        if (tier100El) {
+            tier100El.textContent = `≈ ${formatTokens(tokens100)} PEPE`;
+        }
+        if (tier500El) {
+            tier500El.textContent = `≈ ${formatTokens(tokens500)} PEPE`;
         }
     }
 
