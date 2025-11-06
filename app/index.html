@@ -150,6 +150,89 @@
             margin: 5px 0;
         }
         
+        .contract-address-section {
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #ffff00;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .contract-title {
+            font-size: 1rem;
+            color: #ffff00;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .contract-address-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .contract-address {
+            font-size: 0.7rem;
+            color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 2px solid #00ff00;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            flex: 1;
+            min-width: 200px;
+            max-width: 500px;
+        }
+        
+        .copy-address-btn {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            border: 2px solid #ffff00;
+            color: #000;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .copy-address-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.5);
+        }
+        
+        .copy-address-btn:active {
+            transform: translateY(0);
+        }
+        
+        .contract-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .contract-link {
+            font-size: 0.6rem;
+            color: #00ffff;
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid #00ffff;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .contract-link:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
         .pricing-info {
             margin: 20px 0;
             padding: 20px;
@@ -450,6 +533,18 @@
                 <div class="jackpot-timer" id="jackpot-timer">Next draw in: 72 hours</div>
                 <div class="draw-timing" id="draw-timing">72-hour draws</div>
                 <div class="participants-count" id="participants-count">127 participants</div>
+            </div>
+            
+            <div class="contract-address-section">
+                <div class="contract-title">📋 CONTRACT ADDRESS</div>
+                <div class="contract-address-container">
+                    <div class="contract-address" id="contract-address">HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR</div>
+                    <button class="copy-address-btn" id="copy-contract-btn">📋 COPY</button>
+                </div>
+                <div class="contract-links">
+                    <a href="https://solscan.io/token/HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR?cluster=devnet" target="_blank" class="contract-link">View on Solscan</a>
+                    <a href="https://explorer.solana.com/address/HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR?cluster=devnet" target="_blank" class="contract-link">View on Explorer</a>
+                </div>
             </div>
             
             <div class="pricing-info">
