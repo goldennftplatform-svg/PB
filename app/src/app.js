@@ -181,58 +181,47 @@ class PEPEBALLApp {
         try {
             const tokenMint = this.programIds.token;
             
-            // Check if wallet is available
+            // Copy token address to clipboard first
+            await navigator.clipboard.writeText(tokenMint);
+            this.showNotification("📋 Token address copied to clipboard!", "info");
+            
+            // Check if Phantom wallet is available
             if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
-                // Use Phantom's addToken method if available
+                // Try to connect and add token
                 try {
-                    await window.solana.request({
-                        method: 'wallet_watchAsset',
-                        params: {
-                            type: 'SPL_TOKEN',
-                            options: {
-                                address: tokenMint,
-                                symbol: 'PEPE',
-                                decimals: 9,
-                                image: 'https://pb-n7kx.vercel.app/pepe-icon.png' // Optional: add icon later
-                            }
-                        }
-                    });
-                    this.showNotification("✅ PEPEBALL token added to wallet!", "success");
+                    // Connect wallet if not already connected
+                    if (!window.solana.isConnected) {
+                        await window.solana.connect();
+                    }
+                    
+                    // Phantom doesn't have a direct addToken method, so we provide instructions
+                    const message = `✅ Token address copied!\n\nTo add PEPEBALL to Phantom:\n\n1. Open Phantom wallet\n2. Go to your token list\n3. Click the "+" or "Add Token" button\n4. Paste the address (already copied)\n5. Click "Add"\n\nToken Address:\n${tokenMint}`;
+                    
+                    alert(message);
+                    
+                    // Also open Solana Explorer for reference
+                    window.open(`https://solscan.io/token/${tokenMint}?cluster=devnet`, '_blank');
+                    
                 } catch (error) {
-                    // Fallback to URI scheme
-                    this.addToWalletViaURI(tokenMint);
+                    console.error("Wallet connection error:", error);
+                    this.showManualInstructions(tokenMint);
                 }
             } else {
-                // Use Solana URI scheme for other wallets
-                this.addToWalletViaURI(tokenMint);
+                // No wallet detected - show manual instructions
+                this.showManualInstructions(tokenMint);
             }
         } catch (error) {
             console.error("❌ Add to wallet failed:", error);
-            this.showNotification("❌ Failed to add token. Please install Phantom wallet!", "error");
+            this.showNotification("❌ Failed to add token. Token address: " + this.programIds.token, "error");
         }
     }
 
-    addToWalletViaURI(tokenMint) {
-        // Solana URI scheme for adding tokens
-        const uri = `https://solana.com/token/${tokenMint}`;
-        
-        // Try to open with wallet
-        if (typeof window.solana !== 'undefined') {
-            // If wallet is connected, try direct method
-            window.open(`solana:${tokenMint}`, '_blank');
-        }
-        
-        // Also provide manual instructions
-        const message = `To add PEPEBALL to your wallet:\n\n1. Open your Solana wallet (Phantom, Solflare, etc.)\n2. Click "Add Token" or "Import Token"\n3. Paste this address:\n${tokenMint}\n\nOr click OK to open Solana Explorer.`;
+    showManualInstructions(tokenMint) {
+        const message = `✅ Token address copied to clipboard!\n\nTo add PEPEBALL to your wallet:\n\n1. Open your Solana wallet (Phantom, Solflare, etc.)\n2. Click "Add Token" or "Import Token"\n3. Paste this address (already copied):\n${tokenMint}\n4. Click "Add" or "Import"\n\nClick OK to open Solana Explorer for more info.`;
         
         if (confirm(message)) {
-            window.open(uri, '_blank');
+            window.open(`https://solscan.io/token/${tokenMint}?cluster=devnet`, '_blank');
         }
-        
-        // Copy to clipboard
-        navigator.clipboard.writeText(tokenMint).then(() => {
-            this.showNotification("📋 Token address copied to clipboard!", "info");
-        });
     }
 
     async refreshData() {
