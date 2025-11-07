@@ -1,4 +1,4 @@
-// PEPEBALL Frontend - Clean Rebuild
+// Slot's o Fun Frontend - Clean Rebuild
 // No wallet connection for average users - Admin whitelist only
 
 class PEPEBALLApp {
@@ -165,7 +165,7 @@ class PEPEBALLApp {
     }
 
     async enterLottery() {
-        this.showNotification("🎰 Lottery participation is automatic! Just hold $20 worth of PEPE tokens to qualify! 🎰", "info");
+            this.showNotification("🎰 Lottery participation is automatic! Just hold $20 worth of tokens to qualify! 🎰", "info");
     }
 
     async buyTokens() {
@@ -196,7 +196,7 @@ class PEPEBALLApp {
                     }
                     
                     // Phantom doesn't have a direct addToken method, so we provide instructions
-                    const message = `✅ Token address copied!\n\nTo add PEPEBALL to Phantom:\n\n1. Open Phantom wallet\n2. Go to your token list\n3. Click the "+" or "Add Token" button\n4. Paste the address (already copied)\n5. Click "Add"\n\nToken Address:\n${tokenMint}`;
+                    const message = `✅ Token address copied!\n\nTo add Slot's o Fun to Phantom:\n\n1. Open Phantom wallet\n2. Go to your token list\n3. Click the "+" or "Add Token" button\n4. Paste the address (already copied)\n5. Click "Add"\n\nToken Address:\n${tokenMint}`;
                     
                     alert(message);
                     
@@ -218,7 +218,7 @@ class PEPEBALLApp {
     }
 
     showManualInstructions(tokenMint) {
-        const message = `✅ Token address copied to clipboard!\n\nTo add PEPEBALL to your wallet:\n\n1. Open your Solana wallet (Phantom, Solflare, etc.)\n2. Click "Add Token" or "Import Token"\n3. Paste this address (already copied):\n${tokenMint}\n4. Click "Add" or "Import"\n\nClick OK to open Solana Explorer for more info.`;
+        const message = `✅ Token address copied to clipboard!\n\nTo add Slot's o Fun to your wallet:\n\n1. Open your Solana wallet (Phantom, Solflare, etc.)\n2. Click "Add Token" or "Import Token"\n3. Paste this address (already copied):\n${tokenMint}\n4. Click "Add" or "Import"\n\nClick OK to open Solana Explorer for more info.`;
         
         if (confirm(message)) {
             window.open(`https://solscan.io/token/${tokenMint}?cluster=devnet`, '_blank');
@@ -368,13 +368,13 @@ class PEPEBALLApp {
         const tier500El = document.getElementById('tier-500-tokens');
         
         if (tier20El) {
-            tier20El.textContent = `≈ ${formatTokens(tokens20)} PEPE`;
+            tier20El.textContent = `≈ ${formatTokens(tokens20)} tokens`;
         }
         if (tier100El) {
-            tier100El.textContent = `≈ ${formatTokens(tokens100)} PEPE`;
+            tier100El.textContent = `≈ ${formatTokens(tokens100)} tokens`;
         }
         if (tier500El) {
-            tier500El.textContent = `≈ ${formatTokens(tokens500)} PEPE`;
+            tier500El.textContent = `≈ ${formatTokens(tokens500)} tokens`;
         }
     }
 
