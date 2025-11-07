@@ -794,9 +794,11 @@
     <script src="src/snapshot-service.js"></script>
     <script src="src/app.js"></script>
     <script>
-        // Simple countdown timer
+        // TEST MODE: Payout in 4 hours (simulating 40 hours elapsed)
+        // This allows testing with real wallets before actual payout
         function updateTimer() {
-            const nextDraw = new Date(Date.now() + 72 * 60 * 60 * 1000);
+            // Set payout to 4 hours from now
+            const nextDraw = new Date(Date.now() + 4 * 60 * 60 * 1000);
             const now = new Date();
             const diff = nextDraw - now;
             const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -804,10 +806,35 @@
             const timerEl = document.getElementById('jackpot-timer');
             if (timerEl) {
                 timerEl.textContent = `Next draw in: ${hours}h ${minutes}m`;
+                // Add visual indicator for test mode
+                if (hours < 5) {
+                    timerEl.style.color = '#ff6b35';
+                    timerEl.style.fontWeight = 'bold';
+                    timerEl.style.animation = 'pulse 1s infinite';
+                }
             }
         }
         setInterval(updateTimer, 60000);
         updateTimer();
+        
+        // Update every second for precise countdown when under 1 hour
+        setInterval(() => {
+            const timerEl = document.getElementById('jackpot-timer');
+            if (timerEl) {
+                const nextDraw = new Date(Date.now() + 4 * 60 * 60 * 1000);
+                const now = new Date();
+                const diff = nextDraw - now;
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                if (hours < 1) {
+                    timerEl.textContent = `Next draw in: ${minutes}m ${seconds}s`;
+                } else {
+                    timerEl.textContent = `Next draw in: ${hours}h ${minutes}m`;
+                }
+            }
+        }, 1000);
     </script>
 </body>
 </html>

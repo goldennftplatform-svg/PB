@@ -258,15 +258,16 @@ class PEPEBALLApp {
     }
 
     async updateLotteryData() {
+        // TEST MODE: Simulating 40 hours elapsed, 4 hours remaining
         const jackpot = "25.5";
-        const nextDraw = "48h 23m";
         const participants = "127";
         const jackpotEl = document.getElementById('jackpot-amount');
-        const timerEl = document.getElementById('jackpot-timer');
         const participantsEl = document.getElementById('participants-count');
         if (jackpotEl) jackpotEl.textContent = `${jackpot} SOL`;
-        if (timerEl) timerEl.textContent = `Next draw in: ${nextDraw}`;
         if (participantsEl) participantsEl.textContent = `${participants} participants`;
+        
+        // Timer is handled by inline script for precise countdown
+        // This simulates 40 hours elapsed (36 hours into a 72-hour cycle)
     }
 
     updateUI() {
