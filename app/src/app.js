@@ -1,7 +1,7 @@
 // Slot's o Fun Frontend - Clean Rebuild
 // No wallet connection for average users - Admin whitelist only
 
-class PEPEBALLApp {
+class SlotsOFunApp {
     constructor() {
         this.connection = null;
         this.wallet = null;
@@ -20,7 +20,7 @@ class PEPEBALLApp {
     }
 
     async init() {
-        console.log("🎰 Initializing PEPEBALL App...");
+        console.log("🎰 Initializing Slot's o Fun App...");
         this.setupEventListeners();
         await this.loadSolanaWeb3();
         if (this.priceService) {
@@ -393,7 +393,7 @@ class PEPEBALLApp {
 
 // Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.app = new PEPEBALLApp();
+    window.app = new SlotsOFunApp();
 });
 
 // Add CSS for notifications
