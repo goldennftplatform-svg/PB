@@ -6,6 +6,9 @@ const path = require('path');
 
 const LOTTERY_PROGRAM_ID = new PublicKey('6xiVoEyfTJNyBPYToahQUXDErTqiZG7zrNs8kKy5yekb');
 const NETWORK = 'devnet';
+
+// Expected Admin Wallet Address (must match frontend whitelist)
+const EXPECTED_ADMIN_ADDRESS = 'Hefy8JLP947zsUACbCAtgd3TuvWDJmZDhZmob1xWdbbJ';
 const RESULTS_DIR = path.join(__dirname, '..', 'bots', 'results');
 
 if (!fs.existsSync(RESULTS_DIR)) {
@@ -25,7 +28,21 @@ class SecurePayoutTool {
     }
 
     async initialize() {
-        console.log('🔒 Secure Payout Tool - Initializing...\n');
+        console.log('\n' + '='.repeat(70));
+        console.log('  🔒 SECURE PAYOUT TOOL - INITIALIZING');
+        console.log('='.repeat(70) + '\n');
+        
+        const adminAddress = this.admin.publicKey.toString();
+        
+        // CRITICAL: Verify admin wallet matches expected address
+        if (adminAddress !== EXPECTED_ADMIN_ADDRESS) {
+            console.error('❌ CRITICAL ERROR: Admin wallet mismatch!');
+            console.error('   Expected:      ' + EXPECTED_ADMIN_ADDRESS);
+            console.error('   Found:         ' + adminAddress);
+            console.error('\n   This wallet does not match the frontend whitelist.');
+            console.error('   You cannot execute payouts with this wallet.\n');
+            throw new Error('Admin wallet mismatch');
+        }
         
         // Security: Derive lottery PDA
         [this.lotteryPDA] = PublicKey.findProgramAddressSync(
@@ -48,13 +65,16 @@ class SecurePayoutTool {
             console.log('⚠️  Program loading issue (non-critical):', error.message);
         }
 
-        console.log(`✅ Program ID: ${LOTTERY_PROGRAM_ID.toString()}`);
-        console.log(`✅ Lottery PDA: ${this.lotteryPDA.toString()}`);
-        console.log(`✅ Admin: ${this.admin.publicKey.toString()}\n`);
+        console.log('📋 CONFIGURATION:');
+        console.log('   Network:        ' + NETWORK);
+        console.log('   Program ID:        ' + LOTTERY_PROGRAM_ID.toString());
+        console.log('   Lottery PDA:    ' + this.lotteryPDA.toString());
+        console.log('   Admin Wallet:   ' + adminAddress + ' ✅');
+        console.log('');
     }
 
     async performSecurityChecks() {
-        console.log('🔒 Performing Security Checks...\n');
+        console.log('🔒 PERFORMING SECURITY CHECKS...\n');
         this.securityChecks = [];
 
         try {
@@ -82,15 +102,28 @@ class SecurePayoutTool {
             const lottery = await this.program.account.lottery.fetch(this.lotteryPDA);
             
             // Check 4: Verify admin matches
-            if (lottery.admin.toString() !== this.admin.publicKey.toString()) {
+            const adminAddress = this.admin.publicKey.toString();
+            if (lottery.admin.toString() !== adminAddress) {
                 this.securityChecks.push({ 
                     check: 'Admin Authorization', 
                     passed: false, 
-                    error: `Admin mismatch. Expected: ${this.admin.publicKey.toString()}, Found: ${lottery.admin.toString()}` 
+                    error: `Admin mismatch. Expected: ${adminAddress}, Found: ${lottery.admin.toString()}` 
                 });
                 return false;
             }
+            
+            // Check 4b: Verify admin matches whitelist
+            if (lottery.admin.toString() !== EXPECTED_ADMIN_ADDRESS) {
+                this.securityChecks.push({ 
+                    check: 'Admin Whitelist', 
+                    passed: false, 
+                    error: `Admin does not match whitelist. Expected: ${EXPECTED_ADMIN_ADDRESS}, Found: ${lottery.admin.toString()}` 
+                });
+                return false;
+            }
+            
             this.securityChecks.push({ check: 'Admin Authorization', passed: true });
+            this.securityChecks.push({ check: 'Admin Whitelist', passed: true });
 
             // Check 5: Verify lottery is active
             if (!lottery.isActive) {
@@ -123,11 +156,20 @@ class SecurePayoutTool {
 
             // Check 8: Verify admin has balance for fees
             const adminBalance = await this.connection.getBalance(this.admin.publicKey);
+            const balanceSOL = (adminBalance / 1e9).toFixed(4);
             if (adminBalance < 0.01 * 1e9) {
-                this.securityChecks.push({ check: 'Admin Balance', passed: false, error: 'Insufficient balance for fees' });
+                this.securityChecks.push({ 
+                    check: 'Admin Balance', 
+                    passed: false, 
+                    error: `Insufficient balance for fees. Current: ${balanceSOL} SOL, Required: 0.01 SOL` 
+                });
                 return false;
             }
-            this.securityChecks.push({ check: 'Admin Balance', passed: true });
+            this.securityChecks.push({ 
+                check: 'Admin Balance', 
+                passed: true, 
+                details: `${balanceSOL} SOL available` 
+            });
 
             return true;
 
@@ -138,15 +180,34 @@ class SecurePayoutTool {
     }
 
     displaySecurityChecks() {
-        console.log('📊 Security Check Results:');
-        console.log('='.repeat(60));
+        console.log('='.repeat(70));
+        console.log('  📊 SECURITY CHECK RESULTS');
+        console.log('='.repeat(70));
+        console.log('');
+        
         this.securityChecks.forEach((check, idx) => {
             const status = check.passed ? '✅' : '❌';
-            console.log(`${idx + 1}. ${status} ${check.check}`);
+            const padding = ' '.repeat(3 - String(idx + 1).length);
+            console.log(`${padding}${idx + 1}. ${status} ${check.check}`);
+            
+            if (check.passed && check.details) {
+                console.log('      Details: ' + check.details);
+            }
+            
             if (!check.passed && check.error) {
-                console.log(`   Error: ${check.error}`);
+                console.log('      ❌ Error: ' + check.error);
             }
         });
+        
+        const allPassed = this.securityChecks.every(c => c.passed);
+        console.log('');
+        console.log('='.repeat(70));
+        if (allPassed) {
+            console.log('  ✅ ALL SECURITY CHECKS PASSED');
+        } else {
+            console.log('  ❌ SOME SECURITY CHECKS FAILED');
+        }
+        console.log('='.repeat(70));
         console.log('');
     }
 
@@ -305,15 +366,21 @@ class SecurePayoutTool {
 }
 
 async function main() {
-    console.log('🔒 Secure Automated Payout Tool\n');
-    console.log('='.repeat(60) + '\n');
+    const command = process.argv[2] || 'check';
+    
+    console.log('\n' + '='.repeat(70));
+    console.log('  💰 SECURE PAYOUT TOOL');
+    console.log('='.repeat(70) + '\n');
 
     // Load admin wallet
     const adminKeyPath = process.env.ANCHOR_WALLET || 
         path.join(process.env.HOME || process.env.USERPROFILE, '.config', 'solana', 'id.json');
     
     if (!fs.existsSync(adminKeyPath)) {
-        console.error('❌ Admin wallet not found!');
+        console.error('❌ ERROR: Admin wallet file not found!');
+        console.error(`   Location: ${adminKeyPath}`);
+        console.error('\n   Please ensure your wallet keypair file exists at this location.');
+        console.error('   Or set ANCHOR_WALLET environment variable to point to your wallet.\n');
         process.exit(1);
     }
 
@@ -321,17 +388,38 @@ async function main() {
         Uint8Array.from(JSON.parse(fs.readFileSync(adminKeyPath, 'utf8')))
     );
 
+    const adminAddress = adminKeypair.publicKey.toString();
+    
+    // Verify admin wallet before proceeding
+    if (adminAddress !== EXPECTED_ADMIN_ADDRESS) {
+        console.error('❌ CRITICAL ERROR: Admin wallet mismatch!');
+        console.error('   Expected:      ' + EXPECTED_ADMIN_ADDRESS);
+        console.error('   Found:         ' + adminAddress);
+        console.error('\n   This wallet does not match the frontend whitelist.');
+        console.error('   You cannot execute payouts with this wallet.\n');
+        process.exit(1);
+    }
+
     const connection = new Connection(clusterApiUrl(NETWORK), 'confirmed');
+    
+    console.log('📋 CONFIGURATION:');
+    console.log('   Network:        ' + NETWORK);
+    console.log('   Admin Wallet:   ' + adminAddress + ' ✅');
+    console.log('   Command:        ' + command);
+    console.log('');
+    
     const tool = new SecurePayoutTool(adminKeypair, connection);
     await tool.initialize();
-
-    const command = process.argv[2] || 'check';
 
     switch (command) {
         case 'check':
             console.log('🔒 Running security checks...\n');
-            await tool.performSecurityChecks();
+            const checksPassed = await tool.performSecurityChecks();
             tool.displaySecurityChecks();
+            if (!checksPassed) {
+                console.error('❌ Security checks failed! Please fix issues before proceeding.\n');
+                process.exit(1);
+            }
             break;
 
         case 'payout':
@@ -339,9 +427,10 @@ async function main() {
             break;
 
         default:
-            console.log('Usage:');
-            console.log('  node secure-payout-tool.js check   - Run security checks');
-            console.log('  node secure-payout-tool.js payout   - Execute secure payout');
+            console.log('📖 USAGE:');
+            console.log('   node secure-payout-tool.js check   - Run security checks');
+            console.log('   node secure-payout-tool.js payout   - Execute secure payout');
+            console.log('');
     }
 }
 
