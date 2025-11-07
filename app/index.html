@@ -151,60 +151,68 @@
         }
         
         .contract-address-section {
-            background: rgba(0, 0, 0, 0.9);
-            border: 3px solid #ffff00;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ffff00;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
             text-align: center;
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.3);
         }
         
         .contract-title {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: #ffff00;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             font-weight: bold;
+            text-shadow: 2px 2px 0px #000;
         }
         
         .contract-address-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 15px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
         
         .contract-address {
-            font-size: 0.7rem;
-            color: #00ff00;
-            background: rgba(0, 255, 0, 0.1);
-            padding: 10px 15px;
-            border-radius: 5px;
-            border: 2px solid #00ff00;
+            font-size: 0.9rem;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 2px solid #ffff00;
             font-family: 'Courier New', monospace;
             word-break: break-all;
             flex: 1;
-            min-width: 200px;
-            max-width: 500px;
+            min-width: 250px;
+            max-width: 600px;
+            letter-spacing: 0.5px;
+            line-height: 1.6;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
         }
         
         .copy-address-btn {
-            background: linear-gradient(45deg, #00ff00, #00cc00);
-            border: 2px solid #ffff00;
+            background: linear-gradient(45deg, #ffff00, #ffd700);
+            border: 2px solid #ffffff;
             color: #000;
             font-family: 'Press Start 2P', monospace;
-            font-size: 0.7rem;
-            padding: 10px 20px;
-            border-radius: 5px;
+            font-size: 0.8rem;
+            padding: 12px 25px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             white-space: nowrap;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
         
         .copy-address-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(255, 255, 0, 0.6);
+            background: linear-gradient(45deg, #ffd700, #ffff00);
         }
         
         .copy-address-btn:active {
@@ -214,23 +222,27 @@
         .contract-links {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 20px;
             flex-wrap: wrap;
+            margin-top: 15px;
         }
         
         .contract-link {
-            font-size: 0.6rem;
+            font-size: 0.75rem;
             color: #00ffff;
             text-decoration: none;
-            padding: 5px 10px;
-            border: 1px solid #00ffff;
-            border-radius: 3px;
+            padding: 8px 15px;
+            border: 2px solid #00ffff;
+            border-radius: 6px;
             transition: all 0.3s ease;
+            background: rgba(0, 255, 255, 0.1);
+            font-weight: bold;
         }
         
         .contract-link:hover {
-            background: rgba(0, 255, 255, 0.2);
+            background: rgba(0, 255, 255, 0.3);
             transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 255, 255, 0.4);
         }
         
         .pricing-info {
