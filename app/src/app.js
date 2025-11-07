@@ -170,8 +170,33 @@ class SlotsOFunApp {
 
     async buyTokens() {
         try {
-            this.showNotification("💰 Opening token purchase...", "info");
-            window.open("https://pump.fun", "_blank");
+            const tokenMint = this.programIds.token;
+            
+            // Try to open pump.fun with token address
+            // For devnet, use Jupiter or Raydium
+            const cluster = this.cluster === 'devnet' ? 'devnet' : 'mainnet';
+            
+            // Try Jupiter aggregator first (works on devnet and mainnet)
+            const jupiterUrl = `https://jup.ag/swap/SOL-${tokenMint}?cluster=${cluster}`;
+            
+            // Also try pump.fun direct link
+            const pumpFunUrl = `https://pump.fun/${tokenMint}`;
+            
+            // Show options to user
+            const useJupiter = confirm(
+                `💰 BUY TOKENS\n\n` +
+                `Click OK to open Jupiter (recommended)\n` +
+                `Click Cancel to open Pump.Fun\n\n` +
+                `Token: ${tokenMint.substring(0, 8)}...`
+            );
+            
+            if (useJupiter) {
+                window.open(jupiterUrl, '_blank');
+                this.showNotification("✅ Opening Jupiter swap...", "success");
+            } else {
+                window.open(pumpFunUrl, '_blank');
+                this.showNotification("✅ Opening Pump.Fun...", "success");
+            }
         } catch (error) {
             console.error("❌ Token purchase failed:", error);
             this.showNotification("❌ Token purchase failed", "error");
@@ -181,47 +206,88 @@ class SlotsOFunApp {
     async addToWallet() {
         try {
             const tokenMint = this.programIds.token;
+            const cluster = this.cluster;
             
             // Copy token address to clipboard first
             await navigator.clipboard.writeText(tokenMint);
-            this.showNotification("📋 Token address copied to clipboard!", "info");
             
-            // Check if Phantom wallet is available
+            // Try Solana token URI scheme for direct wallet integration
+            const tokenUri = `solana:${tokenMint}?cluster=${cluster}`;
+            
+            // Check for different wallet types
+            let walletDetected = false;
+            let walletName = '';
+            
+            // Check Phantom
             if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
-                // Try to connect and add token
+                walletDetected = true;
+                walletName = 'Phantom';
                 try {
-                    // Connect wallet if not already connected
+                    // Try to connect if not connected
                     if (!window.solana.isConnected) {
                         await window.solana.connect();
                     }
                     
-                    // Phantom doesn't have a direct addToken method, so we provide instructions
-                    const message = `✅ Token address copied!\n\nTo add Slot's o Fun to Phantom:\n\n1. Open Phantom wallet\n2. Go to your token list\n3. Click the "+" or "Add Token" button\n4. Paste the address (already copied)\n5. Click "Add"\n\nToken Address:\n${tokenMint}`;
-                    
-                    alert(message);
-                    
-                    // Also open Solana Explorer for reference
-                    window.open(`https://solscan.io/token/${tokenMint}?cluster=devnet`, '_blank');
-                    
+                    // Use Phantom's watchAsset if available (for SPL tokens)
+                    if (window.solana.watchAsset) {
+                        try {
+                            await window.solana.watchAsset({
+                                type: 'SPL_TOKEN',
+                                options: {
+                                    address: tokenMint,
+                                    symbol: 'SOF',
+                                    decimals: 9,
+                                    image: 'https://via.placeholder.com/64'
+                                }
+                            });
+                            this.showNotification("✅ Token added to Phantom wallet!", "success");
+                            return;
+                        } catch (watchError) {
+                            console.log("watchAsset not supported, using manual method");
+                        }
+                    }
                 } catch (error) {
-                    console.error("Wallet connection error:", error);
-                    this.showManualInstructions(tokenMint);
+                    console.error("Phantom connection error:", error);
                 }
+            }
+            
+            // Check Solflare
+            if (typeof window.solflare !== 'undefined') {
+                walletDetected = true;
+                walletName = 'Solflare';
+            }
+            
+            // Check Backpack
+            if (typeof window.backpack !== 'undefined') {
+                walletDetected = true;
+                walletName = 'Backpack';
+            }
+            
+            // If wallet detected, show instructions with copy
+            if (walletDetected) {
+                const message = `✅ Token address copied!\n\nTo add Slot's o Fun to ${walletName}:\n\n1. Open ${walletName} wallet\n2. Go to your token list\n3. Click "+" or "Add Token"\n4. Paste: ${tokenMint}\n5. Click "Add"\n\nClick OK to open token explorer.`;
+                
+                if (confirm(message)) {
+                    window.open(`https://solscan.io/token/${tokenMint}?cluster=${cluster}`, '_blank');
+                }
+                this.showNotification(`📋 Token address copied! Add to ${walletName} manually.`, "info");
             } else {
                 // No wallet detected - show manual instructions
-                this.showManualInstructions(tokenMint);
+                this.showManualInstructions(tokenMint, cluster);
             }
+            
         } catch (error) {
             console.error("❌ Add to wallet failed:", error);
-            this.showNotification("❌ Failed to add token. Token address: " + this.programIds.token, "error");
+            const tokenMint = this.programIds.token;
+            this.showNotification("❌ Failed to add token. Address: " + tokenMint.substring(0, 8) + "...", "error");
         }
     }
 
-    showManualInstructions(tokenMint) {
-        const message = `✅ Token address copied to clipboard!\n\nTo add Slot's o Fun to your wallet:\n\n1. Open your Solana wallet (Phantom, Solflare, etc.)\n2. Click "Add Token" or "Import Token"\n3. Paste this address (already copied):\n${tokenMint}\n4. Click "Add" or "Import"\n\nClick OK to open Solana Explorer for more info.`;
+    showManualInstructions(tokenMint, cluster = 'devnet') {
+        const message = `✅ Token address copied to clipboard!\n\nTo add Slot's o Fun to your wallet:\n\n1. Open your Solana wallet (Phantom, Solflare, Backpack, etc.)\n2. Click "Add Token" or "Import Token"\n3. Paste this address (already copied):\n${tokenMint}\n4. Click "Add" or "Import"\n\nClick OK to open Solana Explorer for more info.`;
         
         if (confirm(message)) {
-            window.open(`https://solscan.io/token/${tokenMint}?cluster=devnet`, '_blank');
+            window.open(`https://solscan.io/token/${tokenMint}?cluster=${cluster}`, '_blank');
         }
     }
 
