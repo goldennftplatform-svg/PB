@@ -458,6 +458,19 @@
             overflow: hidden;
         }
         
+        .lottery-btn.primary-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-size: 1.4rem;
+            padding: 18px 40px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        .lottery-btn.primary-btn:hover {
+            transform: translateY(-8px) scale(1.08);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.7);
+        }
+        
         .lottery-btn::before {
             content: '';
             position: absolute;
