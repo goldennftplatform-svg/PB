@@ -38,6 +38,8 @@ class SlotsOFunApp {
             }
             const solanaWeb3 = window.solanaWeb3 || window.anchor?.web3;
             if (solanaWeb3) {
+                // Store reference globally for use in other methods
+                window.solanaWeb3 = solanaWeb3;
                 this.connection = new solanaWeb3.Connection(
                     solanaWeb3.clusterApiUrl('devnet'),
                     'confirmed'
@@ -45,7 +47,13 @@ class SlotsOFunApp {
                 console.log("✅ Connected to Solana Devnet");
             }
             if (typeof window.solana !== 'undefined') {
-                console.log("✅ Phantom wallet detected (admin access available)");
+                console.log("✅ Phantom wallet detected");
+            }
+            if (typeof window.solflare !== 'undefined') {
+                console.log("✅ Solflare wallet detected");
+            }
+            if (typeof window.backpack !== 'undefined') {
+                console.log("✅ Backpack wallet detected");
             }
         } catch (error) {
             console.error("❌ Error loading Solana Web3:", error);
