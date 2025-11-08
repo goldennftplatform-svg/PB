@@ -54,13 +54,34 @@ class SlotsOFunApp {
 
     async loadSolanaWeb3FromCDN() {
         return new Promise((resolve, reject) => {
+            // Check if already loaded
+            if (window.solanaWeb3 || (window.solana && window.solana.PublicKey)) {
+                resolve();
+                return;
+            }
+            
             const script = document.createElement('script');
             script.src = 'https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js';
             script.onload = () => {
-                window.solanaWeb3 = window.solana;
-                resolve();
+                // The library exposes itself as window.solanaWeb3 or similar
+                // Check what was actually loaded
+                if (window.solanaWeb3) {
+                    resolve();
+                } else if (window.solana && window.solana.PublicKey) {
+                    window.solanaWeb3 = window.solana;
+                    resolve();
+                } else {
+                    // Try to access the library
+                    const lib = window.SolanaWeb3 || window.solana;
+                    if (lib) {
+                        window.solanaWeb3 = lib;
+                        resolve();
+                    } else {
+                        reject(new Error('Solana Web3.js failed to load properly'));
+                    }
+                }
             };
-            script.onerror = reject;
+            script.onerror = () => reject(new Error('Failed to load Solana Web3.js from CDN'));
             document.head.appendChild(script);
         });
     }
@@ -165,16 +186,104 @@ class SlotsOFunApp {
     }
 
     async enterLottery() {
-            this.showNotification("🎰 Lottery participation is automatic! Just hold $20 worth of tokens to qualify! 🎰", "info");
+        try {
+            // First, try to connect wallet to verify holdings
+            let walletConnected = false;
+            let walletAddress = null;
+            
+            if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
+                try {
+                    if (!window.solana.isConnected) {
+                        const response = await window.solana.connect();
+                        walletAddress = response.publicKey.toString();
+                    } else {
+                        walletAddress = window.solana.publicKey.toString();
+                    }
+                    walletConnected = true;
+                    this.wallet = window.solana;
+                    this.showNotification("✅ Wallet connected!", "success");
+                } catch (error) {
+                    console.log("Wallet connection optional:", error);
+                }
+            } else if (typeof window.solflare !== 'undefined') {
+                try {
+                    if (!window.solflare.isConnected) {
+                        await window.solflare.connect();
+                    }
+                    walletAddress = window.solflare.publicKey.toString();
+                    walletConnected = true;
+                    this.wallet = window.solflare;
+                    this.showNotification("✅ Wallet connected!", "success");
+                } catch (error) {
+                    console.log("Solflare connection optional:", error);
+                }
+            } else if (typeof window.backpack !== 'undefined') {
+                try {
+                    if (!window.backpack.isConnected) {
+                        await window.backpack.connect();
+                    }
+                    walletAddress = window.backpack.publicKey.toString();
+                    walletConnected = true;
+                    this.wallet = window.backpack;
+                    this.showNotification("✅ Wallet connected!", "success");
+                } catch (error) {
+                    console.log("Backpack connection optional:", error);
+                }
+            }
+            
+            if (walletConnected && walletAddress && this.connection) {
+                // Check token balance
+                try {
+                    const solanaWeb3 = window.solanaWeb3 || window.solana;
+                    if (!solanaWeb3 || !solanaWeb3.PublicKey) {
+                        throw new Error('Solana Web3 not loaded');
+                    }
+                    
+                    const tokenMint = new solanaWeb3.PublicKey(this.programIds.token);
+                    const walletPubkey = new solanaWeb3.PublicKey(walletAddress);
+                    const tokenAccounts = await this.connection.getParsedTokenAccountsByOwner(
+                        walletPubkey,
+                        { mint: tokenMint }
+                    );
+                    
+                    if (tokenAccounts.value.length > 0) {
+                        const balance = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+                        this.showNotification(`✅ You hold ${balance.toLocaleString()} tokens! You're in the lottery! 🎰`, "success");
+                    } else {
+                        this.showNotification("⚠️ No tokens found. Buy tokens first to enter the lottery!", "warning");
+                    }
+                } catch (error) {
+                    console.error("Error checking balance:", error);
+                    this.showNotification("🎰 Lottery participation is automatic! Hold $20+ worth of tokens to qualify! 🎰", "info");
+                }
+            } else {
+                this.showNotification("🎰 Lottery participation is automatic! Just hold $20 worth of tokens to qualify! 🎰", "info");
+            }
+        } catch (error) {
+            console.error("❌ Enter lottery failed:", error);
+            this.showNotification("🎰 Lottery participation is automatic! Hold tokens to qualify! 🎰", "info");
+        }
     }
 
     async buyTokens() {
         try {
             const tokenMint = this.programIds.token;
-            
-            // Try to open pump.fun with token address
-            // For devnet, use Jupiter or Raydium
             const cluster = this.cluster === 'devnet' ? 'devnet' : 'mainnet';
+            
+            // First, try to connect wallet if available
+            let walletConnected = false;
+            if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
+                try {
+                    if (!window.solana.isConnected) {
+                        await window.solana.connect();
+                    }
+                    walletConnected = true;
+                    this.wallet = window.solana;
+                    this.showNotification("✅ Wallet connected!", "success");
+                } catch (error) {
+                    console.log("Wallet connection optional, continuing...");
+                }
+            }
             
             // Try Jupiter aggregator first (works on devnet and mainnet)
             const jupiterUrl = `https://jup.ag/swap/SOL-${tokenMint}?cluster=${cluster}`;
@@ -199,7 +308,7 @@ class SlotsOFunApp {
             }
         } catch (error) {
             console.error("❌ Token purchase failed:", error);
-            this.showNotification("❌ Token purchase failed", "error");
+            this.showNotification("❌ Token purchase failed: " + error.message, "error");
         }
     }
 
@@ -210,26 +319,23 @@ class SlotsOFunApp {
             
             // Copy token address to clipboard first
             await navigator.clipboard.writeText(tokenMint);
+            this.showNotification("📋 Token address copied!", "info");
             
-            // Try Solana token URI scheme for direct wallet integration
-            const tokenUri = `solana:${tokenMint}?cluster=${cluster}`;
+            // Check for different wallet types and try to add token
+            let walletAdded = false;
             
-            // Check for different wallet types
-            let walletDetected = false;
-            let walletName = '';
-            
-            // Check Phantom
+            // Try Phantom first (most common)
             if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
-                walletDetected = true;
-                walletName = 'Phantom';
                 try {
-                    // Try to connect if not connected
+                    // Connect if not connected
                     if (!window.solana.isConnected) {
-                        await window.solana.connect();
+                        const response = await window.solana.connect();
+                        this.wallet = window.solana;
+                        this.showNotification("✅ Phantom connected!", "success");
                     }
                     
-                    // Use Phantom's watchAsset if available (for SPL tokens)
-                    if (window.solana.watchAsset) {
+                    // Try watchAsset API (Phantom supports this)
+                    if (window.solana.watchAsset && typeof window.solana.watchAsset === 'function') {
                         try {
                             await window.solana.watchAsset({
                                 type: 'SPL_TOKEN',
@@ -241,45 +347,74 @@ class SlotsOFunApp {
                                 }
                             });
                             this.showNotification("✅ Token added to Phantom wallet!", "success");
+                            walletAdded = true;
                             return;
                         } catch (watchError) {
-                            console.log("watchAsset not supported, using manual method");
+                            console.log("watchAsset failed, trying alternative method:", watchError);
                         }
                     }
+                    
+                    // Fallback: show instructions
+                    if (!walletAdded) {
+                        this.showPhantomInstructions(tokenMint, cluster);
+                    }
+                    return;
                 } catch (error) {
                     console.error("Phantom connection error:", error);
+                    this.showNotification("⚠️ Could not connect to Phantom. Address copied - add manually.", "warning");
                 }
             }
             
-            // Check Solflare
+            // Try Solflare
             if (typeof window.solflare !== 'undefined') {
-                walletDetected = true;
-                walletName = 'Solflare';
-            }
-            
-            // Check Backpack
-            if (typeof window.backpack !== 'undefined') {
-                walletDetected = true;
-                walletName = 'Backpack';
-            }
-            
-            // If wallet detected, show instructions with copy
-            if (walletDetected) {
-                const message = `✅ Token address copied!\n\nTo add Slot's o Fun to ${walletName}:\n\n1. Open ${walletName} wallet\n2. Go to your token list\n3. Click "+" or "Add Token"\n4. Paste: ${tokenMint}\n5. Click "Add"\n\nClick OK to open token explorer.`;
-                
-                if (confirm(message)) {
-                    window.open(`https://solscan.io/token/${tokenMint}?cluster=${cluster}`, '_blank');
+                try {
+                    if (!window.solflare.isConnected) {
+                        await window.solflare.connect();
+                    }
+                    this.showNotification("✅ Solflare connected! Add token manually using copied address.", "info");
+                    this.showManualInstructions(tokenMint, cluster);
+                    return;
+                } catch (error) {
+                    console.error("Solflare connection error:", error);
                 }
-                this.showNotification(`📋 Token address copied! Add to ${walletName} manually.`, "info");
-            } else {
-                // No wallet detected - show manual instructions
-                this.showManualInstructions(tokenMint, cluster);
             }
+            
+            // Try Backpack
+            if (typeof window.backpack !== 'undefined') {
+                try {
+                    if (!window.backpack.isConnected) {
+                        await window.backpack.connect();
+                    }
+                    this.showNotification("✅ Backpack connected! Add token manually using copied address.", "info");
+                    this.showManualInstructions(tokenMint, cluster);
+                    return;
+                } catch (error) {
+                    console.error("Backpack connection error:", error);
+                }
+            }
+            
+            // No wallet detected - show manual instructions
+            this.showManualInstructions(tokenMint, cluster);
             
         } catch (error) {
             console.error("❌ Add to wallet failed:", error);
             const tokenMint = this.programIds.token;
-            this.showNotification("❌ Failed to add token. Address: " + tokenMint.substring(0, 8) + "...", "error");
+            this.showNotification("❌ Failed to add token: " + error.message, "error");
+            // Still copy address as fallback
+            try {
+                await navigator.clipboard.writeText(tokenMint);
+                this.showNotification("📋 Address copied - add manually", "info");
+            } catch (copyError) {
+                console.error("Failed to copy:", copyError);
+            }
+        }
+    }
+    
+    showPhantomInstructions(tokenMint, cluster) {
+        const message = `✅ Token address copied!\n\nTo add Slot's o Fun to Phantom:\n\n1. Open Phantom wallet\n2. Click the "+" button in your token list\n3. Paste: ${tokenMint}\n4. Click "Add"\n\nClick OK to open token explorer.`;
+        
+        if (confirm(message)) {
+            window.open(`https://solscan.io/token/${tokenMint}?cluster=${cluster}`, '_blank');
         }
     }
 
