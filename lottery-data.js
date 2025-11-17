@@ -244,10 +244,10 @@ async function updateLotteryDisplay() {
         jackpotEl.textContent = lotteryFetcher.formatSOL(state.jackpot) + ' SOL';
     }
 
-    // Update jackpot won display
-    const jackpotWonEl = document.getElementById('jackpot-won');
-    if (jackpotWonEl && state.jackpot) {
-        jackpotWonEl.textContent = `Jackpot: ${lotteryFetcher.formatSOL(state.jackpot)} SOL`;
+    // Update jackpot amount
+    const jackpotAmountEl = document.getElementById('jackpot-amount');
+    if (jackpotAmountEl && state.jackpot) {
+        jackpotAmountEl.textContent = `${lotteryFetcher.formatSOL(state.jackpot)} SOL`;
     }
 
     // Update winners section
@@ -264,7 +264,26 @@ async function updateLotteryDisplay() {
 }
 
 /**
- * Update winners display
+ * Copy address helper
+ */
+async function copyAddressToClipboard(address) {
+    try {
+        await navigator.clipboard.writeText(address);
+        return true;
+    } catch (error) {
+        // Fallback
+        const textArea = document.createElement('textarea');
+        textArea.value = address;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return true;
+    }
+}
+
+/**
+ * Update winners display with copy buttons
  */
 function updateWinnersDisplay(state) {
     const mainWinnerEl = document.getElementById('main-winner-display');
@@ -284,11 +303,15 @@ function updateWinnersDisplay(state) {
                 : state.winners.mainWinner.toString();
             const mainPayout = state.payouts?.mainPayout || (Number(state.jackpot) * 0.68);
             mainWinnerEl.innerHTML = `
-                <a href="${EXPLORER_BASE}/address/${mainWinnerAddress}${EXPLORER_CLUSTER}" 
-                   target="_blank" style="color: #3498db; text-decoration: none;">
+                <span style="font-family: 'Courier New', monospace; color: #003087;">
                     ${lotteryFetcher.formatAddress(mainWinnerAddress)}
-                </a>
-                (${lotteryFetcher.formatSOL(mainPayout)} SOL)
+                </span>
+                <button class="copy-btn" onclick="copyAddressToClipboard('${mainWinnerAddress}').then(() => { this.textContent='✅'; setTimeout(() => this.textContent='📋', 2000); })" style="margin-left: 10px; padding: 3px 10px; font-size: 0.8em;">📋</button>
+                <span style="color: #DC143C; font-weight: bold; margin-left: 10px;">
+                    (${lotteryFetcher.formatSOL(mainPayout)} SOL)
+                </span>
+                <a href="${EXPLORER_BASE}/address/${mainWinnerAddress}${EXPLORER_CLUSTER}" 
+                   target="_blank" style="color: #003087; text-decoration: none; margin-left: 10px;">🔗</a>
             `;
         } else {
             mainWinnerEl.textContent = 'No main winner yet';
@@ -300,18 +323,24 @@ function updateWinnersDisplay(state) {
         if (state.winners.minorWinners && state.winners.minorWinners.length > 0) {
             const minorWinners = state.winners.minorWinners
                 .filter(w => w && w !== '11111111111111111111111111111111')
-                .map(w => {
+                .map((w, idx) => {
                     const address = typeof w === 'string' ? w : w.toString();
                     const payout = state.payouts?.minorPayout || (Number(state.jackpot) * 0.03);
                     return `
-                        <a href="${EXPLORER_BASE}/address/${address}${EXPLORER_CLUSTER}" 
-                           target="_blank" style="color: #3498db; text-decoration: none;">
-                            ${lotteryFetcher.formatAddress(address)}
-                        </a>
-                        (${lotteryFetcher.formatSOL(payout)} SOL)
+                        <div style="margin: 5px 0; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-family: 'Courier New', monospace; color: #003087;">
+                                ${lotteryFetcher.formatAddress(address)}
+                            </span>
+                            <button class="copy-btn" onclick="copyAddressToClipboard('${address}').then(() => { this.textContent='✅'; setTimeout(() => this.textContent='📋', 2000); })" style="padding: 3px 10px; font-size: 0.8em;">📋</button>
+                            <span style="color: #DC143C; font-weight: bold;">
+                                (${lotteryFetcher.formatSOL(payout)} SOL)
+                            </span>
+                            <a href="${EXPLORER_BASE}/address/${address}${EXPLORER_CLUSTER}" 
+                               target="_blank" style="color: #003087; text-decoration: none;">🔗</a>
+                        </div>
                     `;
                 })
-                .join(', ');
+                .join('');
             
             minorWinnersEl.innerHTML = minorWinners;
         } else {
@@ -319,6 +348,9 @@ function updateWinnersDisplay(state) {
         }
     }
 }
+
+// Make copyAddressToClipboard global
+window.copyAddressToClipboard = copyAddressToClipboard;
 
 /**
  * Update payout transaction display
@@ -345,29 +377,25 @@ function updatePayoutTransaction(state) {
         }
     }
 
-    if (payoutSection && state.payoutTx) {
-            payoutSection.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 8px; color: #3498db;">
-                💰 Payout Transaction (Testnet):
-            </div>
-            <a href="${EXPLORER_BASE}/tx/${state.payoutTx}${EXPLORER_CLUSTER}" 
-               target="_blank" 
-               style="color: #3498db; text-decoration: none; word-break: break-all;">
-                ${state.payoutTx.substring(0, 20)}...${state.payoutTx.substring(state.payoutTx.length - 8)}
-            </a>
-            <div style="margin-top: 8px; font-size: 0.9em; color: #95a5a6;">
-                ${state.payoutTime ? 'Paid: ' + lotteryFetcher.formatDate(state.payoutTime) : ''}
-            </div>
-            <div style="margin-top: 4px; font-size: 0.8em; color: #f39c12;">
-                🔗 <a href="${EXPLORER_BASE}/tx/${state.payoutTx}${EXPLORER_CLUSTER}" target="_blank" style="color: #f39c12;">View on Explorer</a>
-            </div>
-        `;
-    } else if (payoutSection && !state.payoutTx) {
-        payoutSection.innerHTML = `
-            <div style="color: #95a5a6; font-style: italic;">
-                No payout transaction yet. Waiting for next draw...
-            </div>
-        `;
+    // Update payout transaction in winners section
+    const payoutTxSection = document.getElementById('payout-tx-section');
+    const payoutTxDisplay = document.getElementById('payout-tx-display');
+    
+    if (payoutTxSection && payoutTxDisplay) {
+        if (state.payoutTx) {
+            payoutTxSection.style.display = 'block';
+            payoutTxDisplay.innerHTML = `
+                <span style="font-family: 'Courier New', monospace; color: #003087;">
+                    ${state.payoutTx.substring(0, 20)}...${state.payoutTx.substring(state.payoutTx.length - 8)}
+                </span>
+                <button class="copy-btn" onclick="copyAddressToClipboard('${state.payoutTx}').then(() => { this.textContent='✅'; setTimeout(() => this.textContent='📋', 2000); })" style="margin-left: 10px; padding: 3px 10px; font-size: 0.8em;">📋</button>
+                <a href="${EXPLORER_BASE}/tx/${state.payoutTx}${EXPLORER_CLUSTER}" 
+                   target="_blank" style="color: #003087; text-decoration: none; margin-left: 10px;">🔗 View</a>
+                ${state.payoutTime ? `<span style="color: #666; margin-left: 10px;">(${lotteryFetcher.formatDate(state.payoutTime)})</span>` : ''}
+            `;
+        } else {
+            payoutTxSection.style.display = 'none';
+        }
     }
 }
 
