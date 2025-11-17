@@ -332,7 +332,7 @@ function updateWinnersDisplay(state) {
         return;
     }
 
-    // Main winner
+    // Main winner - BIG AND VISIBLE
     if (mainWinnerEl) {
         if (state.winners.mainWinner) {
             const mainWinnerAddress = typeof state.winners.mainWinner === 'string' 
@@ -340,18 +340,20 @@ function updateWinnersDisplay(state) {
                 : state.winners.mainWinner.toString();
             const mainPayout = state.payouts?.mainPayout || (Number(state.jackpot) * 0.68);
             mainWinnerEl.innerHTML = `
-                <span style="font-family: 'Courier New', monospace; color: #003087;">
-                    ${lotteryFetcher.formatAddress(mainWinnerAddress)}
-                </span>
-                <button class="copy-btn" onclick="copyAddressToClipboard('${mainWinnerAddress}').then(() => { this.textContent='✅'; setTimeout(() => this.textContent='📋', 2000); })" style="margin-left: 10px; padding: 3px 10px; font-size: 0.8em;">📋</button>
-                <span style="color: #DC143C; font-weight: bold; margin-left: 10px;">
-                    (${lotteryFetcher.formatSOL(mainPayout)} SOL)
-                </span>
-                <a href="${EXPLORER_BASE}/address/${mainWinnerAddress}${EXPLORER_CLUSTER}" 
-                   target="_blank" style="color: #003087; text-decoration: none; margin-left: 10px;">🔗</a>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                    <span style="font-family: 'Courier New', monospace; color: #003087; font-size: 1.1em; font-weight: bold;">
+                        ${lotteryFetcher.formatAddress(mainWinnerAddress)}
+                    </span>
+                    <button class="copy-btn" onclick="copyAddressToClipboard('${mainWinnerAddress}').then(() => { this.textContent='✅ COPIED!'; this.style.background='#28a745'; setTimeout(() => { this.textContent='📋 Copy'; this.style.background=''; }, 2000); })" style="padding: 8px 20px; font-size: 1em; font-weight: bold; background: #DC143C; color: white; border: 2px solid white;">📋 Copy</button>
+                    <span style="color: #DC143C; font-weight: bold; font-size: 1.3em; background: white; padding: 10px 20px; border-radius: 8px; border: 2px solid #DC143C;">
+                        ${lotteryFetcher.formatSOL(mainPayout)} SOL
+                    </span>
+                    <a href="${EXPLORER_BASE}/address/${mainWinnerAddress}${EXPLORER_CLUSTER}" 
+                       target="_blank" style="color: #003087; text-decoration: none; font-size: 1.2em; font-weight: bold; background: white; padding: 10px 20px; border-radius: 8px; border: 2px solid #003087;">🔗 View</a>
+                </div>
             `;
         } else {
-            mainWinnerEl.textContent = 'No main winner yet';
+            mainWinnerEl.innerHTML = '<div style="color: #666; font-size: 1.2em;">No main winner yet</div>';
         }
     }
 
@@ -367,23 +369,23 @@ function updateWinnersDisplay(state) {
                         const address = typeof w === 'string' ? w : w.toString();
                         const payout = state.payouts?.minorPayout || (Number(state.jackpot) * 0.03);
                         return `
-                            <div style="margin: 8px 0; padding: 10px; background: #f9f9f9; border-radius: 5px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                <span style="font-weight: bold; color: #003087;">#${idx + 1}:</span>
-                                <span style="font-family: 'Courier New', monospace; color: #003087;">
+                            <div style="margin: 12px 0; padding: 15px; background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%); border-radius: 10px; border: 2px solid #003087; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                                <span style="font-weight: bold; color: #DC143C; font-size: 1.3em; background: #fff3cd; padding: 8px 15px; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 3px solid #DC143C;">#${idx + 1}</span>
+                                <span style="font-family: 'Courier New', monospace; color: #003087; font-size: 1.1em; font-weight: bold; flex: 1;">
                                     ${lotteryFetcher.formatAddress(address)}
                                 </span>
-                                <button class="copy-btn" onclick="copyAddressToClipboard('${address}').then(() => { this.textContent='✅'; setTimeout(() => this.textContent='📋', 2000); })" style="padding: 3px 10px; font-size: 0.8em;">📋</button>
-                                <span style="color: #DC143C; font-weight: bold;">
+                                <button class="copy-btn" onclick="copyAddressToClipboard('${address}').then(() => { this.textContent='✅'; this.style.background='#28a745'; setTimeout(() => { this.textContent='📋 Copy'; this.style.background=''; }, 2000); })" style="padding: 8px 15px; font-size: 0.9em; font-weight: bold; background: #003087; color: white;">📋 Copy</button>
+                                <span style="color: #DC143C; font-weight: bold; font-size: 1.2em; background: white; padding: 8px 15px; border-radius: 8px; border: 2px solid #DC143C;">
                                     ${lotteryFetcher.formatSOL(payout)} SOL
                                 </span>
                                 <a href="${EXPLORER_BASE}/address/${address}${EXPLORER_CLUSTER}" 
-                                   target="_blank" style="color: #003087; text-decoration: none;">🔗 View</a>
+                                   target="_blank" style="color: #003087; text-decoration: none; font-weight: bold; background: white; padding: 8px 15px; border-radius: 8px; border: 2px solid #003087;">🔗 View</a>
                             </div>
                         `;
                     })
                     .join('');
                 
-                minorWinnersEl.innerHTML = `<div style="margin-top: 10px;"><strong>8 Minor Winners (3% each):</strong></div>${minorWinners}`;
+                minorWinnersEl.innerHTML = minorWinners;
             } else {
                 minorWinnersEl.textContent = 'No minor winners yet';
             }
