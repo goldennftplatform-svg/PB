@@ -415,18 +415,32 @@
                 <div class="number-ball">🐸</div>
                 <div class="powerball-ball">🐸</div>
             </div>
-            <div class="winners-info" id="winners-info" style="min-height: 400px;">
-                <div class="winner-item" style="background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 3px solid #DC143C; box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);">
-                    <strong style="color: #DC143C; font-size: 1.3em; display: block; margin-bottom: 12px;">🏆 Main Winner (68% of Jackpot)</strong> 
-                    <div style="margin-top: 8px; font-size: 1.1em;" id="main-winner-display">Loading winners...</div>
+            <div class="winners-info" id="winners-info" style="min-height: 500px; background: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <!-- MAIN WINNER - BIG AND BOLD -->
+                <div class="winner-item" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px; border: 5px solid #DC143C; box-shadow: 0 8px 25px rgba(220, 20, 60, 0.5); text-align: center;">
+                    <div style="font-size: 2.5em; margin-bottom: 15px;">🏆</div>
+                    <strong style="color: #DC143C; font-size: 1.8em; display: block; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">MAIN WINNER</strong>
+                    <div style="color: #8B0000; font-size: 1.3em; margin-bottom: 10px; font-weight: bold;">68% of Jackpot</div>
+                    <div style="margin-top: 15px; font-size: 1.2em; font-weight: bold; color: #003087; background: white; padding: 15px; border-radius: 8px; border: 2px solid #DC143C;" id="main-winner-display">Loading winners...</div>
                 </div>
-                <div class="winner-item" style="background: #f8f9fa; padding: 20px; border-radius: 10px; border: 2px solid #003087;">
-                    <strong style="color: #003087; font-size: 1.2em; display: block; margin-bottom: 15px;">🎯 Minor Winners (8 winners, 3% each)</strong> 
-                    <div style="margin-top: 10px;" id="minor-winners-display">Loading winners...</div>
+                
+                <!-- MINOR WINNERS - CLEAR LIST -->
+                <div class="winner-item" style="background: linear-gradient(135deg, #E6F3FF 0%, #B3D9FF 100%); padding: 25px; border-radius: 15px; border: 4px solid #003087; box-shadow: 0 6px 20px rgba(0, 48, 135, 0.3);">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">🎯</div>
+                        <strong style="color: #003087; font-size: 1.6em; display: block; text-transform: uppercase; letter-spacing: 2px;">8 MINOR WINNERS</strong>
+                        <div style="color: #001f5c; font-size: 1.2em; margin-top: 5px;">3% Each</div>
+                    </div>
+                    <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 10px; border: 2px solid #003087;" id="minor-winners-display">Loading winners...</div>
                 </div>
-                <div class="winner-item" id="payout-tx-section" style="display: block; margin-top: 20px; padding: 15px; background: #e8f4f8; border-radius: 8px; border: 2px solid #003087;">
-                    <strong style="color: #003087; font-size: 1.1em;">💰 Payout Transaction:</strong> 
-                    <div style="margin-top: 8px;" id="payout-tx-display">Loading transaction...</div>
+                
+                <!-- PAYOUT TRANSACTION -->
+                <div class="winner-item" id="payout-tx-section" style="display: block; margin-top: 25px; padding: 20px; background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); border-radius: 12px; border: 3px solid #28a745; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">💰</div>
+                        <strong style="color: #155724; font-size: 1.4em; display: block; margin-bottom: 15px; text-transform: uppercase;">Payout Transaction</strong>
+                        <div style="margin-top: 10px; background: white; padding: 15px; border-radius: 8px; border: 2px solid #28a745; font-family: 'Courier New', monospace; font-size: 1.1em;" id="payout-tx-display">Loading transaction...</div>
+                    </div>
                 </div>
             </div>
         </div>
