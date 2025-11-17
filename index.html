@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐸 PEPEBALL - The Ultimate Powerball Lottery Token</title>
+    <title>🐸 PEPEBALL - The Ultimate Powerball Lottery Token (Testnet)</title>
     <style>
         * {
             margin: 0;
@@ -501,7 +501,7 @@
     <div class="container">
         <div class="header">
             <div class="title">PEPEBALL</div>
-            <div class="subtitle">Powerball Lottery Token</div>
+            <div class="subtitle">Powerball Lottery Token <span style="color: #f39c12; font-size: 0.7em;">(Testnet)</span></div>
             
             <!-- Powerball-style winning wallets display -->
             <div class="winning-numbers-section">
@@ -515,16 +515,19 @@
                     <div class="powerball">🐸</div>
                 </div>
                 <div class="draw-info">
-                    <div class="draw-date">Snapshot: December 15, 2024</div>
-                    <div class="jackpot-won">Jackpot: 20.5 SOL</div>
+                    <div class="draw-date">Loading snapshot data...</div>
+                    <div class="jackpot-won" id="jackpot-won">Loading jackpot...</div>
                 </div>
                 <div class="wallet-addresses">
                     <div class="main-winner">
-                        <strong>Main Winner:</strong> 7xK8...9mP2 (12.3 SOL)
+                        <strong>Main Winner:</strong> <span id="main-winner-display">Loading...</span>
                     </div>
                     <div class="minor-winners">
-                        <strong>Minor Winners:</strong> 4xL2...8nQ1, 9mR5...2kL7, 6pS3...1jM9, 8tV7...5hN4, 3wX9...7bC6
+                        <strong>Minor Winners:</strong> <span id="minor-winners-display">Loading...</span>
                     </div>
+                </div>
+                <div id="payout-transaction" style="margin-top: 15px; padding: 10px; background: rgba(52, 152, 219, 0.1); border-radius: 8px; border: 1px solid #3498db;">
+                    <div style="color: #95a5a6; font-style: italic;">Loading payout transaction...</div>
                 </div>
             </div>
             </div>
@@ -726,41 +729,39 @@
         // Initialize wallet connection
         async function initWallet() {
             try {
-                console.log('Initializing wallet connection...');
+                console.log('Initializing wallet connection for testnet...');
                 
                 // Check if Phantom is available
                 if (window.solana && window.solana.isPhantom) {
                     walletAdapter = window.solana;
                     console.log('Phantom wallet detected');
+                    
+                    // Ensure wallet is on devnet
+                    try {
+                        const network = await walletAdapter.request({ method: 'getNetwork' });
+                        if (network && network !== 'devnet') {
+                            console.warn('Wallet not on devnet. Please switch to devnet in Phantom settings.');
+                        }
+                    } catch (e) {
+                        // Some wallets don't support getNetwork, continue anyway
+                        console.log('Could not check network, continuing...');
+                    }
+                } else if (window.solflare) {
+                    // Support Solflare wallet
+                    walletAdapter = window.solflare;
+                    console.log('Solflare wallet detected');
                 } else {
-                    console.log('No wallet detected, using mock connection');
-                    setupMockWallet();
+                    console.log('No wallet detected. Please install Phantom or Solflare.');
+                    console.log('For testnet: Switch wallet to Devnet mode in settings.');
                 }
                 
                 console.log('Wallet initialization complete');
             } catch (error) {
                 console.error('Wallet initialization failed:', error);
-                setupMockWallet();
             }
         }
 
-        // Mock wallet for testing
-        function setupMockWallet() {
-            console.log('Setting up mock wallet for testing');
-            walletAdapter = {
-                connect: async () => {
-                    return {
-                        publicKey: {
-                            toString: () => 'MockWallet1234567890abcdef'
-                        }
-                    };
-                },
-                disconnect: async () => {
-                    return true;
-                },
-                isConnected: false
-            };
-        }
+        // Note: No mock wallet - requires real wallet connection for testnet
 
         // Handle wallet connection
         function handleWalletConnection(publicKey) {
@@ -850,7 +851,7 @@
             }
         }
 
-        // Connect wallet function
+        // Connect wallet function (testnet-ready)
         async function connectWallet() {
             try {
                 if (isConnected) {
@@ -866,16 +867,25 @@
                     // Connect
                     if (!walletAdapter) {
                         console.error('Wallet adapter not initialized');
-                        alert('Wallet service not ready. Please refresh the page.');
+                        alert('⚠️ Please install Phantom wallet!\n\n1. Install: https://phantom.app/\n2. Switch to Devnet in Settings\n3. Refresh this page');
+                        window.open('https://phantom.app/', '_blank');
                         return;
                     }
                     
-                    const response = await walletAdapter.connect();
+                    // Request connection
+                    const response = await walletAdapter.connect({ onlyIfTrusted: false });
                     handleWalletConnection(response.publicKey);
+                    
+                    // Verify network (warn if not devnet)
+                    console.log('Connected to wallet. Make sure it\'s on Devnet for testnet testing!');
                 }
             } catch (error) {
                 console.error('Wallet connection failed:', error);
-                alert('Wallet connection failed: ' + error.message);
+                if (error.code === 4001) {
+                    alert('Connection rejected. Please approve the connection request.');
+                } else {
+                    alert('Wallet connection failed: ' + error.message + '\n\nMake sure your wallet is on Devnet!');
+                }
             }
         }
 
@@ -1076,5 +1086,8 @@
         // Initialize
         updateCountdown();
     </script>
+    
+    <!-- Lottery Data Fetcher - Fetches real winners and payout transactions -->
+    <script type="module" src="lottery-data.js"></script>
 </body>
 </html>
