@@ -318,31 +318,38 @@ function updateWinnersDisplay(state) {
         }
     }
 
-    // Minor winners
+    // Minor winners - Show all 8 minor winners
     if (minorWinnersEl) {
         if (state.winners.minorWinners && state.winners.minorWinners.length > 0) {
-            const minorWinners = state.winners.minorWinners
-                .filter(w => w && w !== '11111111111111111111111111111111')
-                .map((w, idx) => {
-                    const address = typeof w === 'string' ? w : w.toString();
-                    const payout = state.payouts?.minorPayout || (Number(state.jackpot) * 0.03);
-                    return `
-                        <div style="margin: 5px 0; display: flex; align-items: center; gap: 10px;">
-                            <span style="font-family: 'Courier New', monospace; color: #003087;">
-                                ${lotteryFetcher.formatAddress(address)}
-                            </span>
-                            <button class="copy-btn" onclick="copyAddressToClipboard('${address}').then(() => { this.textContent='✅'; setTimeout(() => this.textContent='📋', 2000); })" style="padding: 3px 10px; font-size: 0.8em;">📋</button>
-                            <span style="color: #DC143C; font-weight: bold;">
-                                (${lotteryFetcher.formatSOL(payout)} SOL)
-                            </span>
-                            <a href="${EXPLORER_BASE}/address/${address}${EXPLORER_CLUSTER}" 
-                               target="_blank" style="color: #003087; text-decoration: none;">🔗</a>
-                        </div>
-                    `;
-                })
-                .join('');
+            const validWinners = state.winners.minorWinners
+                .filter(w => w && w !== '11111111111111111111111111111111');
             
-            minorWinnersEl.innerHTML = minorWinners;
+            if (validWinners.length > 0) {
+                const minorWinners = validWinners
+                    .map((w, idx) => {
+                        const address = typeof w === 'string' ? w : w.toString();
+                        const payout = state.payouts?.minorPayout || (Number(state.jackpot) * 0.03);
+                        return `
+                            <div style="margin: 8px 0; padding: 10px; background: #f9f9f9; border-radius: 5px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <span style="font-weight: bold; color: #003087;">#${idx + 1}:</span>
+                                <span style="font-family: 'Courier New', monospace; color: #003087;">
+                                    ${lotteryFetcher.formatAddress(address)}
+                                </span>
+                                <button class="copy-btn" onclick="copyAddressToClipboard('${address}').then(() => { this.textContent='✅'; setTimeout(() => this.textContent='📋', 2000); })" style="padding: 3px 10px; font-size: 0.8em;">📋</button>
+                                <span style="color: #DC143C; font-weight: bold;">
+                                    ${lotteryFetcher.formatSOL(payout)} SOL
+                                </span>
+                                <a href="${EXPLORER_BASE}/address/${address}${EXPLORER_CLUSTER}" 
+                                   target="_blank" style="color: #003087; text-decoration: none;">🔗 View</a>
+                            </div>
+                        `;
+                    })
+                    .join('');
+                
+                minorWinnersEl.innerHTML = `<div style="margin-top: 10px;"><strong>8 Minor Winners (3% each):</strong></div>${minorWinners}`;
+            } else {
+                minorWinnersEl.textContent = 'No minor winners yet';
+            }
         } else {
             minorWinnersEl.textContent = 'No minor winners yet';
         }
