@@ -3,911 +3,688 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slot's o Fun - Solana Lottery Token</title>
+    <title>PEPEBALL - Solana Powerball Lottery</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        :root {
+            --powerball-red: #DC143C;
+            --powerball-blue: #003087;
+            --powerball-white: #FFFFFF;
+            --powerball-gold: #FFD700;
+            --powerball-dark: #1a1a1a;
+        }
+
         body {
-            font-family: 'Press Start 2P', monospace;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: #1a1a1a;
-            overflow-x: hidden;
-            min-height: 100vh;
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            background: linear-gradient(180deg, #f5f5f5 0%, #e8e8e8 100%);
+            color: #333;
+            line-height: 1.6;
         }
-        
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes numberRoll {
-            0% { transform: translateY(0); }
-            25% { transform: translateY(-20px); }
-            50% { transform: translateY(-40px); }
-            75% { transform: translateY(-20px); }
-            100% { transform: translateY(0); }
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
+
+        /* Header - Powerball Style */
         .header {
+            background: var(--powerball-blue);
+            color: var(--powerball-white);
+            padding: 20px 0;
             text-align: center;
-            margin-bottom: 40px;
-            text-shadow: 3px 3px 0px #000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
-        
-        .title {
-            font-size: 3rem;
-            color: #00ff00;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
-            text-shadow: 3px 3px 0px #000, 5px 5px 10px rgba(0,0,0,0.2);
-        }
-        
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
-        }
-        
-        .pepe-emoji {
-            font-size: 4rem;
-            margin: 20px 0;
-            animation: float 3s ease-in-out infinite;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #00ff00 0%, #32cd32 100%);
-            border: 3px solid #ffff00;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
-            transition: all 0.3s ease;
-            animation: slideIn 0.6s ease-out;
-        }
-        
-        .stat-card:nth-child(1) { animation-delay: 0.1s; }
-        .stat-card:nth-child(2) { animation-delay: 0.2s; }
-        .stat-card:nth-child(3) { animation-delay: 0.3s; }
-        
-        .stat-card:hover {
-            transform: translateY(-10px) scale(1.05);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        }
-        
-        .stat-title {
-            font-size: 1rem;
-            color: #fff;
+
+        .header h1 {
+            font-size: 3.5em;
+            font-weight: bold;
+            letter-spacing: 3px;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-        
-        .stat-value {
-            font-size: 1.5rem;
-            color: #ffd700;
-            margin-bottom: 5px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            animation: pulse 2s infinite;
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            font-weight: 300;
         }
-        
-        .stat-description {
-            font-size: 0.8rem;
-            color: #fff;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-        
-        .lottery-section {
-            background: linear-gradient(135deg, #fff 0%, #f0fff0 100%);
-            border: 4px solid #00ff00;
+
+        .testnet-badge {
+            display: inline-block;
+            background: var(--powerball-gold);
+            color: var(--powerball-dark);
+            padding: 5px 15px;
             border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* Jackpot Section - Powerball Style */
+        .jackpot-section {
+            background: var(--powerball-white);
+            border: 4px solid var(--powerball-red);
+            border-radius: 15px;
             padding: 40px;
-            margin-bottom: 40px;
-            box-shadow: 0 15px 50px rgba(0, 255, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-                .lottery-section::before {
-                    content: '';
-                    position: absolute;
-                    top: -50%;
-                    left: -50%;
-                    width: 200%;
-                    height: 200%;
-                    background: radial-gradient(circle, rgba(0,255,0,0.15) 0%, transparent 70%);
-                    animation: spin 20s linear infinite;
-                }
-                
-                .tax-info-section {
-                    background: rgba(255, 255, 255, 0.9);
-                    border: 2px solid #ff69b4;
-                    border-radius: 12px;
-                    padding: 20px;
-                    margin: 20px 0;
-                    text-align: center;
-                    position: relative;
-                    z-index: 1;
-                }
-                
-                .tax-title {
-                    font-size: 1rem;
-                    color: #ff69b4;
-                    margin-bottom: 15px;
-                    font-weight: bold;
-                }
-                
-                .tax-grid {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 15px;
-                    margin-bottom: 10px;
-                }
-                
-                .tax-item {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 5px;
-                }
-                
-                .tax-label {
-                    font-size: 0.7rem;
-                    color: #2c3e50;
-                }
-                
-                .tax-value {
-                    font-size: 1.2rem;
-                    color: #00ff00;
-                    font-weight: bold;
-                }
-                
-                .tax-description {
-                    font-size: 0.6rem;
-                    color: #888;
-                    margin-top: 10px;
-                }
-                
-                @media (max-width: 768px) {
-                    .tax-grid {
-                        grid-template-columns: 1fr;
-                        gap: 10px;
-                    }
-                }
-        
-        .lottery-title {
-            font-size: 2rem;
-            color: #00ff00;
             text-align: center;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            position: relative;
-            z-index: 1;
+            margin: 30px 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
-        
-        .jackpot-display {
-            text-align: center;
-            margin-bottom: 30px;
-            position: relative;
-            z-index: 1;
+
+        .jackpot-label {
+            font-size: 1.5em;
+            color: #666;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
-        
+
         .jackpot-amount {
-            font-size: 4rem;
-            color: #00ff00;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
-            margin-bottom: 10px;
+            font-size: 4.5em;
             font-weight: bold;
-            animation: pulse 2s infinite;
-            background: linear-gradient(135deg, #00ff00 0%, #32cd32 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--powerball-red);
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
-        
+
         .jackpot-timer {
-            font-size: 1.2rem;
-            color: #2c3e50;
-            font-weight: bold;
+            font-size: 1.3em;
+            color: var(--powerball-blue);
+            font-weight: 600;
+            margin-top: 20px;
         }
-        
-        .draw-timing {
-            font-size: 1rem;
-            color: #ff69b4;
-            margin: 10px 0;
-            font-weight: bold;
-        }
-        
-        .participants-count {
-            font-size: 0.9rem;
-            color: #00ff00;
-            margin: 5px 0;
-            font-weight: bold;
-        }
-        
-        .contract-address-section {
-            background: rgba(0, 0, 0, 0.95);
-            border: 2px solid #00ff00;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 25px 0;
+
+        /* Winning Numbers - Powerball Style */
+        .winning-numbers-section {
+            background: var(--powerball-white);
+            border: 3px solid var(--powerball-blue);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
             text-align: center;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
-        
-        .contract-title {
-            font-size: 1.1rem;
-            color: #00ff00;
-            margin-bottom: 20px;
+
+        .section-title {
+            font-size: 2em;
+            color: var(--powerball-blue);
+            margin-bottom: 30px;
             font-weight: bold;
-            text-shadow: 2px 2px 0px #000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
-        
-        .contract-address-container {
+
+        .winning-numbers {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .number-ball {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--powerball-white);
+            border: 4px solid var(--powerball-blue);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--powerball-blue);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
         }
-        
-        .contract-address {
-            font-size: 0.9rem;
-            color: #ffffff;
-            background: rgba(0, 255, 0, 0.15);
-            padding: 15px 20px;
-            border-radius: 8px;
-            border: 2px solid #00ff00;
+
+        .number-ball:hover {
+            transform: scale(1.1);
+        }
+
+        .powerball-ball {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--powerball-red);
+            border: 4px solid var(--powerball-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--powerball-white);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .powerball-ball:hover {
+            transform: scale(1.1);
+        }
+
+        .winners-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .winner-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .winner-item:last-child {
+            border-bottom: none;
+        }
+
+        .winner-address {
             font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: var(--powerball-blue);
             word-break: break-all;
-            flex: 1;
-            min-width: 250px;
-            max-width: 600px;
-            letter-spacing: 0.5px;
-            line-height: 1.6;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        .copy-address-btn {
-            background: linear-gradient(45deg, #ffff00, #ffd700);
-            border: 2px solid #00ff00;
-            color: #000;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 0.8rem;
-            padding: 12px 25px;
+
+        .copy-btn {
+            background: var(--powerball-blue);
+            color: var(--powerball-white);
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: var(--powerball-red);
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+        }
+
+        /* Action Buttons */
+        .action-section {
+            background: var(--powerball-white);
+            border: 3px solid var(--powerball-blue);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .action-btn {
+            background: var(--powerball-red);
+            color: var(--powerball-white);
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.3em;
+            font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(255, 255, 0, 0.4);
+            margin: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-        
-        .copy-address-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(255, 255, 0, 0.7);
-            background: linear-gradient(45deg, #ffd700, #ffff00);
+
+        .action-btn:hover {
+            background: #b01030;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
-        
-        .copy-address-btn:active {
+
+        .action-btn:active {
             transform: translateY(0);
         }
-        
-        .contract-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 15px;
+
+        .action-btn.secondary {
+            background: var(--powerball-blue);
         }
-        
-        .contract-link {
-            font-size: 0.75rem;
-            color: #ff69b4;
-            text-decoration: none;
-            padding: 8px 15px;
-            border: 2px solid #ff69b4;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            background: rgba(255, 105, 180, 0.1);
-            font-weight: bold;
+
+        .action-btn.secondary:hover {
+            background: #002066;
         }
-        
-        .contract-link:hover {
-            background: rgba(255, 105, 180, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(255, 105, 180, 0.4);
+
+        .action-btn.success {
+            background: #28a745;
         }
-        
-        .pricing-info {
-            margin: 20px 0;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 10px;
-            border: 2px solid #00ff00;
+
+        .action-btn.success:hover {
+            background: #218838;
         }
-        
-        .pricing-title {
-            font-size: 1.2rem;
-            color: #00ff00;
-            text-align: center;
-            margin-bottom: 15px;
-            font-weight: bold;
+
+        /* Token Address Section */
+        .token-section {
+            background: var(--powerball-white);
+            border: 3px solid var(--powerball-blue);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
-        
-        .pricing-tiers {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-        }
-        
-        .pricing-tier {
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #ffff00;
-            border-radius: 8px;
+
+        .token-address {
+            background: #f5f5f5;
             padding: 15px;
-            text-align: center;
-            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            word-break: break-all;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
         }
-        
-        .pricing-tier:hover {
-            border-color: #00ff00;
-            transform: translateY(-3px);
+
+        .token-address-text {
+            flex: 1;
+            color: var(--powerball-blue);
         }
-        
-        .tier-price {
-            display: block;
-            font-size: 1.2rem;
-            color: #00ff00;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .tier-tickets {
-            display: block;
-            font-size: 0.9rem;
-            color: #ff69b4;
-            margin-bottom: 5px;
-        }
-        
-        .tier-bonus {
-            display: block;
-            font-size: 0.7rem;
-            color: #000;
-            background: rgba(255, 255, 0, 0.5);
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        
-        .tier-token-count {
-            display: block;
-            font-size: 0.65rem;
-            color: #00ff00;
-            margin-top: 5px;
-            font-weight: bold;
-        }
-        
-        .enter-lottery {
-            text-align: center;
-            margin-top: 30px;
-        }
-        
-        .lottery-btn {
-            background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
-            border: 3px solid #ffff00;
-            color: #000;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 1.2rem;
-            padding: 15px 30px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.4);
-            margin: 5px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .lottery-btn.primary-btn {
-            background: linear-gradient(135deg, #00ff00 0%, #32cd32 100%);
-            font-size: 1.4rem;
-            padding: 18px 40px;
-            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.5);
-            animation: pulse 2s infinite;
-            border-color: #ffff00;
-        }
-        
-        .lottery-btn.primary-btn:hover {
-            transform: translateY(-8px) scale(1.08);
-            box-shadow: 0 15px 40px rgba(0, 255, 0, 0.7);
-        }
-        
-        .lottery-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .lottery-btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-        
-        .lottery-btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 12px 30px rgba(255, 105, 180, 0.6);
-        }
-        
-        .lottery-btn:active {
-            transform: translateY(-2px) scale(1.02);
-        }
-        
-        .features {
+
+        /* Stats Grid */
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            margin-bottom: 40px;
+            margin: 30px 0;
         }
-        
-        .feature-card {
-            background: linear-gradient(135deg, #fff 0%, #f0fff0 100%);
-            border: 2px solid #00ff00;
-            border-radius: 12px;
-            padding: 20px;
+
+        .stat-card {
+            background: var(--powerball-white);
+            border: 2px solid var(--powerball-blue);
+            border-radius: 10px;
+            padding: 25px;
             text-align: center;
-            box-shadow: 0 8px 20px rgba(0, 255, 0, 0.2);
-            transition: all 0.3s ease;
-            animation: slideIn 0.8s ease-out;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
-        
-        .feature-card:nth-child(1) { animation-delay: 0.1s; }
-        .feature-card:nth-child(2) { animation-delay: 0.2s; }
-        .feature-card:nth-child(3) { animation-delay: 0.3s; }
-        .feature-card:nth-child(4) { animation-delay: 0.4s; }
-        
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(0, 255, 0, 0.4);
-            border-color: #ffff00;
-        }
-        
-        .feature-title {
-            font-size: 1rem;
-            color: #00ff00;
-            margin-bottom: 10px;
+
+        .stat-value {
+            font-size: 2.5em;
             font-weight: bold;
+            color: var(--powerball-red);
+            margin: 10px 0;
         }
-        
-        .feature-text {
-            font-size: 0.8rem;
-            color: #2c3e50;
-            line-height: 1.6;
+
+        .stat-label {
+            font-size: 1em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
-        .bubble {
-            position: absolute;
-            background: radial-gradient(circle, rgba(0,255,0,0.2) 0%, rgba(0,255,0,0.05) 100%);
-            border-radius: 50%;
-            animation: float 8s ease-in-out infinite;
-            border: 2px solid rgba(0,255,0,0.3);
-        }
-        
-        .bubble:nth-child(1) {
-            width: 100px;
-            height: 100px;
-            top: 10%;
-            left: 5%;
-            animation-delay: 0s;
-        }
-        
-        .bubble:nth-child(2) {
-            width: 80px;
-            height: 80px;
-            top: 50%;
-            right: 10%;
-            animation-delay: 2s;
-        }
-        
-        .bubble:nth-child(3) {
-            width: 120px;
-            height: 120px;
-            bottom: 15%;
-            left: 15%;
-            animation-delay: 4s;
-        }
-        
-        .lottery-ball {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #fff, #f0f0f0, #ddd);
-            border: 3px solid #333;
-            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.3), inset 5px 5px 10px rgba(255,255,255,0.5), 0 5px 15px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            animation: float 6s ease-in-out infinite;
-            z-index: 0;
-        }
-        
-        .lottery-ball:nth-child(4) {
-            top: 20%;
-            right: 20%;
-            animation-delay: 1s;
-        }
-        
-        .lottery-ball:nth-child(5) {
-            bottom: 25%;
-            right: 15%;
-            animation-delay: 3s;
-        }
-        
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            background: linear-gradient(135deg, #00ff00 0%, #32cd32 100%);
-            border-top: 3px solid #ffff00;
-            box-shadow: 0 -5px 20px rgba(0, 255, 0, 0.2);
-        }
-        
-        .footer-text {
-            font-size: 0.8rem;
-            color: #fff;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-        
-        /* Admin Section Styles */
-        .admin-section {
-            display: none;
-            background: rgba(0, 0, 0, 0.95);
-            border: 4px solid #ff0000;
+
+        /* Wallet Connection */
+        .wallet-section {
+            background: var(--powerball-white);
+            border: 3px solid var(--powerball-blue);
             border-radius: 15px;
             padding: 30px;
-            margin: 40px 0;
-            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
-        }
-        
-        .admin-section.active {
-            display: block;
-        }
-        
-        .admin-title {
-            font-size: 1.5rem;
-            color: #ff0000;
+            margin: 30px 0;
             text-align: center;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 0px #000;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
-        
-        .admin-content {
-            color: #00ff00;
-        }
-        
-        .admin-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .admin-stat-card {
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #ff0000;
-            border-radius: 8px;
+
+        .wallet-status {
             padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+
+        .wallet-status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .wallet-status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--powerball-dark);
+            color: var(--powerball-white);
+            padding: 30px 20px;
             text-align: center;
+            margin-top: 50px;
         }
-        
-        .admin-stat-label {
-            font-size: 0.7rem;
-            color: #ffff00;
-            margin-bottom: 5px;
-        }
-        
-        .admin-stat-value {
-            font-size: 1rem;
-            color: #00ffff;
-        }
-        
-        .admin-access-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #ff0000;
-            color: #ff0000;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 0.6rem;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            z-index: 1000;
-        }
-        
-        .admin-access-btn:hover {
-            background: rgba(255, 0, 0, 0.2);
-        }
-        
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .title {
-                font-size: 2rem;
+            .header h1 {
+                font-size: 2.5em;
             }
-            
+
             .jackpot-amount {
-                font-size: 2rem;
+                font-size: 3em;
             }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
+
+            .number-ball, .powerball-ball {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5em;
             }
         }
     </style>
 </head>
 <body>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="lottery-ball">🎰</div>
-    <div class="lottery-ball">🎲</div>
-    
+    <!-- Header -->
+    <div class="header">
+        <h1>PEPEBALL</h1>
+        <div class="subtitle">Solana Powerball Lottery</div>
+        <div class="testnet-badge">TESTNET</div>
+    </div>
+
+    <!-- Main Container -->
     <div class="container">
-        <div class="header">
-            <div class="title">🎰 SLOT'S O FUN 🎰</div>
-            <div class="pepe-emoji">🎲</div>
-            <div class="subtitle">Solana Lottery Token</div>
+        <!-- Jackpot Section -->
+        <div class="jackpot-section">
+            <div class="jackpot-label">Estimated Jackpot</div>
+            <div class="jackpot-amount" id="jackpot-amount">20.5 SOL</div>
+            <div class="jackpot-timer" id="jackpot-timer">Next Draw: 2d 14h 32m</div>
         </div>
-        
+
+        <!-- Winning Numbers Section -->
+        <div class="winning-numbers-section">
+            <div class="section-title">Last Winning Numbers</div>
+            <div class="winning-numbers">
+                <div class="number-ball">🐸</div>
+                <div class="number-ball">🐸</div>
+                <div class="number-ball">🐸</div>
+                <div class="number-ball">🐸</div>
+                <div class="number-ball">🐸</div>
+                <div class="powerball-ball">🐸</div>
+            </div>
+            <div class="winners-info" id="winners-info" style="min-height: 500px; background: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <!-- MAIN WINNER - BIG AND BOLD -->
+                <div class="winner-item" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px; border: 5px solid #DC143C; box-shadow: 0 8px 25px rgba(220, 20, 60, 0.5); text-align: center;">
+                    <div style="font-size: 2.5em; margin-bottom: 15px;">🏆</div>
+                    <strong style="color: #DC143C; font-size: 1.8em; display: block; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">MAIN WINNER</strong>
+                    <div style="color: #8B0000; font-size: 1.3em; margin-bottom: 10px; font-weight: bold;">68% of Jackpot</div>
+                    <div style="margin-top: 15px; font-size: 1.2em; font-weight: bold; color: #003087; background: white; padding: 15px; border-radius: 8px; border: 2px solid #DC143C;" id="main-winner-display">Loading winners...</div>
+                </div>
+                
+                <!-- MINOR WINNERS - CLEAR LIST -->
+                <div class="winner-item" style="background: linear-gradient(135deg, #E6F3FF 0%, #B3D9FF 100%); padding: 25px; border-radius: 15px; border: 4px solid #003087; box-shadow: 0 6px 20px rgba(0, 48, 135, 0.3);">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">🎯</div>
+                        <strong style="color: #003087; font-size: 1.6em; display: block; text-transform: uppercase; letter-spacing: 2px;">8 MINOR WINNERS</strong>
+                        <div style="color: #001f5c; font-size: 1.2em; margin-top: 5px;">3% Each</div>
+                    </div>
+                    <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 10px; border: 2px solid #003087;" id="minor-winners-display">Loading winners...</div>
+                </div>
+                
+                <!-- PAYOUT TRANSACTION -->
+                <div class="winner-item" id="payout-tx-section" style="display: block; margin-top: 25px; padding: 20px; background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); border-radius: 12px; border: 3px solid #28a745; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">💰</div>
+                        <strong style="color: #155724; font-size: 1.4em; display: block; margin-bottom: 15px; text-transform: uppercase;">Payout Transaction</strong>
+                        <div style="margin-top: 10px; background: white; padding: 15px; border-radius: 8px; border: 2px solid #28a745; font-family: 'Courier New', monospace; font-size: 1.1em;" id="payout-tx-display">Loading transaction...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-section">
+            <h2 style="color: var(--powerball-blue); margin-bottom: 20px;">Get Started</h2>
+            <button class="action-btn" onclick="buyTokens()">🛒 Buy Tokens on Orca</button>
+            <button class="action-btn secondary" onclick="connectWallet()" id="connect-btn">🔗 Connect Wallet</button>
+            <button class="action-btn success" onclick="addTokenToWallet()" id="add-token-btn">➕ Add Token to Wallet</button>
+        </div>
+
+        <!-- Token Address Section -->
+        <div class="token-section">
+            <h3 style="color: var(--powerball-blue); margin-bottom: 15px;">Token Contract Address</h3>
+            <div class="token-address">
+                <span class="token-address-text" id="token-address">CXcoVCAuQB2XigJmyGz162aj1MCgJxC9Hgo5SEuRuFto</span>
+                <button class="copy-btn" onclick="copyTokenAddress()" id="copy-token-btn">📋 Copy</button>
+            </div>
+            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+                Hold $20 worth of PEPEBALL tokens to automatically qualify for lottery drawings!
+            </p>
+        </div>
+
+        <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-title">Draw Timing</div>
-                <div class="stat-value">72h / 36h</div>
-                <div class="stat-description">Dynamic based on jackpot size</div>
+                <div class="stat-label">Total Participants</div>
+                <div class="stat-value" id="total-participants">1,247</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Fees Collected</div>
+                <div class="stat-value" id="fees-collected">45.2 SOL</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Token Price</div>
+                <div class="stat-value" id="token-price">$0.000020</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Qualify Amount</div>
+                <div class="stat-value" id="qualify-amount">1M PEPE</div>
             </div>
         </div>
-        
-        <div class="lottery-section">
-            <div class="lottery-title">🎲 CURRENT JACKPOT 🎲</div>
-            <div class="jackpot-display">
-                <div class="jackpot-amount" id="jackpot-amount">25.5 SOL</div>
-                <div class="jackpot-timer" id="jackpot-timer">Next draw in: 4h 0m</div>
-                <div class="draw-timing" id="draw-timing">TEST MODE: Payout in 4 hours</div>
-                <div class="participants-count" id="participants-count">127 participants</div>
+
+        <!-- Wallet Connection Status -->
+        <div class="wallet-section">
+            <h3 style="color: var(--powerball-blue); margin-bottom: 15px;">Wallet Connection</h3>
+            <div class="wallet-status disconnected" id="wallet-status">
+                🔴 Not Connected
             </div>
-            
-            <div class="tax-info-section">
-                <div class="tax-title">📊 Tax Structure</div>
-                <div class="tax-grid">
-                    <div class="tax-item">
-                        <span class="tax-label">Jackpot Tax:</span>
-                        <span class="tax-value">2.45%</span>
-                    </div>
-                    <div class="tax-item">
-                        <span class="tax-label">Total Tax:</span>
-                        <span class="tax-value">2.5%</span>
-                    </div>
-                    <div class="tax-item">
-                        <span class="tax-label">Admin Costs:</span>
-                        <span class="tax-value">0.05%</span>
-                    </div>
-                </div>
-                <div class="tax-description">All taxes fund the lottery pool and operations</div>
-            </div>
-            
-            <div class="contract-address-section">
-                <div class="contract-title">📋 CONTRACT ADDRESS</div>
-                <div class="contract-address-container">
-                    <div class="contract-address" id="contract-address">HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR</div>
-                    <button class="copy-address-btn" id="copy-contract-btn">📋 COPY</button>
-                </div>
-                <div class="contract-links">
-                    <a href="https://solscan.io/token/HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR?cluster=devnet" target="_blank" class="contract-link">View on Solscan</a>
-                    <a href="https://explorer.solana.com/address/HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR?cluster=devnet" target="_blank" class="contract-link">View on Explorer</a>
-                </div>
-            </div>
-            
-            <div class="pricing-info">
-                <div class="pricing-title">💰 Dynamic Pricing 💰</div>
-                <div class="pricing-tiers">
-                    <div class="pricing-tier">
-                        <span class="tier-price">$20</span>
-                        <span class="tier-tickets">1 ticket</span>
-                        <span class="tier-bonus">Basic</span>
-                        <span class="tier-token-count" id="tier-20-tokens">-</span>
-                    </div>
-                    <div class="pricing-tier">
-                        <span class="tier-price">$100</span>
-                        <span class="tier-tickets">4 tickets</span>
-                        <span class="tier-bonus">100% bonus</span>
-                        <span class="tier-token-count" id="tier-100-tokens">-</span>
-                    </div>
-                    <div class="pricing-tier">
-                        <span class="tier-price">$500</span>
-                        <span class="tier-tickets">10 tickets</span>
-                        <span class="tier-bonus">400% bonus</span>
-                        <span class="tier-token-count" id="tier-500-tokens">-</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="enter-lottery">
-                <button class="lottery-btn" id="enter-lottery">🎫 ENTER LOTTERY 🎫</button>
-                <button class="lottery-btn" id="buy-tokens">💰 BUY TOKENS 💰</button>
-                <button class="lottery-btn" id="add-to-wallet">➕ ADD TO WALLET ➕</button>
-                <button class="lottery-btn" id="refresh-data">🔄 REFRESH 🔄</button>
-            </div>
-        </div>
-        
-        <div class="features">
-            <div class="feature-card">
-                <div class="feature-title">🛡️ Anti-Rug</div>
-                <div class="feature-text">85% instant renounce + burnt LP. Only fire-alarm admin access.</div>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-title">💰 SOL Payouts</div>
-                <div class="feature-text">Winners get SOL, not tokens. Protects price and holders.</div>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-title">🚀 Dynamic Timing</div>
-                <div class="feature-text">72h draws < 200 SOL, 36h draws ≥ 200 SOL</div>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-title">🎯 Fair Distribution</div>
-                <div class="feature-text">1 grand prize winner (68%) + 8 minor winners (3% each) + 8% carry-over</div>
-            </div>
-        </div>
-        
-        <!-- Admin/Reporting Section (Whitelist Only) -->
-        <div class="admin-section" id="admin-section">
-            <div class="admin-title">🔐 ADMIN REPORTING DASHBOARD 🔐</div>
-            <div class="admin-content">
-                <div class="admin-stats">
-                    <div class="admin-stat-card">
-                        <div class="admin-stat-label">Connected Wallet</div>
-                        <div class="admin-stat-value" id="admin-wallet-address">-</div>
-                    </div>
-                    <div class="admin-stat-card">
-                        <div class="admin-stat-label">Admin Status</div>
-                        <div class="admin-stat-value" id="admin-status">-</div>
-                    </div>
-                    <div class="admin-stat-card">
-                        <div class="admin-stat-label">Total Volume</div>
-                        <div class="admin-stat-value" id="admin-total-volume">-</div>
-                    </div>
-                    <div class="admin-stat-card">
-                        <div class="admin-stat-label">Total Participants</div>
-                        <div class="admin-stat-value" id="admin-total-participants">-</div>
-                    </div>
-                </div>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="lottery-btn" id="admin-refresh">🔄 Refresh Data</button>
-                    <button class="lottery-btn" id="admin-disconnect" style="background: linear-gradient(45deg, #ff0000, #cc0000);">🚪 Disconnect</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Admin Access Button (Always visible) -->
-        <button class="admin-access-btn" id="admin-access-btn">🔐 Admin</button>
-        
-        <div class="footer">
-            <div class="footer-text">
-                🎰 Slot's o Fun - Anonymous Solana Lottery<br>
-                Decentralized • Transparent • Fair<br>
-                soflotto.com
-            </div>
+            <div id="wallet-address" style="display: none; margin-top: 15px; font-family: 'Courier New', monospace; color: var(--powerball-blue);"></div>
         </div>
     </div>
-    
-    <script src="src/price-service.js"></script>
-    <script src="src/snapshot-service.js"></script>
-    <script src="src/app.js"></script>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>PEPEBALL - Solana Powerball Lottery</p>
+        <p style="margin-top: 10px; opacity: 0.8; font-size: 0.9em;">Decentralized • Transparent • Fair</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="lottery-data.js"></script>
     <script>
-        // TEST MODE: Payout in 4 hours (simulating 40 hours elapsed)
-        // This allows testing with real wallets before actual payout
+        // Token Address
+        const TOKEN_ADDRESS = 'CXcoVCAuQB2XigJmyGz162aj1MCgJxC9Hgo5SEuRuFto';
+        const ORCA_SWAP_URL = 'https://www.orca.so/?chainId=solanaDevnet&tokenIn=CXcoVCAuQB2XigJmyGz162aj1MCgJxC9Hgo5SEuRuFto&tokenOut=So11111111111111111111111111111111111111112';
+
+        // Wallet state
+        let isConnected = false;
+        let walletAdapter = null;
+        let userAddress = null;
+
+        // Copy Token Address Function
+        async function copyTokenAddress() {
+            try {
+                await navigator.clipboard.writeText(TOKEN_ADDRESS);
+                const btn = document.getElementById('copy-token-btn');
+                btn.textContent = '✅ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = '📋 Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            } catch (error) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = TOKEN_ADDRESS;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                const btn = document.getElementById('copy-token-btn');
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    btn.textContent = '📋 Copy';
+                }, 2000);
+            }
+        }
+
+        // Copy Winner Address Function
+        async function copyAddress(address) {
+            try {
+                await navigator.clipboard.writeText(address);
+                return true;
+            } catch (error) {
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = address;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                return true;
+            }
+        }
+
+        // Buy Tokens on Orca
+        function buyTokens() {
+            window.open(ORCA_SWAP_URL, '_blank');
+        }
+
+        // Add Token to Wallet
+        async function addTokenToWallet() {
+            if (!window.solana && !window.solflare) {
+                alert('Please install Phantom or Solflare wallet first!');
+                window.open('https://phantom.app/', '_blank');
+                return;
+            }
+
+            try {
+                const wallet = window.solana || window.solflare;
+                if (wallet && wallet.watchAsset) {
+                    await wallet.watchAsset({
+                        type: 'SPL_TOKEN',
+                        options: {
+                            address: TOKEN_ADDRESS,
+                            symbol: 'PEPE',
+                            decimals: 9,
+                            image: 'https://via.placeholder.com/64'
+                        }
+                    });
+                    alert('✅ Token added to wallet!');
+                } else {
+                    // Fallback: Copy address
+                    await copyTokenAddress();
+                    alert('Token address copied! Please add it manually to your wallet.');
+                }
+            } catch (error) {
+                console.error('Error adding token:', error);
+                alert('Error adding token. Please add manually using the contract address.');
+            }
+        }
+
+        // Connect Wallet
+        async function connectWallet() {
+            try {
+                if (isConnected) {
+                    // Disconnect
+                    if (walletAdapter && walletAdapter.disconnect) {
+                        await walletAdapter.disconnect();
+                    }
+                    isConnected = false;
+                    walletAdapter = null;
+                    userAddress = null;
+                    updateWalletUI();
+                } else {
+                    // Connect
+                    if (window.solana && window.solana.isPhantom) {
+                        walletAdapter = window.solana;
+                    } else if (window.solflare) {
+                        walletAdapter = window.solflare;
+                    } else {
+                        alert('Please install Phantom or Solflare wallet!\n\nMake sure to switch to Devnet in wallet settings.');
+                        window.open('https://phantom.app/', '_blank');
+                        return;
+                    }
+
+                    const response = await walletAdapter.connect({ onlyIfTrusted: false });
+                    userAddress = response.publicKey.toString();
+                    isConnected = true;
+                    updateWalletUI();
+                }
+            } catch (error) {
+                console.error('Wallet connection error:', error);
+                if (error.code === 4001) {
+                    alert('Connection rejected. Please approve the connection request.');
+                } else {
+                    alert('Wallet connection failed. Make sure your wallet is on Devnet!');
+                }
+            }
+        }
+
+        // Update Wallet UI
+        function updateWalletUI() {
+            const statusEl = document.getElementById('wallet-status');
+            const addressEl = document.getElementById('wallet-address');
+            const connectBtn = document.getElementById('connect-btn');
+
+            if (isConnected && userAddress) {
+                statusEl.textContent = '🟢 Connected';
+                statusEl.className = 'wallet-status connected';
+                addressEl.textContent = userAddress;
+                addressEl.style.display = 'block';
+                connectBtn.textContent = '🔌 Disconnect';
+            } else {
+                statusEl.textContent = '🔴 Not Connected';
+                statusEl.className = 'wallet-status disconnected';
+                addressEl.style.display = 'none';
+                connectBtn.textContent = '🔗 Connect Wallet';
+            }
+        }
+
+        // Initialize Wallet on Load
+        window.addEventListener('load', () => {
+            if (window.solana && window.solana.isPhantom) {
+                walletAdapter = window.solana;
+            } else if (window.solflare) {
+                walletAdapter = window.solflare;
+            }
+            updateWalletUI();
+        });
+
+        // Update Timer
         function updateTimer() {
-            // Set payout to 4 hours from now
             const nextDraw = new Date(Date.now() + 4 * 60 * 60 * 1000);
             const now = new Date();
             const diff = nextDraw - now;
             const hours = Math.floor(diff / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
             const timerEl = document.getElementById('jackpot-timer');
             if (timerEl) {
-                timerEl.textContent = `Next draw in: ${hours}h ${minutes}m`;
-                // Add visual indicator for test mode
-                if (hours < 5) {
-                    timerEl.style.color = '#00ff00';
-                    timerEl.style.fontWeight = 'bold';
-                    timerEl.style.animation = 'pulse 1s infinite';
+                if (hours < 1) {
+                    timerEl.textContent = `Next Draw: ${minutes}m ${seconds}s`;
+                } else {
+                    timerEl.textContent = `Next Draw: ${hours}h ${minutes}m`;
                 }
             }
         }
-        setInterval(updateTimer, 60000);
+
+        setInterval(updateTimer, 1000);
         updateTimer();
-        
-        // Update every second for precise countdown when under 1 hour
-        setInterval(() => {
-            const timerEl = document.getElementById('jackpot-timer');
-            if (timerEl) {
-                const nextDraw = new Date(Date.now() + 4 * 60 * 60 * 1000);
-                const now = new Date();
-                const diff = nextDraw - now;
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                
-                if (hours < 1) {
-                    timerEl.textContent = `Next draw in: ${minutes}m ${seconds}s`;
-                } else {
-                    timerEl.textContent = `Next draw in: ${hours}h ${minutes}m`;
-                }
-            }
-        }, 1000);
     </script>
 </body>
 </html>
