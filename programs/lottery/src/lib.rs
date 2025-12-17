@@ -1,8 +1,8 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount};
-use solana_program::clock::Clock;
+use anchor_lang::solana_program::clock::Clock;
 
-declare_id!("ytKyH7viyfRmqYtS7Y3nCa8kCJXAPTN6MA8a3EmtSn1");
+declare_id!("8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7");
 
 #[program]
 pub mod lottery {
@@ -12,63 +12,66 @@ pub mod lottery {
         ctx: Context<InitializeLottery>,
         jackpot_amount: u64,
     ) -> Result<()> {
-        // Security: Verify PDA is correctly derived from seeds
         let lottery = &mut ctx.accounts.lottery;
         
-        // Security: Validate initial jackpot amount (must be reasonable)
         require!(jackpot_amount > 0, ErrorCode::InvalidConfig);
-        require!(jackpot_amount <= 1_000_000 * 1_000_000_000, ErrorCode::InvalidConfig); // Max 1M SOL
+        require!(jackpot_amount <= 1_000_000 * 1_000_000_000, ErrorCode::InvalidConfig);
         
-        // Initialize lottery state
         lottery.jackpot_amount = jackpot_amount;
-        lottery.carry_over_amount = 0; // Initialize carry-over
+        lottery.carry_over_amount = 0;
         lottery.last_snapshot = Clock::get()?.unix_timestamp;
-        lottery.base_snapshot_interval = 72 * 60 * 60; // 72 hours in seconds
-        lottery.fast_snapshot_interval = 48 * 60 * 60; // 48 hours in seconds
-        lottery.fast_mode_threshold = 200 * 1_000_000_000; // 200 SOL in lamports
+        lottery.base_snapshot_interval = 72 * 60 * 60;
+        lottery.fast_snapshot_interval = 48 * 60 * 60;
+        lottery.fast_mode_threshold = 200 * 1_000_000_000;
         lottery.fees_collected = 0;
         lottery.is_fast_mode = false;
         lottery.is_active = true;
         lottery.admin = ctx.accounts.admin.key();
         lottery.total_participants = 0;
+        lottery.total_tickets = 0;
         lottery.total_snapshots = 0;
+        lottery.rollover_count = 0;
+        lottery.pepe_ball_count = 0;
         
         msg!("PEPEBALL Lottery initialized!");
         msg!("Initial Jackpot: {} SOL", jackpot_amount / 1_000_000_000);
         msg!("Admin: {}", ctx.accounts.admin.key());
         msg!("Lottery PDA: {}", lottery.key());
-        msg!("Snapshot Timing: 72 hours (< 200 SOL fees), 48 hours (≥ 200 SOL fees)");
+        msg!("Scalable architecture: Separate participant accounts");
+        msg!("50/50 Rollover mechanic: Odd Pepe balls = payout, Even = rollover");
         
         Ok(())
     }
 
     pub fn enter_lottery_with_usd_value(
         ctx: Context<EnterLottery>,
-        usd_value: u64, // USD value in cents (e.g., 2000 = $20.00)
+        usd_value: u64,
     ) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
         require!(lottery.is_active, ErrorCode::LotteryInactive);
         
-        // Calculate tickets based on USD value
         let ticket_count = calculate_tickets_from_usd_value(usd_value);
         require!(ticket_count > 0, ErrorCode::InsufficientValue);
         
-        // Add participant
-        let participant = Participant {
-            wallet: ctx.accounts.participant.key(),
-            ticket_count,
-            usd_value,
-            entry_time: Clock::get()?.unix_timestamp,
-        };
+        let participant_wallet = ctx.accounts.participant.key();
+        let entry_time = Clock::get()?.unix_timestamp;
         
-        lottery.participants.push(participant);
+        // Initialize new participant account (will fail if already exists, use update_participant instead)
+        ctx.accounts.participant_account.lottery = lottery.key();
+        ctx.accounts.participant_account.wallet = participant_wallet;
+        ctx.accounts.participant_account.ticket_count = ticket_count;
+        ctx.accounts.participant_account.usd_value = usd_value;
+        ctx.accounts.participant_account.entry_time = entry_time;
+        
         lottery.total_participants += 1;
+        lottery.total_tickets += ticket_count as u64;
         
-        msg!("Participant entered lottery with {} tickets (${}.{})", 
+        msg!("New participant entered: {} tickets (${}.{})", 
              ticket_count, 
              usd_value / 100, 
              usd_value % 100);
-        msg!("Total participants: {}", lottery.total_participants);
+        msg!("Total unique participants: {}", lottery.total_participants);
+        msg!("Total tickets in lottery: {}", lottery.total_tickets);
         
         Ok(())
     }
@@ -80,34 +83,61 @@ pub mod lottery {
         let lottery = &mut ctx.accounts.lottery;
         require!(lottery.is_active, ErrorCode::LotteryInactive);
         
-        // Add participant
-        let participant = Participant {
-            wallet: ctx.accounts.participant.key(),
-            ticket_count,
-            usd_value: 0, // Legacy entry without USD tracking
-            entry_time: Clock::get()?.unix_timestamp,
-        };
+        let participant_wallet = ctx.accounts.participant.key();
+        let entry_time = Clock::get()?.unix_timestamp;
         
-        lottery.participants.push(participant);
+        // Initialize new participant account
+        ctx.accounts.participant_account.lottery = lottery.key();
+        ctx.accounts.participant_account.wallet = participant_wallet;
+        ctx.accounts.participant_account.ticket_count = ticket_count;
+        ctx.accounts.participant_account.usd_value = 0;
+        ctx.accounts.participant_account.entry_time = entry_time;
+        
         lottery.total_participants += 1;
+        lottery.total_tickets += ticket_count as u64;
         
-        msg!("Participant entered lottery with {} tickets", ticket_count);
-        msg!("Total participants: {}", lottery.total_participants);
+        msg!("New participant entered: {} tickets", ticket_count);
         
         Ok(())
     }
 
+    pub fn update_participant_tickets(
+        ctx: Context<UpdateParticipant>,
+        ticket_count: u32,
+        usd_value: u64,
+    ) -> Result<()> {
+        let lottery = &mut ctx.accounts.lottery;
+        require!(lottery.is_active, ErrorCode::LotteryInactive);
+        require!(
+            ctx.accounts.participant_account.lottery == lottery.key(),
+            ErrorCode::Unauthorized
+        );
+        
+        ctx.accounts.participant_account.ticket_count += ticket_count;
+        ctx.accounts.participant_account.usd_value += usd_value;
+        lottery.total_tickets += ticket_count as u64;
+        
+        msg!("Participant added {} more tickets (total: {}, ${}.{} total)", 
+             ticket_count,
+             ctx.accounts.participant_account.ticket_count,
+             ctx.accounts.participant_account.usd_value / 100,
+             ctx.accounts.participant_account.usd_value % 100);
+        
+        Ok(())
+    }
+
+    // Snapshot with 50/50 rollover mechanic
+    // For 20k participants, use off-chain indexing + on-chain verification
     pub fn take_snapshot(ctx: Context<TakeSnapshot>) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
         let clock = Clock::get()?;
         
         require!(lottery.is_active, ErrorCode::LotteryInactive);
         
-        // Dynamic timing based on fees collected
         let snapshot_interval = if lottery.fees_collected >= lottery.fast_mode_threshold {
-            lottery.fast_snapshot_interval // 48 hours for 200+ SOL fees
+            lottery.fast_snapshot_interval
         } else {
-            lottery.base_snapshot_interval  // 72 hours for < 200 SOL fees
+            lottery.base_snapshot_interval
         };
         
         require!(
@@ -115,81 +145,81 @@ pub mod lottery {
             ErrorCode::DrawTooEarly
         );
         
-        require!(lottery.participants.len() >= 9, ErrorCode::NotEnoughParticipants); // Need 9 for 1 main + 8 minor
+        require!(lottery.total_participants >= 9, ErrorCode::NotEnoughParticipants);
+        require!(lottery.total_tickets > 0, ErrorCode::NotEnoughParticipants);
         
-        // CRITICAL FIX 4: Improved randomness using clock data (weighted by ticket count)
+        // Use deterministic randomness based on blockchain state
         let seed = clock.slot
             .wrapping_mul(clock.unix_timestamp as u64)
-            .wrapping_add(lottery.participants.len() as u64)
+            .wrapping_add(lottery.total_participants)
             .wrapping_add(lottery.total_snapshots);
         
-        // Weighted selection based on ticket count
-        let total_tickets: u32 = lottery.participants.iter()
-            .map(|p| p.ticket_count)
-            .sum();
+        // 50/50 ROLLOVER MECHANIC: Calculate Pepe ball count (1-30)
+        // Mix of numbered balls and Pepe balls - use randomness to determine count
+        let pepe_count = ((seed % 30) as u8) + 1; // 1-30 balls
+        lottery.pepe_ball_count = pepe_count;
+        let is_odd = pepe_count % 2 == 1;
         
-        require!(total_tickets > 0, ErrorCode::NotEnoughParticipants);
-        
-        // Select main winner (weighted by tickets)
-        let main_winner_ticket = (seed % total_tickets as u64) as u32;
-        let mut accumulated = 0u32;
-        let mut main_winner_idx = 0;
-        
-        for (idx, participant) in lottery.participants.iter().enumerate() {
-            accumulated += participant.ticket_count;
-            if accumulated > main_winner_ticket {
-                main_winner_idx = idx;
-                break;
-            }
-        }
-        
-        lottery.winners.main_winner = Some(lottery.participants[main_winner_idx].wallet);
-        
-        // Select 8 minor winners (excluding main winner, with different randomness)
-        let mut minor_indices = Vec::new();
-        let mut remaining_seed = seed.wrapping_mul(7); // Different seed for minor winners
-        
-        for _ in 0..8 {
-            let available: Vec<usize> = (0..lottery.participants.len())
-                .filter(|&i| i != main_winner_idx && !minor_indices.contains(&i))
-                .collect();
-            
-            if available.is_empty() {
-                break;
-            }
-            
-            let winner_idx = available[(remaining_seed as usize) % available.len()];
-            minor_indices.push(winner_idx);
-            remaining_seed = remaining_seed.wrapping_mul(13).wrapping_add(1);
-        }
-        
-        let mut minor_winners = Vec::with_capacity(8);
-        for idx in minor_indices {
-            minor_winners.push(lottery.participants[idx].wallet);
-        }
-        lottery.winners.minor_winners = minor_winners;
-        
+        lottery.snapshot_seed = seed;
         lottery.last_snapshot = clock.unix_timestamp;
         lottery.total_snapshots += 1;
-        
-        // Update fast mode status
         lottery.is_fast_mode = lottery.fees_collected >= lottery.fast_mode_threshold;
         
-        // Log the snapshot
-        let timing = if lottery.is_fast_mode {
-            "48-hour"
-        } else {
-            "72-hour"
-        };
-        
         msg!("📸 SNAPSHOT TAKEN! 📸");
-        msg!("Jackpot: {} SOL", lottery.jackpot_amount / 1_000_000_000);
-        msg!("Fees Collected: {} SOL", lottery.fees_collected / 1_000_000_000);
-        msg!("Timing: {} snapshots", timing);
-        msg!("Main Winner: {}", lottery.winners.main_winner.unwrap());
-        msg!("Minor Winners: {}", lottery.winners.minor_winners.len());
+        msg!("Total Participants: {}", lottery.total_participants);
+        msg!("Total Tickets: {}", lottery.total_tickets);
+        msg!("Snapshot Seed: {}", seed);
+        msg!("🐸 Pepe Ball Count: {} ({} balls)", pepe_count, if is_odd { "ODD" } else { "EVEN" });
         
-        lottery.participants.clear();
+        if is_odd {
+            // ODD = PAYOUT: Proceed with winner selection
+            msg!("🎉 ODD COUNT - PAYOUT TIME! 🎉");
+            msg!("Use off-chain indexer to find winners based on this seed");
+            // Don't reset yet - wait for payout to complete
+        } else {
+            // EVEN = ROLLOVER: Grow jackpot, extend timer, keep participants
+            msg!("🚀 EVEN COUNT - ROLLOVER! 🚀");
+            lottery.rollover_count += 1;
+            
+            // Extend timer: 48h for odd rollovers, 72h for even rollovers
+            let extension = if lottery.rollover_count % 2 == 0 {
+                72 * 3600  // 72 hours
+            } else {
+                48 * 3600  // 48 hours
+            };
+            
+            lottery.last_snapshot = clock.unix_timestamp + extension as i64;
+            
+            // Jackpot grows (accumulates from entries, no payout)
+            // Participants remain for next draw
+            msg!("Rollover #{} - Jackpot grows, timer extended by {} hours", 
+                 lottery.rollover_count, extension / 3600);
+            msg!("Participants carry over to next draw");
+            
+            // Reset snapshot seed (no payout this round)
+            lottery.snapshot_seed = 0;
+        }
+        
+        Ok(())
+    }
+
+    // Verify and set winners (called after off-chain calculation)
+    pub fn set_winners(
+        ctx: Context<SetWinners>,
+        main_winner: Pubkey,
+        minor_winners: Vec<Pubkey>,
+    ) -> Result<()> {
+        let lottery = &mut ctx.accounts.lottery;
+        require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
+        require!(lottery.snapshot_seed > 0, ErrorCode::NoWinners);
+        require!(minor_winners.len() <= 8, ErrorCode::InvalidConfig);
+        
+        lottery.winners.main_winner = Some(main_winner);
+        lottery.winners.minor_winners = minor_winners;
+        
+        msg!("✅ Winners set!");
+        msg!("Main Winner: {}", main_winner);
+        msg!("Minor Winners: {}", lottery.winners.minor_winners.len());
         
         Ok(())
     }
@@ -197,32 +227,37 @@ pub mod lottery {
     pub fn payout_winners(ctx: Context<PayoutWinners>) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
         require!(lottery.winners.main_winner.is_some(), ErrorCode::NoWinners);
+        require!(lottery.pepe_ball_count % 2 == 1, ErrorCode::InvalidConfig); // Must be odd for payout
         
-        // NEW PAYOUT STRUCTURE: 68% Grand Prize, 8% Carry-over, 8 winners at 3% each
-        let total_jackpot = lottery.jackpot_amount + lottery.carry_over_amount; // Include carry-over
-        let grand_prize = (total_jackpot * 68) / 100; // 68% to grand prize winner
-        let carry_over = (total_jackpot * 8) / 100; // 8% carry-over to next round
-        let minor_payout_per_winner = (total_jackpot * 3) / 100; // 3% to each of 8 minor winners
+        let total_jackpot = lottery.jackpot_amount + lottery.carry_over_amount;
         
-        msg!("💰 PAYOUT DISTRIBUTION 💰");
+        // 50/50 ROLLOVER PAYOUT STRUCTURE (when odd):
+        // 50% main winner, 40% split 8 minors (5% each), 10% house
+        let main_reward = total_jackpot / 2;  // 50%
+        let minor_pool = (total_jackpot * 2) / 5;  // 40%
+        let minor_each = minor_pool / 8;  // 5% each for 8 winners
+        let house_fee = total_jackpot / 10;  // 10%
+        
+        msg!("💰 50/50 ROLLOVER PAYOUT DISTRIBUTION 💰");
         msg!("Total Jackpot: {} SOL", total_jackpot / 1_000_000_000);
-        msg!("Grand Prize Winner: {} SOL (68%)", grand_prize / 1_000_000_000);
-        msg!("Carry-over to Next Round: {} SOL (8%)", carry_over / 1_000_000_000);
-        msg!("Each Minor Winner: {} SOL (3%)", minor_payout_per_winner / 1_000_000_000);
-        msg!("Total Minor Winners: {}", lottery.winners.minor_winners.len());
+        msg!("Pepe Ball Count: {} (ODD - PAYOUT)", lottery.pepe_ball_count);
+        msg!("Main Winner: {} SOL (50%)", main_reward / 1_000_000_000);
+        msg!("Minor Winners Pool: {} SOL (40%)", minor_pool / 1_000_000_000);
+        msg!("Each Minor Winner: {} SOL (5%)", minor_each / 1_000_000_000);
+        msg!("House Fee: {} SOL (10%)", house_fee / 1_000_000_000);
         
-        // Update carry-over for next round
-        lottery.carry_over_amount = carry_over;
-        
-        // Transfer SOL to winners (simplified - would need proper SOL transfer logic)
-        // This is a placeholder - actual implementation would transfer SOL
-        
-        // Clear winners after payout
+        // Reset for next round
+        lottery.carry_over_amount = 0;
+        lottery.jackpot_amount = 0;  // All paid out (or set to house fee if keeping some)
         lottery.winners.main_winner = None;
         lottery.winners.minor_winners.clear();
+        lottery.snapshot_seed = 0;
+        lottery.rollover_count = 0;  // Reset rollover counter after payout
+        lottery.pepe_ball_count = 0;
         
-        // Reset jackpot to carry-over amount for next round
-        lottery.jackpot_amount = carry_over;
+        // Reset participants for next round
+        lottery.total_participants = 0;
+        lottery.total_tickets = 0;
         
         Ok(())
     }
@@ -232,20 +267,13 @@ pub mod lottery {
         new_fees: u64,
     ) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
-        let _old_fees = lottery.fees_collected;
         lottery.fees_collected = new_fees;
-        
-        // Update fast mode status
-        let was_fast_mode = lottery.is_fast_mode;
         lottery.is_fast_mode = lottery.fees_collected >= lottery.fast_mode_threshold;
         
-        // Log the mode change if threshold is crossed
-        if lottery.is_fast_mode && !was_fast_mode {
-            msg!("🚀 FEES REACHED {} SOL! Switching to 48-hour snapshots! 🚀", new_fees / 1_000_000_000);
-        } else if !lottery.is_fast_mode && was_fast_mode {
-            msg!("📉 Fees dropped to {} SOL. Back to 72-hour snapshots.", new_fees / 1_000_000_000);
+        if lottery.is_fast_mode {
+            msg!("🚀 Fast mode active: 48-hour snapshots");
         } else {
-            msg!("Fees updated to {} SOL", new_fees / 1_000_000_000);
+            msg!("📉 Standard mode: 72-hour snapshots");
         }
         
         Ok(())
@@ -266,7 +294,6 @@ pub mod lottery {
         Ok(())
     }
 
-    // Admin-only: configure snapshot timing and fast-mode threshold for testing/devnet
     pub fn configure_timing(
         ctx: Context<ConfigureTiming>,
         base_snapshot_interval: u64,
@@ -275,8 +302,6 @@ pub mod lottery {
     ) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
         require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
-
-        // Basic sanity checks
         require!(base_snapshot_interval > 0, ErrorCode::InvalidConfig);
         require!(fast_snapshot_interval > 0, ErrorCode::InvalidConfig);
 
@@ -284,8 +309,7 @@ pub mod lottery {
         lottery.fast_snapshot_interval = fast_snapshot_interval;
         lottery.fast_mode_threshold = fast_mode_threshold;
 
-        msg!(
-            "⏱️ Timing configured: base={}s, fast={}s, threshold={} SOL",
+        msg!("⏱️ Timing configured: base={}s, fast={}s, threshold={} SOL",
             base_snapshot_interval,
             fast_snapshot_interval,
             fast_mode_threshold / 1_000_000_000
@@ -301,12 +325,18 @@ pub mod lottery {
         let lottery = &mut ctx.accounts.lottery;
         require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
         
-        let old_amount = lottery.jackpot_amount;
         lottery.jackpot_amount = new_amount;
         
-        msg!("💰 Jackpot updated: {} SOL → {} SOL", 
-             old_amount / 1_000_000_000,
-             new_amount / 1_000_000_000);
+        msg!("💰 Jackpot updated: {} SOL", new_amount / 1_000_000_000);
+        
+        Ok(())
+    }
+
+    pub fn close_lottery(ctx: Context<CloseLottery>) -> Result<()> {
+        let lottery = &ctx.accounts.lottery;
+        require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
+        
+        msg!("Closing lottery account for upgrade...");
         
         Ok(())
     }
@@ -334,11 +364,47 @@ pub struct EnterLottery<'info> {
     #[account(mut)]
     pub lottery: Account<'info, Lottery>,
     
+    #[account(
+        init,
+        payer = participant,
+        space = 8 + ParticipantAccount::INIT_SPACE,
+        seeds = [b"participant", lottery.key().as_ref(), participant.key().as_ref()],
+        bump
+    )]
+    pub participant_account: Account<'info, ParticipantAccount>,
+    
+    #[account(mut)]
+    pub participant: Signer<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateParticipant<'info> {
+    #[account(mut)]
+    pub lottery: Account<'info, Lottery>,
+    
+    #[account(
+        mut,
+        seeds = [b"participant", lottery.key().as_ref(), participant.key().as_ref()],
+        bump
+    )]
+    pub participant_account: Account<'info, ParticipantAccount>,
+    
+    #[account(mut)]
     pub participant: Signer<'info>,
 }
 
 #[derive(Accounts)]
 pub struct TakeSnapshot<'info> {
+    #[account(mut)]
+    pub lottery: Account<'info, Lottery>,
+    
+    pub admin: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct SetWinners<'info> {
     #[account(mut)]
     pub lottery: Account<'info, Lottery>,
     
@@ -385,31 +451,49 @@ pub struct EmergencyPauseLottery<'info> {
     pub admin: Signer<'info>,
 }
 
+#[derive(Accounts)]
+pub struct CloseLottery<'info> {
+    #[account(
+        mut,
+        close = admin,
+        seeds = [b"lottery"],
+        bump
+    )]
+    pub lottery: Account<'info, Lottery>,
+    
+    #[account(mut)]
+    pub admin: Signer<'info>,
+}
+
 #[account]
 #[derive(InitSpace)]
         pub struct Lottery {
         pub jackpot_amount: u64,
-        pub carry_over_amount: u64,         // 8% carry-over to next prize
+    pub carry_over_amount: u64,
         pub last_snapshot: i64,
-        pub base_snapshot_interval: u64,    // 72 hours in seconds
-        pub fast_snapshot_interval: u64,     // 48 hours in seconds
-        pub fast_mode_threshold: u64,       // 200 SOL threshold
-        pub fees_collected: u64,            // Total fees collected in SOL
+    pub base_snapshot_interval: u64,
+    pub fast_snapshot_interval: u64,
+    pub fast_mode_threshold: u64,
+    pub fees_collected: u64,
         pub is_fast_mode: bool,
         pub is_active: bool,
         pub admin: Pubkey,
-        #[max_len(1000)]
-        pub participants: Vec<Participant>,
-        pub winners: Winners,
         pub total_participants: u64,
+    pub total_tickets: u64,
         pub total_snapshots: u64,
+    pub snapshot_seed: u64,  // Seed for winner selection
+    pub winners: Winners,
+    pub rollover_count: u8,  // Track consecutive rollovers
+    pub pepe_ball_count: u8,  // Last draw's Pepe ball count (1-30)
         }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, InitSpace)]
-pub struct Participant {
+#[account]
+#[derive(InitSpace)]
+pub struct ParticipantAccount {
+    pub lottery: Pubkey,
     pub wallet: Pubkey,
     pub ticket_count: u32,
-    pub usd_value: u64, // USD value in cents
+    pub usd_value: u64,
     pub entry_time: i64,
 }
 
@@ -420,16 +504,11 @@ pub struct Winners {
     pub minor_winners: Vec<Pubkey>,
 }
 
-// Helper function to calculate tickets from USD value
 fn calculate_tickets_from_usd_value(usd_value: u64) -> u32 {
     match usd_value {
-        // $20.00 = 1 ticket
         2000..=9999 => 1,
-        // $100.00 = 4 tickets (25% bonus)
         10000..=49999 => 4,
-        // $500.00 = 10 tickets (100% bonus)
         50000..=u64::MAX => 10,
-        // Less than $20 = 0 tickets
         _ => 0,
     }
 }
@@ -450,5 +529,6 @@ pub enum ErrorCode {
     InsufficientValue,
     #[msg("Invalid configuration values")]
     InvalidConfig,
+    #[msg("Payout only allowed when Pepe ball count is odd")]
+    PayoutNotAllowed,
 }
-

@@ -154,6 +154,23 @@ class SecurePayoutTool {
             }
             this.securityChecks.push({ check: 'Jackpot Amount', passed: true });
 
+            // Check 7b: Verify Pepe ball count is odd (required for payout in 50/50 rollover)
+            const pepeBallCount = lottery.pepeBallCount || 0;
+            const isOdd = pepeBallCount % 2 === 1;
+            if (!isOdd) {
+                this.securityChecks.push({ 
+                    check: 'Pepe Ball Count (50/50 Rollover)', 
+                    passed: false, 
+                    error: `Pepe ball count is EVEN (${pepeBallCount}) - Payout only allowed when ODD. This is a rollover round.` 
+                });
+                return false;
+            }
+            this.securityChecks.push({ 
+                check: 'Pepe Ball Count (50/50 Rollover)', 
+                passed: true, 
+                details: `Pepe balls: ${pepeBallCount} (ODD - PAYOUT ALLOWED)` 
+            });
+
             // Check 8: Verify admin has balance for fees
             const adminBalance = await this.connection.getBalance(this.admin.publicKey);
             const balanceSOL = (adminBalance / 1e9).toFixed(4);
@@ -222,15 +239,16 @@ class SecurePayoutTool {
             throw new Error('Jackpot amount must be positive');
         }
 
-        // NEW PAYOUT STRUCTURE: 68% Grand Prize, 8% Carry-over, 8 winners at 3% each
+        // 50/50 ROLLOVER PAYOUT STRUCTURE (when odd Pepe ball count):
+        // 50% Main Winner, 40% split 8 minors (5% each), 10% house fee
         // Calculate with overflow protection
-        const grandPrize = (jackpot * 68n) / 100n; // 68% to grand prize winner
-        const carryOver = (jackpot * 8n) / 100n; // 8% carry-over to next round
-        const minorPayoutPerWinner = (jackpot * 3n) / 100n; // 3% to each of 8 minor winners
-        const totalMinorPayout = minorPayoutPerWinner * 8n; // 24% total (8 winners × 3%)
+        const mainReward = jackpot / 2n; // 50% to main winner
+        const minorPool = (jackpot * 2n) / 5n; // 40% total for minor winners
+        const minorPayoutPerWinner = minorPool / 8n; // 5% to each of 8 minor winners
+        const houseFee = jackpot / 10n; // 10% house fee
         
         // Calculate remainder to handle rounding
-        const total = grandPrize + carryOver + totalMinorPayout;
+        const total = mainReward + minorPool + houseFee;
         const remainder = jackpot - total;
         
         // Security: Verify totals match (allow small remainder due to integer division)
@@ -242,14 +260,16 @@ class SecurePayoutTool {
 
         return {
             total: Number(jackpot),
-            grandPrize: Number(grandPrize),
-            grandPrizeSOL: Number(grandPrize) / 1e9,
-            carryOver: Number(carryOver),
-            carryOverSOL: Number(carryOver) / 1e9,
+            mainReward: Number(mainReward),
+            mainRewardSOL: Number(mainReward) / 1e9,
+            minorPool: Number(minorPool),
+            minorPoolSOL: Number(minorPool) / 1e9,
             minorPayoutPerWinner: Number(minorPayoutPerWinner),
             minorPayoutPerWinnerSOL: Number(minorPayoutPerWinner) / 1e9,
-            totalMinorPayout: Number(totalMinorPayout),
-            totalMinorPayoutSOL: Number(totalMinorPayout) / 1e9,
+            totalMinorPayout: Number(minorPool),
+            totalMinorPayoutSOL: Number(minorPool) / 1e9,
+            houseFee: Number(houseFee),
+            houseFeeSOL: Number(houseFee) / 1e9,
             minorWinnersCount: 8,
             validated: true
         };
@@ -284,15 +304,28 @@ class SecurePayoutTool {
             const totalJackpot = lottery.jackpotAmount + (lottery.carryOverAmount || 0);
             const payouts = await this.calculateSecurePayouts(totalJackpot);
             
-            console.log('💰 PAYOUT CALCULATION (New Structure):');
+            // Check Pepe ball count for 50/50 rollover
+            const pepeBallCount = lottery.pepeBallCount || 0;
+            const isOdd = pepeBallCount % 2 === 1;
+            
+            if (!isOdd) {
+                console.log('⚠️  WARNING: Pepe ball count is EVEN - Payout not allowed!');
+                console.log(`   Pepe Ball Count: ${pepeBallCount} (EVEN = ROLLOVER)`);
+                console.log('   Only ODD counts trigger payouts.\n');
+                return { success: false, error: 'Payout only allowed when Pepe ball count is odd' };
+            }
+            
+            console.log('💰 50/50 ROLLOVER PAYOUT CALCULATION:');
             console.log(`Total Jackpot: ${(totalJackpot / 1e9).toFixed(4)} SOL`);
             console.log(`  Base: ${(lottery.jackpotAmount / 1e9).toFixed(4)} SOL`);
             console.log(`  Carry-over: ${((lottery.carryOverAmount || 0) / 1e9).toFixed(4)} SOL`);
-            console.log(`Grand Prize Winner: ${payouts.grandPrizeSOL.toFixed(4)} SOL (68%)`);
-            console.log(`Carry-over to Next Round: ${payouts.carryOverSOL.toFixed(4)} SOL (8%)`);
-            console.log(`Each Minor Winner: ${payouts.minorPayoutPerWinnerSOL.toFixed(4)} SOL (3%)`);
-            console.log(`Total Minor Payout: ${payouts.totalMinorPayoutSOL.toFixed(4)} SOL (24%)`);
-            console.log(`Grand Prize Winner: ${lottery.winners.mainWinner.toString()}`);
+            console.log(`🐸 Pepe Ball Count: ${pepeBallCount} (ODD - PAYOUT TIME!)`);
+            console.log(`Main Winner: ${payouts.mainRewardSOL.toFixed(4)} SOL (50%)`);
+            console.log(`Minor Winners Pool: ${payouts.minorPoolSOL.toFixed(4)} SOL (40%)`);
+            console.log(`Each Minor Winner: ${payouts.minorPayoutPerWinnerSOL.toFixed(4)} SOL (5%)`);
+            console.log(`Total Minor Payout: ${payouts.totalMinorPayoutSOL.toFixed(4)} SOL (40%)`);
+            console.log(`House Fee: ${payouts.houseFeeSOL.toFixed(4)} SOL (10%)`);
+            console.log(`Main Winner: ${lottery.winners.mainWinner.toString()}`);
             console.log(`Minor Winners: ${lottery.winners.minorWinners?.length || 0}\n`);
 
             console.log('📝 Executing payout_winners instruction...\n');
