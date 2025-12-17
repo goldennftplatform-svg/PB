@@ -20,6 +20,10 @@
     "@solana/web3.js": "^1.87.0",
     "@solana/spl-token": "^0.3.0",
     "@coral-xyz/anchor": "^0.30.1"
+  },
+  "scripts": {
+    "index-winners": "node helius-winner-indexer.js",
+    "check-participant": "node participant-account-helper.js"
   }
 }
 

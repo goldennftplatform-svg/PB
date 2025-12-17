@@ -1,4 +1,4 @@
-// Slot's o Fun Frontend - Clean Rebuild
+// Slot's o Fun Frontend - Optimized for 100k+ concurrent users
 // No wallet connection for average users - Admin whitelist only
 
 class SlotsOFunApp {
@@ -6,17 +6,76 @@ class SlotsOFunApp {
         this.connection = null;
         this.wallet = null;
         this.programIds = {
-            token: "HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR",
-            lottery: "ytKyH7viyfRmqYtS7Y3nCa8kCJXAPTN6MA8a3EmtSn1",
+            token: "CXcoVCAuQB2XigJmyGz162aj1MCgJxC9Hgo5SEuRuFto", // NEW MINTED TOKEN
+            lottery: "8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7",
             lpManager: "G5WidJNwmdp33kQ6AeTcrsKJdP9rvuecfyZXCmQ6oSNG"
         };
-        this.priceService = typeof PriceService !== 'undefined' ? new PriceService() : null;
         this.cluster = "devnet";
+        
+        // Initialize scalability infrastructure
+        this.initScalabilityInfrastructure();
+        
+        // Initialize price service with shared state
+        this.priceService = typeof PriceService !== 'undefined' 
+            ? new PriceService({
+                sharedState: this.sharedState,
+                connectionPool: this.connectionPool,
+                rateLimiter: this.rateLimiter
+            }) 
+            : null;
+        
         // Admin whitelist - only this address can access admin/reporting
         this.adminWhitelist = ["Hefy8JLP947zsUACbCAtgd3TuvWDJmZDhZmob1xWdbbJ"];
         this.isAdminAuthenticated = false;
         this.adminWalletAddress = null;
         this.init();
+    }
+
+    initScalabilityInfrastructure() {
+        // Initialize connection pool
+        if (typeof ConnectionPool !== 'undefined') {
+            this.connectionPool = new ConnectionPool({
+                cluster: this.cluster,
+                heliusApiKey: typeof process !== 'undefined' ? process.env.HELIUS_API_KEY : null,
+                maxConnections: 10,
+                maxRequestsPerSecond: 100
+            });
+        }
+
+        // Initialize shared state manager
+        if (typeof SharedStateManager !== 'undefined') {
+            this.sharedState = typeof window !== 'undefined' && window.sharedState 
+                ? window.sharedState 
+                : new SharedStateManager();
+            
+            // Subscribe to state updates
+            this.stateUnsubscribe = this.sharedState.subscribe((state) => {
+                this.onStateUpdate(state);
+            });
+        }
+
+        // Initialize rate limiter
+        if (typeof RateLimiter !== 'undefined') {
+            this.rateLimiter = new RateLimiter({
+                maxRequests: 100,
+                windowMs: 1000
+            });
+        }
+    }
+
+    onStateUpdate(state) {
+        // Update UI when shared state changes
+        if (state.tokenPrice !== null) {
+            this.updateTokenCounts(state.tokenPrice);
+        }
+        if (state.jackpot !== null) {
+            const jackpotEl = document.getElementById('jackpot-amount');
+            if (jackpotEl) jackpotEl.textContent = `${state.jackpot} SOL`;
+        }
+        if (state.participants !== null) {
+            const participantsEl = document.getElementById('participants-count');
+            if (participantsEl) participantsEl.textContent = `${state.participants} participants`;
+        }
     }
 
     async init() {
@@ -40,11 +99,40 @@ class SlotsOFunApp {
             if (solanaWeb3) {
                 // Store reference globally for use in other methods
                 window.solanaWeb3 = solanaWeb3;
-                this.connection = new solanaWeb3.Connection(
-                    solanaWeb3.clusterApiUrl('devnet'),
-                    'confirmed'
-                );
-                console.log("✅ Connected to Solana Devnet");
+                
+                // Use connection pool if available, otherwise create direct connection
+                if (this.connectionPool) {
+                    // Create connection with pool-backed methods
+                    const pool = this.connectionPool;
+                    this.connection = new solanaWeb3.Connection(
+                        solanaWeb3.clusterApiUrl('devnet'),
+                        'confirmed'
+                    );
+                    
+                    // Override methods to use connection pool
+                    const originalGetParsedTokenAccountsByOwner = this.connection.getParsedTokenAccountsByOwner.bind(this.connection);
+                    this.connection.getParsedTokenAccountsByOwner = async (owner, config) => {
+                        // Use pool for better performance
+                        try {
+                            const result = await pool.executeRequest(
+                                'getParsedTokenAccountsByOwner',
+                                [owner.toString(), config],
+                                true
+                            );
+                            return { value: result || [] };
+                        } catch (error) {
+                            // Fallback to direct connection
+                            return originalGetParsedTokenAccountsByOwner(owner, config);
+                        }
+                    };
+                } else {
+                    // Fallback to direct connection
+                    this.connection = new solanaWeb3.Connection(
+                        solanaWeb3.clusterApiUrl('devnet'),
+                        'confirmed'
+                    );
+                }
+                console.log("✅ Connected to Solana Devnet (optimized)");
             }
             if (typeof window.solana !== 'undefined') {
                 console.log("✅ Phantom wallet detected");
@@ -256,16 +344,33 @@ class SlotsOFunApp {
                     
                     if (tokenAccounts.value.length > 0) {
                         const balance = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
-                        this.showNotification(`✅ You hold ${balance.toLocaleString()} tokens! You're in the lottery! 🎰`, "success");
+                        const rawAmount = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.amount;
+                        const decimals = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.decimals;
+                        
+                        // Calculate USD value
+                        let usdValue = 0;
+                        if (this.priceService) {
+                            try {
+                                usdValue = await this.priceService.calculateUSDValue(rawAmount, decimals);
+                            } catch (error) {
+                                console.error('Error calculating USD value:', error);
+                            }
+                        }
+                        
+                        if (usdValue >= 20) {
+                            this.showNotification(`✅ You hold ${balance.toLocaleString()} tokens ($${usdValue.toFixed(2)})! You're in the lottery! 🎰`, "success");
+                        } else {
+                            this.showNotification(`⚠️ You hold ${balance.toLocaleString()} tokens ($${usdValue.toFixed(2)}). Need $20+ to qualify!`, "warning");
+                        }
                     } else {
-                        this.showNotification("⚠️ No tokens found. Buy tokens first to enter the lottery!", "warning");
+                        this.showNotification("⚠️ No tokens found. Buy $20+ worth on Pump.fun to enter the lottery!", "warning");
                     }
                 } catch (error) {
                     console.error("Error checking balance:", error);
-                    this.showNotification("🎰 Lottery participation is automatic! Hold $20+ worth of tokens to qualify! 🎰", "info");
+                    this.showNotification("🎰 Auto-entry enabled! Buy $20+ worth on Pump.fun to automatically enter! 🎰", "info");
                 }
             } else {
-                this.showNotification("🎰 Lottery participation is automatic! Just hold $20 worth of tokens to qualify! 🎰", "info");
+                this.showNotification("🎰 Auto-entry enabled! Buy $20+ worth on Pump.fun - you'll be automatically entered! 🎰", "info");
             }
         } catch (error) {
             console.error("❌ Enter lottery failed:", error);
@@ -278,7 +383,7 @@ class SlotsOFunApp {
             const tokenMint = this.programIds.token;
             const cluster = this.cluster === 'devnet' ? 'devnet' : 'mainnet';
             
-            // First, try to connect wallet if available
+            // Connect wallet first
             let walletConnected = false;
             if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
                 try {
@@ -287,33 +392,25 @@ class SlotsOFunApp {
                     }
                     walletConnected = true;
                     this.wallet = window.solana;
-                    this.showNotification("✅ Wallet connected!", "success");
                 } catch (error) {
                     console.log("Wallet connection optional, continuing...");
                 }
             }
             
-            // Try Jupiter aggregator first (works on devnet and mainnet)
-            const jupiterUrl = `https://jup.ag/swap/SOL-${tokenMint}?cluster=${cluster}`;
-            
-            // Also try pump.fun direct link
+            // PRIMARY: Pump.fun (auto-entry enabled)
             const pumpFunUrl = `https://pump.fun/${tokenMint}`;
             
-            // Show options to user
-            const useJupiter = confirm(
-                `💰 BUY TOKENS\n\n` +
-                `Click OK to open Jupiter (recommended)\n` +
-                `Click Cancel to open Pump.Fun\n\n` +
-                `Token: ${tokenMint.substring(0, 8)}...`
-            );
+            // Show auto-entry message
+            this.showNotification("🎰 Opening Pump.fun - You'll be auto-entered into lottery when you buy! 🎰", "success");
             
-            if (useJupiter) {
-                window.open(jupiterUrl, '_blank');
-                this.showNotification("✅ Opening Jupiter swap...", "success");
-            } else {
-                window.open(pumpFunUrl, '_blank');
-                this.showNotification("✅ Opening Pump.Fun...", "success");
-            }
+            // Open Pump.fun
+            window.open(pumpFunUrl, '_blank');
+            
+            // Also show info about auto-entry
+            setTimeout(() => {
+                this.showNotification("💡 Remember: Every purchase on Pump.fun automatically enters you into the lottery!", "info");
+            }, 2000);
+            
         } catch (error) {
             console.error("❌ Token purchase failed:", error);
             this.showNotification("❌ Token purchase failed: " + error.message, "error");
@@ -522,13 +619,26 @@ class SlotsOFunApp {
             return;
         }
         
-        // Update immediately
-        await this.updatePricingWithTokenCounts();
-        
-        // Update every 30 seconds
-        setInterval(async () => {
+        // If using shared state, updates come automatically via subscription
+        if (this.sharedState) {
+            // Shared state will broadcast updates to all users
+            // Only one user needs to fetch, others get updates via WebSocket/polling
+            const state = this.sharedState.getState();
+            if (state.tokenPrice !== null) {
+                this.updateTokenCounts(state.tokenPrice);
+            } else {
+                // Trigger initial fetch (only if no one else has)
+                await this.updatePricingWithTokenCounts();
+            }
+        } else {
+            // Fallback: individual updates (less efficient for 100k users)
             await this.updatePricingWithTokenCounts();
-        }, 30000);
+            
+            // Update every 30 seconds (reduced frequency for scalability)
+            setInterval(async () => {
+                await this.updatePricingWithTokenCounts();
+            }, 30000);
+        }
     }
 
     async updatePricingWithTokenCounts() {
@@ -537,6 +647,7 @@ class SlotsOFunApp {
             
             if (this.priceService) {
                 try {
+                    // This will use shared state if available, reducing API calls
                     tokenPrice = await this.priceService.getTokenPriceInUSDC();
                 } catch (error) {
                     console.error('Error getting token price:', error);
@@ -588,15 +699,19 @@ class SlotsOFunApp {
     }
 
     showNotification(message, type = 'info') {
+        // Remove existing notifications
+        const existing = document.querySelector('.notification');
+        if (existing) existing.remove();
+        
         const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
+        notification.className = 'notification';
         notification.textContent = message;
         document.body.appendChild(notification);
-        setTimeout(() => notification.classList.add('show'), 100);
+        
         setTimeout(() => {
-            notification.classList.remove('show');
+            notification.style.opacity = '0';
             setTimeout(() => notification.remove(), 300);
-        }, 3000);
+        }, 4000);
     }
 }
 

@@ -96,3 +96,18 @@ When the jackpot pool reaches **200 SOL**, the lottery switches from:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

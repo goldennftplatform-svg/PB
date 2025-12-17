@@ -1,10 +1,11 @@
 // Price Service - Dynamic Token Price to USDC Conversion
+// Optimized for 100k+ concurrent users with shared state
 // Uses Helius API for optimized data retrieval + Jupiter for price
 
 class PriceService {
-    constructor() {
+    constructor(options = {}) {
         // Helius API key - set via environment variable or default
-        this.heliusApiKey = process.env.HELIUS_API_KEY || '431ca765-2f35-4b23-8abd-db03796bd85f';
+        this.heliusApiKey = options.heliusApiKey || process.env.HELIUS_API_KEY || '431ca765-2f35-4b23-8abd-db03796bd85f';
         this.heliusRpcUrl = this.heliusApiKey 
             ? `https://rpc.helius.xyz/?api-key=${this.heliusApiKey}`
             : null;
@@ -12,6 +13,21 @@ class PriceService {
         this.tokenMint = null; // Will be set from contract
         this.usdcMint = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'; // USDC on Solana
         this.priceCache = { price: 0, timestamp: 0, ttl: 30000 }; // 30s cache
+        
+        // Use shared state if available
+        this.sharedState = options.sharedState || (typeof window !== 'undefined' && window.sharedState) || null;
+        this.connectionPool = options.connectionPool || null;
+        this.rateLimiter = options.rateLimiter || null;
+        
+        // Subscribe to shared state updates
+        if (this.sharedState) {
+            this.unsubscribe = this.sharedState.subscribe((state) => {
+                if (state.tokenPrice !== null && state.tokenPrice !== this.priceCache.price) {
+                    this.priceCache.price = state.tokenPrice;
+                    this.priceCache.timestamp = state.lastUpdate || Date.now();
+                }
+            });
+        }
     }
 
     /**
@@ -24,10 +40,22 @@ class PriceService {
 
     /**
      * Get token price in USDC using Jupiter Price API
+     * Optimized: Uses shared state to avoid redundant API calls
      */
     async getTokenPriceInUSDC() {
         try {
-            // Check cache first
+            // Check shared state first (most efficient for 100k users)
+            if (this.sharedState) {
+                const state = this.sharedState.getState();
+                if (state.tokenPrice !== null) {
+                    const age = Date.now() - (state.lastUpdate || 0);
+                    if (age < this.priceCache.ttl) {
+                        return state.tokenPrice;
+                    }
+                }
+            }
+
+            // Check local cache
             const now = Date.now();
             if (this.priceCache.timestamp > 0 && (now - this.priceCache.timestamp) < this.priceCache.ttl) {
                 return this.priceCache.price;
@@ -37,27 +65,42 @@ class PriceService {
                 throw new Error('Token mint not set. Call setTokenMint() first.');
             }
 
-            // Fetch price from Jupiter
-            const response = await fetch(`${this.jupiterPriceApi}?ids=${this.tokenMint}`);
-            const data = await response.json();
-            
-            if (data.data && data.data[this.tokenMint]) {
-                const priceData = data.data[this.tokenMint];
-                // Jupiter returns price in USD (not USDC, but close enough for our use)
-                const price = parseFloat(priceData.price || 0);
+            // Use rate limiter if available
+            const fetchPrice = async () => {
+                const response = await fetch(`${this.jupiterPriceApi}?ids=${this.tokenMint}`, {
+                    cache: 'no-cache',
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await response.json();
                 
-                // Update cache
-                this.priceCache = {
-                    price,
-                    timestamp: now,
-                    ttl: 30000
-                };
+                if (data.data && data.data[this.tokenMint]) {
+                    const priceData = data.data[this.tokenMint];
+                    const price = parseFloat(priceData.price || 0);
+                    
+                    // Update local cache
+                    this.priceCache = {
+                        price,
+                        timestamp: now,
+                        ttl: 30000
+                    };
+                    
+                    // Update shared state (broadcasts to all users)
+                    if (this.sharedState) {
+                        this.sharedState.updateProperty('tokenPrice', price);
+                    }
+                    
+                    return price;
+                }
                 
-                console.log(`💰 Token price: $${price.toFixed(6)}`);
-                return price;
+                throw new Error('Price data not found');
+            };
+
+            // Execute with rate limiting if available
+            if (this.rateLimiter) {
+                return await this.rateLimiter.execute(fetchPrice, 1);
+            } else {
+                return await fetchPrice();
             }
-            
-            throw new Error('Price data not found');
         } catch (error) {
             console.error('❌ Error fetching token price:', error);
             // Fallback to default price for testing
@@ -103,14 +146,25 @@ class PriceService {
 
     /**
      * Use Helius API for enhanced data retrieval
+     * Optimized: Uses connection pool for better performance
      */
     async getTokenAccountData(accountAddress) {
-        if (!this.heliusRpcUrl) {
+        if (!this.heliusRpcUrl && !this.connectionPool) {
             console.warn('⚠️ Helius API key not set - using standard RPC');
             return null;
         }
 
         try {
+            // Use connection pool if available
+            if (this.connectionPool) {
+                return await this.connectionPool.executeRequest(
+                    'getAccountInfo',
+                    [accountAddress, { encoding: 'jsonParsed' }],
+                    true // use cache
+                );
+            }
+
+            // Fallback to direct fetch
             const response = await fetch(this.heliusRpcUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

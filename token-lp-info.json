@@ -1,0 +1,14 @@
+{
+  "mint": "CXcoVCAuQB2XigJmyGz162aj1MCgJxC9Hgo5SEuRuFto",
+  "publicLPAccount": "C66FhqiG1keNd9YMckGcPUNryctSvHL9yyLGymqDFysq",
+  "houseLPAccount": "C66FhqiG1keNd9YMckGcPUNryctSvHL9yyLGymqDFysq",
+  "publicLPAmount": "850000000000000000",
+  "houseLPAmount": "150000000000000000",
+  "totalSupply": "1000000000000000000",
+  "strategy": {
+    "publicLPPercent": 85,
+    "houseLPPercent": 15
+  },
+  "network": "devnet",
+  "createdAt": "2025-11-09T05:41:59.223Z"
+}

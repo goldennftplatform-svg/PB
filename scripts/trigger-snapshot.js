@@ -6,7 +6,7 @@ const Anchor = require('@coral-xyz/anchor');
 const fs = require('fs');
 const path = require('path');
 
-const LOTTERY_PROGRAM_ID = new PublicKey('ytKyH7viyfRmqYtS7Y3nCa8kCJXAPTN6MA8a3EmtSn1');
+const LOTTERY_PROGRAM_ID = new PublicKey('8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7');
 const NETWORK = 'devnet';
 const EXPECTED_ADMIN_ADDRESS = 'Hefy8JLP947zsUACbCAtgd3TuvWDJmZDhZmob1xWdbbJ';
 
