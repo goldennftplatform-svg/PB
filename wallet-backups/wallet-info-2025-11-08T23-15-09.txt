@@ -1,0 +1,22 @@
+WALLET BACKUP INFORMATION
+==================================================
+
+Export Date: 2025-11-08T23:15:09.438Z
+Wallet Address: 2ZsZLFBqZvm9tb7rH9236hTDy7pzS5zfWS2UWJASwb6r
+Expected Admin: Hefy8JLP947zsUACbCAtgd3TuvWDJmZDhZmob1xWdbbJ
+Is Admin Wallet: NO ❌
+
+Backup File: C:\Users\PreSafu\Desktop\POWERsol\wallet-backups\wallet-backup-2025-11-08T23-15-09.json
+Info File: C:\Users\PreSafu\Desktop\POWERsol\wallet-backups\wallet-info-2025-11-08T23-15-09.txt
+
+⚠️  SECURITY:
+  - Keep these files SECURE and PRIVATE
+  - Never share or commit to git
+  - Store in password manager or encrypted storage
+  - Delete after secure backup
+
+To restore:
+  Copy wallet-backup-2025-11-08T23-15-09.json to ~/.config/solana/id.json
+
+To verify:
+  solana address

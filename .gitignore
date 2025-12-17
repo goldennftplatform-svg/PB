@@ -59,3 +59,17 @@ bots/registry.json
 bots/funding-status.json
 bots/results/*.json
 
+# Secrets and private keys (NEVER commit!)
+SECRETS.md
+**/secrets/**
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+*.keypair
+*.secret
+
+# Test wallets (keep private!)
+test-wallets/**/*.json
+wallet-backups/**/*.json
+

@@ -95,3 +95,8 @@ const LOTTERY_PROGRAM_ID = '8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7';
 
 The website is fully configured for testnet and ready to be pushed to GitHub and deployed!
 
+
+
+
+
+

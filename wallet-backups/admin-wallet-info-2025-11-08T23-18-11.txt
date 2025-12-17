@@ -1,0 +1,23 @@
+ADMIN WALLET IMPORTED FROM SEED PHRASE
+==================================================
+
+Import Date: 2025-11-08T23:18:11.288Z
+Wallet Address: Hefy8JLP947zsUACbCAtgd3TuvWDJmZDhZmob1xWdbbJ
+Expected Admin: Hefy8JLP947zsUACbCAtgd3TuvWDJmZDhZmob1xWdbbJ
+Matches: YES ✅
+
+Backup File: C:\Users\PreSafu\Desktop\POWERsol\wallet-backups\admin-wallet-imported-2025-11-08T23-18-11.json
+Info File: C:\Users\PreSafu\Desktop\POWERsol\wallet-backups\admin-wallet-info-2025-11-08T23-18-11.txt
+
+⚠️  SECURITY:
+  - Keep these files SECURE and PRIVATE
+  - Never share or commit to git
+  - Store in password manager or encrypted storage
+
+To use this wallet:
+  1. Copy the JSON file to: ~/.config/solana/id.json
+  2. Or set: ANCHOR_WALLET=/path/to/admin-wallet-imported-*.json
+
+To verify:
+  solana address
+  Should show: Hefy8JLP947zsUACbCAtgd3TuvWDJmZDhZmob1xWdbbJ

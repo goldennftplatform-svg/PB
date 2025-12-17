@@ -1,0 +1,73 @@
+# Cursor AI Ignore File
+# Files that should NOT be scanned or read by AI
+# This prevents AI from reading sensitive files and reduces token usage
+
+# ============================================
+# CRITICAL: Secrets and Private Keys
+# ============================================
+SECRETS.md
+**/SECRETS.md
+**/secrets.md
+*.key
+*.pem
+*.p12
+*.pfx
+*.keypair
+*.secret
+**/secrets/**
+**/private/**
+
+# ============================================
+# Wallet Files (NEVER scan these!)
+# ============================================
+**/wallets/**/*.json
+**/test-wallets/**/*.json
+**/bots/wallets/**/*.json
+wallet-backups/**/*.json
+*.json.keypair
+**/*wallet*.json
+**/*keypair*.json
+
+# ============================================
+# Environment & Config Files
+# ============================================
+.env
+.env.local
+.env.*.local
+*.env
+**/config/private/**
+**/secrets/**
+
+# ============================================
+# Backup & Temporary Files
+# ============================================
+*.backup
+*.bak
+*.old
+*~
+*.tmp
+*.temp
+.cache/**
+
+# ============================================
+# Logs (may contain sensitive data)
+# ============================================
+*.log
+logs/**
+
+# ============================================
+# Database Files
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================================
+# Large Dependencies (not needed for scanning)
+# ============================================
+node_modules/
+target/
+dist/
+build/
+.anchor/
+

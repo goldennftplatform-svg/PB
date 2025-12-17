@@ -6,12 +6,12 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-lottery = "ytKyH7viyfRmqYtS7Y3nCa8kCJXAPTN6MA8a3EmtSn1"  # Updated with new program ID
+lottery = "8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7"
 lp_manager = "G5WidJNwmdp33kQ6AeTcrsKJdP9rvuecfyZXCmQ6oSNG"
 pepball_token = "HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR"
 
 [programs.localnet]
-lottery = "ytKyH7viyfRmqYtS7Y3nCa8kCJXAPTN6MA8a3EmtSn1"
+lottery = "8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7"
 lp_manager = "G5WidJNwmdp33kQ6AeTcrsKJdP9rvuecfyZXCmQ6oSNG"
 pepball_token = "HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR"
 
@@ -24,7 +24,7 @@ pepball_token = "11111111111111111111111111111111"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
