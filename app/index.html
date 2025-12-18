@@ -419,9 +419,17 @@
             </div>
         </div>
 
-        <!-- Winning Numbers Section -->
+        <!-- Draw Animation Section -->
         <div class="winning-numbers-section">
-            <div class="section-title">Last Winning Numbers</div>
+            <div class="section-title">🎰 Live Draw Animation 🎰</div>
+            <div class="draw-animation-container">
+                <canvas id="draw-animation-canvas" class="draw-animation-canvas" width="800" height="600"></canvas>
+                <button class="replay-btn" id="replay-draw-btn" onclick="triggerDrawAnimation()">🎲 Play Draw Animation</button>
+                <div id="draw-result" style="margin-top: 15px; font-size: 1.2em; font-weight: bold; color: #003087;"></div>
+            </div>
+            
+            <!-- Static Winning Numbers (Fallback) -->
+            <div class="section-title" style="margin-top: 40px;">Last Winning Numbers</div>
             <div class="winning-numbers">
                 <div class="number-ball">🐸</div>
                 <div class="number-ball">🐸</div>
@@ -519,6 +527,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="lottery-data.js"></script>
+    <script src="draw-animation.js"></script>
     <script>
         // Token Address
         const TOKEN_ADDRESS = 'CXcoVCAuQB2XigJmyGz162aj1MCgJxC9Hgo5SEuRuFto';
@@ -700,6 +709,58 @@
 
         setInterval(updateTimer, 1000);
         updateTimer();
+        
+        // Initialize Draw Animation
+        let drawAnimation = null;
+        document.addEventListener('DOMContentLoaded', () => {
+            drawAnimation = new DrawAnimation('draw-animation-canvas');
+            
+            // Listen for draw complete events
+            document.addEventListener('drawComplete', (e) => {
+                const result = e.detail;
+                const resultEl = document.getElementById('draw-result');
+                if (resultEl) {
+                    if (result.isOdd) {
+                        resultEl.innerHTML = `
+                            <div style="color: #00ff00; text-align: center;">
+                                🎉 ODD COUNT (${result.pepeCount}) = PAYOUT! 🎉<br>
+                                <span style="font-size: 0.9em; color: #003087;">50% Main Winner • 40% Minors • 10% House</span>
+                            </div>
+                        `;
+                    } else {
+                        resultEl.innerHTML = `
+                            <div style="color: #ff6b00; text-align: center;">
+                                🚀 EVEN COUNT (${result.pepeCount}) = ROLLOVER! 🚀<br>
+                                <span style="font-size: 0.9em; color: #003087;">Jackpot Grows • Timer Extended</span>
+                            </div>
+                        `;
+                    }
+                }
+            });
+            
+            // Auto-play on load (demo)
+            setTimeout(() => {
+                triggerDrawAnimation();
+            }, 2000);
+        });
+        
+        // Trigger draw animation function
+        function triggerDrawAnimation() {
+            if (drawAnimation) {
+                // Random Pepe count for demo (1-30)
+                const pepeCount = Math.floor(Math.random() * 30) + 1;
+                drawAnimation.startAnimation(pepeCount);
+                
+                // Clear previous result
+                const resultEl = document.getElementById('draw-result');
+                if (resultEl) {
+                    resultEl.textContent = 'Drawing...';
+                }
+            }
+        }
+        
+        // Make it global
+        window.triggerDrawAnimation = triggerDrawAnimation;
     </script>
 </body>
 </html>
