@@ -1,7 +1,9 @@
-// Fetch and display last 10 winners - Powerball style
+// Fetch REAL winners from on-chain data - no test data
 const LOTTERY_PROGRAM_ID = '8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7';
 const NETWORK = 'devnet';
 const RPC_URL = 'https://api.devnet.solana.com';
+const HELIUS_API_KEY = '431ca765-2f35-4b23-8abd-db03796bd85f';
+const HELIUS_RPC_URL = `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`;
 
 class WinnersHistory {
     constructor() {
@@ -18,7 +20,8 @@ class WinnersHistory {
                 return false;
             }
 
-            this.connection = new Connection(RPC_URL, 'confirmed');
+            // Use Helius for better RPC performance
+            this.connection = new Connection(HELIUS_RPC_URL || RPC_URL, 'confirmed');
             const [lotteryPDA] = PublicKey.findProgramAddressSync(
                 [Buffer.from('lottery')],
                 new PublicKey(LOTTERY_PROGRAM_ID)
@@ -31,99 +34,120 @@ class WinnersHistory {
         }
     }
 
-    async fetchLast10Winners() {
+    async fetchRealWinners() {
         try {
             if (!this.connection || !this.lotteryPDA) {
                 await this.init();
             }
 
-            // Get recent transactions
+            // Get lottery account to check for winners
+            const accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
+            if (!accountInfo) {
+                return [];
+            }
+
+            // Get recent transactions for the lottery PDA
             const signatures = await this.connection.getSignaturesForAddress(
                 this.lotteryPDA,
-                { limit: 100 }
+                { limit: 200 }
             );
 
             const winners = [];
-            
-            for (const sig of signatures.slice(0, 50)) {
+            const processedTxs = new Set();
+
+            for (const sig of signatures) {
+                if (winners.length >= 10) break;
+                if (processedTxs.has(sig.signature)) continue;
+
                 try {
                     const tx = await this.connection.getTransaction(sig.signature, {
                         commitment: 'confirmed',
                         maxSupportedTransactionVersion: 0
                     });
 
-                    if (tx && tx.meta && tx.meta.logMessages) {
-                        // Look for payout or winner logs
-                        const hasWinner = tx.meta.logMessages.some(log => 
-                            log.includes('Winner') || 
-                            log.includes('winner') || 
-                            log.includes('Payout') ||
-                            log.includes('payout')
-                        );
+                    if (!tx || !tx.meta || !tx.meta.logMessages) continue;
 
-                        if (hasWinner && tx.meta.postBalances) {
-                            // Extract winner addresses from account keys
-                            const accountKeys = tx.transaction.message.accountKeys;
-                            
+                    // Look for payout transactions
+                    const isPayout = tx.meta.logMessages.some(log => 
+                        log.includes('PayoutWinners') || 
+                        log.includes('payout') ||
+                        log.includes('Winner') ||
+                        log.includes('Transfer')
+                    );
+
+                    if (isPayout && tx.meta.postBalances) {
+                        // Extract winner addresses from account keys
+                        const accountKeys = tx.transaction.message.accountKeys;
+                        const preBalances = tx.meta.preBalances || [];
+                        const postBalances = tx.meta.postBalances || [];
+
+                        // Find accounts that received SOL (balance increased)
+                        const recipientAccounts = [];
+                        for (let i = 0; i < accountKeys.length; i++) {
+                            const preBalance = preBalances[i] || 0;
+                            const postBalance = postBalances[i] || 0;
+                            const increase = postBalance - preBalance;
+
+                            // If balance increased significantly (more than just fees)
+                            if (increase > 1000000) { // More than 0.001 SOL
+                                const account = accountKeys[i];
+                                if (account && typeof account === 'object' && account.toString) {
+                                    recipientAccounts.push({
+                                        address: account.toString(),
+                                        amount: increase / 1e9, // Convert to SOL
+                                        isSystemProgram: account.toString() === '11111111111111111111111111111111'
+                                    });
+                                }
+                            }
+                        }
+
+                        // Filter out system program and sort by amount
+                        const realWinners = recipientAccounts
+                            .filter(acc => !acc.isSystemProgram)
+                            .sort((a, b) => b.amount - a.amount)
+                            .slice(0, 9); // Top 9 (1 main + 8 minor)
+
+                        if (realWinners.length > 0) {
+                            // Main winner (largest amount)
+                            const mainWinner = realWinners[0];
                             winners.push({
                                 date: new Date(sig.blockTime * 1000),
                                 transaction: sig.signature,
                                 type: 'Grand Prize',
-                                amount: '50%',
-                                accounts: accountKeys.map(k => k.toString()).slice(0, 5)
+                                amount: `${mainWinner.amount.toFixed(4)} SOL`,
+                                address: mainWinner.address,
+                                isReal: true
                             });
 
-                            if (winners.length >= 10) break;
+                            // Minor winners
+                            realWinners.slice(1).forEach((winner, idx) => {
+                                winners.push({
+                                    date: new Date(sig.blockTime * 1000),
+                                    transaction: sig.signature,
+                                    type: 'Minor Winner',
+                                    amount: `${winner.amount.toFixed(4)} SOL`,
+                                    address: winner.address,
+                                    isReal: true
+                                });
+                            });
+
+                            processedTxs.add(sig.signature);
                         }
                     }
                 } catch (e) {
-                    // Skip failed transactions
+                    console.error('Error processing transaction:', e);
                 }
             }
 
-            // If we don't have enough real winners, create sample data for demo
-            if (winners.length < 10) {
-                const sampleWinners = this.generateSampleWinners(10 - winners.length);
-                winners.push(...sampleWinners);
-            }
-
+            // Sort by date (newest first) and limit to 10
+            winners.sort((a, b) => b.date - a.date);
             this.winners = winners.slice(0, 10);
+            
             return this.winners;
         } catch (error) {
-            console.error('Error fetching winners:', error);
-            // Return sample data on error
-            this.winners = this.generateSampleWinners(10);
-            return this.winners;
+            console.error('Error fetching real winners:', error);
+            return [];
         }
-    }
-
-    generateSampleWinners(count) {
-        const winners = [];
-        const now = Date.now();
-        
-        for (let i = 0; i < count; i++) {
-            const date = new Date(now - (i * 24 * 60 * 60 * 1000)); // One per day
-            const isGrandPrize = i % 3 === 0; // Every 3rd is grand prize
-            
-            winners.push({
-                date: date,
-                transaction: this.generateFakeAddress(),
-                type: isGrandPrize ? 'Grand Prize' : 'Minor Winner',
-                amount: isGrandPrize ? '50%' : '5%',
-                address: this.generateFakeAddress()
-            });
-        }
-        
-        return winners;
-    }
-
-    generateFakeAddress() {
-        const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-        let result = '';
-        for (let i = 0; i < 44; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
     }
 
     formatAddress(address) {
@@ -136,21 +160,33 @@ class WinnersHistory {
         return new Date(date).toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
-            year: 'numeric'
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         });
     }
 
     async displayWinners() {
-        const winners = await this.fetchLast10Winners();
         const container = document.getElementById('winners-list');
         
         if (!container) return;
 
+        // Show loading state
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666;">
+                <div style="font-size: 3em; margin-bottom: 20px;">⏳</div>
+                <div style="font-size: 1.2em;">Loading real winners from blockchain...</div>
+            </div>
+        `;
+
+        const winners = await this.fetchRealWinners();
+        
         if (winners.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 40px; color: #666;">
                     <div style="font-size: 3em; margin-bottom: 20px;">🎰</div>
-                    <div style="font-size: 1.2em;">No winners yet. Be the first!</div>
+                    <div style="font-size: 1.2em; margin-bottom: 10px;">No winners yet</div>
+                    <div style="font-size: 0.9em; color: #999;">Be the first to win! Make an entry and wait for the next draw.</div>
                 </div>
             `;
             return;
@@ -162,23 +198,28 @@ class WinnersHistory {
             
             return `
                 <div class="${cardClass}">
-                    <div class="winner-rank">#${index + 1} ${isGrandPrize ? '🏆' : '🎯'}</div>
+                    <div class="winner-rank">
+                        #${index + 1} ${isGrandPrize ? '🏆 GRAND PRIZE' : '🎯 MINOR WINNER'}
+                    </div>
                     <div class="winner-date">${this.formatDate(winner.date)}</div>
-                    <div class="winner-amount">${winner.amount} of Jackpot</div>
+                    <div class="winner-amount" style="color: ${isGrandPrize ? '#DC143C' : '#003087'};">
+                        ${winner.amount}
+                    </div>
                     <div class="winner-address-display">
-                        ${this.formatAddress(winner.address || winner.transaction)}
-                        <button class="copy-btn" onclick="copyWinnerAddress('${winner.address || winner.transaction}')" 
-                                style="margin-left: 10px; padding: 5px 10px; font-size: 0.8em;">
-                            📋
+                        <span style="font-weight: 600;">${this.formatAddress(winner.address)}</span>
+                        <button class="copy-btn" onclick="copyWinnerAddress('${winner.address}')" 
+                                style="margin-left: 10px; padding: 5px 10px; font-size: 0.8em; background: #003087; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            📋 Copy
                         </button>
                     </div>
                     <div style="margin-top: 10px; font-size: 0.85em;">
                         <a href="https://explorer.solana.com/tx/${winner.transaction}?cluster=devnet" 
                            target="_blank" 
-                           style="color: #003087; text-decoration: none;">
-                            View Transaction →
+                           style="color: #003087; text-decoration: none; font-weight: 600;">
+                            🔗 View Transaction on Explorer →
                         </a>
                     </div>
+                    ${winner.isReal ? '<div style="margin-top: 5px; font-size: 0.75em; color: #28a745;">✅ Verified on-chain</div>' : ''}
                 </div>
             `;
         }).join('');
@@ -198,7 +239,15 @@ async function loadWinnersHistory() {
 // Copy winner address function
 function copyWinnerAddress(address) {
     navigator.clipboard.writeText(address).then(() => {
-        alert('Address copied!');
+        // Show feedback
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✅ Copied!';
+        btn.style.background = '#28a745';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = '#003087';
+        }, 2000);
     }).catch(() => {
         // Fallback
         const textArea = document.createElement('textarea');
@@ -207,7 +256,7 @@ function copyWinnerAddress(address) {
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
-        alert('Address copied!');
+        alert('Address copied to clipboard!');
     });
 }
 
@@ -218,6 +267,8 @@ if (document.readyState === 'loading') {
     loadWinnersHistory();
 }
 
-// Refresh every 30 seconds
-setInterval(loadWinnersHistory, 30000);
+// Refresh every 60 seconds
+setInterval(loadWinnersHistory, 60000);
 
+// Make copy function global
+window.copyWinnerAddress = copyWinnerAddress;
