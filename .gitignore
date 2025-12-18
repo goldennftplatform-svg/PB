@@ -73,3 +73,8 @@ SECRETS.md
 test-wallets/**/*.json
 wallet-backups/**/*.json
 
+# Testnet keys (NEVER commit!)
+testnet-key.json
+**/testnet-key.json
+**/*-key.json
+
