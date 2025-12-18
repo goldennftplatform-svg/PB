@@ -1,68 +1,79 @@
-# 🧪 Test Status
+# 🎰 Full Test Status
 
-## ✅ Completed
+## Current Situation
 
-1. **25 Test Wallets Created** ✅
-   - All 25 wallets generated and saved
-   - Wallets saved to: `test-wallets/`
+✅ **Ready:**
+- 25 test wallets created and funded (2 SOL each)
+- Snapshot script ready (50/50 rollover logic deployed)
+- Winner indexer ready
+- Payout tool ready (50/40/10 split)
 
-## ⚠️ Issues
+❌ **Blocked:**
+- Cannot make entries without IDL file
+- Need at least 9 participants to trigger snapshot
+- Currently have: 0 participants
 
-1. **Airdrop Rate Limit** ❌
-   - Devnet airdrop faucet rate limited
-   - Need 50 SOL to fund 25 wallets (2 SOL each)
-   - Current balance: ~0.21 SOL
+## The Problem
 
-2. **Wallet Funding** ❌
-   - Cannot fund wallets without SOL
-   - Scripts are ready, just need SOL
+The IDL (Interface Definition Language) file is missing because:
+- `anchor build` fails in Windows PowerShell (WSL environment issue)
+- The IDL is required for JavaScript clients to call program instructions
+- Without it, we can't make lottery entries
 
-## 🔧 Solutions
+## Solution
 
-### Option 1: Use Alternative Faucet
-Visit: https://faucet.solana.com
-- Request SOL manually
-- Or use other devnet faucets
-
-### Option 2: Reduce Test Size
-Modify scripts to use:
-- Fewer wallets (e.g., 5 wallets)
-- Less SOL per wallet (e.g., 1 SOL each)
-
-### Option 3: Wait and Retry
-- Wait a few minutes
-- Try airdrop again
-
-## 📝 Next Steps
-
-Once you have SOL:
-
-1. **Fund Wallets**:
-   ```bash
-   node scripts/fund-test-wallets.js
-   ```
-
-2. **Simulate Revenue**:
-   ```bash
-   node scripts/simulate-2m-revenue.js
-   ```
-
-3. **Trigger Payout**:
-   ```bash
-   node scripts/trigger-payout.js
-   ```
-
-Or run the master script:
+**Option 1: Fix IDL in WSL (Recommended)**
 ```bash
-node scripts/run-full-test-25-wallets.js
+# In WSL terminal:
+cd /mnt/c/Users/PreSafu/Desktop/POWERsol
+anchor clean
+anchor build
 ```
 
-## 💡 Quick Fix
+Then in PowerShell:
+```powershell
+# Make entries
+node scripts/run-full-test-now.js
 
-To reduce SOL needed, edit `scripts/fund-test-wallets.js`:
-- Change `SOL_PER_WALLET = 2` to `SOL_PER_WALLET = 1`
-- Or reduce number of wallets
+# Or use the complete test:
+node scripts/test-complete-50-50.js
+```
 
-This will reduce SOL needed from 50 to 25 (or less with fewer wallets).
+**Option 2: Use Existing Participants**
+If there are already participants on-chain from previous tests:
+```powershell
+node scripts/trigger-snapshot-raw.js
+```
 
+## Test Flow (Once IDL is Fixed)
 
+1. **Make Entries** → Creates 10+ participants
+2. **Trigger Snapshot** → Calculates Pepe ball count (1-30)
+3. **Check Result:**
+   - ODD count → Payout mode (50% main, 40% minors, 10% house)
+   - EVEN count → Rollover (jackpot grows, timer extended)
+4. **If ODD:** Find winners → Execute payout
+
+## Scripts Created
+
+- `scripts/test-complete-50-50.js` - Master orchestrator
+- `scripts/run-full-test-now.js` - Full test with entries
+- `scripts/check-and-trigger.js` - Check state and trigger
+- `scripts/enter-lottery-raw.js` - Raw entry attempts (needs correct discriminator)
+- `scripts/make-entries-workaround.js` - Workaround attempts
+
+## What Works Now
+
+✅ Snapshot trigger (shows 50/50 logic)
+✅ Winner indexing (if winners exist)
+✅ Payout execution (if winners set)
+✅ Wallet creation and funding
+
+## What's Needed
+
+🔧 IDL file generation (anchor build in WSL)
+🔧 Entry creation (once IDL is available)
+
+---
+
+**Bottom Line:** The 50/50 rollover code is deployed and ready. We just need the IDL to make entries and test the full flow!
