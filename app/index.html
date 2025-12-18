@@ -369,20 +369,124 @@
             margin-top: 50px;
         }
 
+        /* Last 10 Winners - Powerball Style */
+        .winner-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 3px solid var(--powerball-blue);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .winner-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .winner-card.grand-prize {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: 4px solid var(--powerball-red);
+            border-left: 8px solid var(--powerball-red);
+        }
+
+        .winner-card.minor {
+            background: linear-gradient(135deg, #E6F3FF 0%, #B3D9FF 100%);
+            border-left: 6px solid var(--powerball-blue);
+        }
+
+        .winner-rank {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--powerball-red);
+            margin-bottom: 10px;
+        }
+
+        .winner-date {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .winner-amount {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--powerball-blue);
+            margin: 10px 0;
+        }
+
+        .winner-address-display {
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            color: var(--powerball-dark);
+            background: rgba(255,255,255,0.7);
+            padding: 10px;
+            border-radius: 6px;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .header h1 {
-                font-size: 2.5em;
+                font-size: 2em;
+                letter-spacing: 2px;
             }
 
             .jackpot-amount {
-                font-size: 3em;
+                font-size: 2.5em;
             }
 
             .number-ball, .powerball-ball {
-                width: 60px;
-                height: 60px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.2em;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .jackpot-section, .winning-numbers-section, .action-section {
+                padding: 25px 15px;
+            }
+
+            .winner-card {
+                padding: 20px 15px;
+            }
+
+            .winner-rank {
                 font-size: 1.5em;
+            }
+
+            .winner-amount {
+                font-size: 1.3em;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .jackpot-amount {
+                font-size: 2em;
+            }
+
+            .section-title {
+                font-size: 1.5em;
+            }
+
+            .action-btn {
+                padding: 15px 25px;
+                font-size: 1.1em;
+                width: 100%;
+                margin: 5px 0;
             }
         }
     </style>
@@ -438,12 +542,23 @@
                 <div class="number-ball">🐸</div>
                 <div class="powerball-ball">🐸</div>
             </div>
-            <div class="winners-info" id="winners-info" style="min-height: 500px; background: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <!-- Last 10 Winners Section - Powerball Style -->
+            <div class="section-title" style="margin-top: 50px; margin-bottom: 30px;">🏆 Last 10 Winners</div>
+            <div id="last-10-winners" style="background: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div id="winners-list" style="display: grid; gap: 20px;">
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">⏳</div>
+                        <div style="font-size: 1.2em;">Loading winners...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="winners-info" id="winners-info" style="min-height: 500px; background: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-top: 30px;">
                 <!-- MAIN WINNER - BIG AND BOLD -->
                 <div class="winner-item" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px; border: 5px solid #DC143C; box-shadow: 0 8px 25px rgba(220, 20, 60, 0.5); text-align: center;">
                     <div style="font-size: 2.5em; margin-bottom: 15px;">🏆</div>
                     <strong style="color: #DC143C; font-size: 1.8em; display: block; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">MAIN WINNER</strong>
-                    <div style="color: #8B0000; font-size: 1.3em; margin-bottom: 10px; font-weight: bold;">68% of Jackpot</div>
+                    <div style="color: #8B0000; font-size: 1.3em; margin-bottom: 10px; font-weight: bold;">50% of Jackpot</div>
                     <div style="margin-top: 15px; font-size: 1.2em; font-weight: bold; color: #003087; background: white; padding: 15px; border-radius: 8px; border: 2px solid #DC143C;" id="main-winner-display">Loading winners...</div>
                 </div>
                 
@@ -452,7 +567,7 @@
                     <div style="text-align: center; margin-bottom: 20px;">
                         <div style="font-size: 2em; margin-bottom: 10px;">🎯</div>
                         <strong style="color: #003087; font-size: 1.6em; display: block; text-transform: uppercase; letter-spacing: 2px;">8 MINOR WINNERS</strong>
-                        <div style="color: #001f5c; font-size: 1.2em; margin-top: 5px;">3% Each</div>
+                        <div style="color: #001f5c; font-size: 1.2em; margin-top: 5px;">5% Each (40% total)</div>
                     </div>
                     <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 10px; border: 2px solid #003087;" id="minor-winners-display">Loading winners...</div>
                 </div>
@@ -528,6 +643,7 @@
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="lottery-data.js"></script>
     <script src="draw-animation.js"></script>
+    <script src="winners-history.js"></script>
     <script>
         // Token Address
         const TOKEN_ADDRESS = 'CXcoVCAuQB2XigJmyGz162aj1MCgJxC9Hgo5SEuRuFto';
