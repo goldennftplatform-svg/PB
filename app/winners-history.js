@@ -1,11 +1,6 @@
 // Fetch REAL winners from on-chain data - no test data
-// Use constants from lottery-data.js (avoid duplicate declarations)
-// If lottery-data.js hasn't loaded yet, define fallback constants
-const LOTTERY_PROGRAM_ID = window.LOTTERY_PROGRAM_ID || '8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7';
-const NETWORK = window.NETWORK || 'devnet';
-const RPC_URL = window.RPC_URL || 'https://api.devnet.solana.com';
-const HELIUS_API_KEY = window.HELIUS_API_KEY || '431ca765-2f35-4b23-8abd-db03796bd85f';
-const HELIUS_RPC_URL = window.HELIUS_RPC_URL || `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`;
+// Use constants from lottery-data.js via window object (NO const declarations here!)
+// These will be set by lottery-data.js when it loads first
 
 class WinnersHistory {
     constructor() {
@@ -39,10 +34,12 @@ class WinnersHistory {
             }
 
             // Use Helius for better RPC performance
-            this.connection = new Connection(HELIUS_RPC_URL || RPC_URL, 'confirmed');
+            const rpcUrl = window.HELIUS_RPC_URL || window.RPC_URL || 'https://api.devnet.solana.com';
+            this.connection = new Connection(rpcUrl, 'confirmed');
+            const programId = window.LOTTERY_PROGRAM_ID || '8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7';
             const [lotteryPDA] = PublicKey.findProgramAddressSync(
                 [Buffer.from('lottery')],
-                new PublicKey(LOTTERY_PROGRAM_ID)
+                new PublicKey(programId)
             );
             this.lotteryPDA = lotteryPDA;
             return true;
