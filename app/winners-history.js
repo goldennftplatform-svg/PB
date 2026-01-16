@@ -82,7 +82,7 @@ class WinnersHistory {
                         maxSupportedTransactionVersion: 0
                     });
 
-                    if (!tx || !tx.meta || !tx.meta.logMessages) continue;
+                    if (!tx || !tx.meta || !tx.meta.logMessages || !tx.transaction || !tx.transaction.message) continue;
 
                     // Look for payout transactions
                     const isPayout = tx.meta.logMessages.some(log => 
@@ -92,11 +92,13 @@ class WinnersHistory {
                         log.includes('Transfer')
                     );
 
-                    if (isPayout && tx.meta.postBalances) {
+                    if (isPayout && tx.meta.postBalances && tx.transaction && tx.transaction.message) {
                         // Extract winner addresses from account keys
-                        const accountKeys = tx.transaction.message.accountKeys;
+                        const accountKeys = (tx.transaction.message.accountKeys || []);
                         const preBalances = tx.meta.preBalances || [];
                         const postBalances = tx.meta.postBalances || [];
+                        
+                        if (!Array.isArray(accountKeys) || accountKeys.length === 0) continue;
 
                         // Find accounts that received SOL (balance increased)
                         const recipientAccounts = [];
