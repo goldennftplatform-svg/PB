@@ -124,7 +124,7 @@ async function runSpeedRun() {
     console.log('  🚀 SPEED RUN: 100 Wallets → Entries → Snapshot');
     console.log('='.repeat(70) + '\n');
 
-    const connection = new Connection(HELIUS_RPC_URL || RPC_URL, 'confirmed');
+    let connection = new Connection(HELIUS_RPC_URL || RPC_URL, 'confirmed');
 
     // Load admin wallet - supports custom path via environment variable
     let adminKeyPath = process.env.ANCHOR_WALLET || 
@@ -162,9 +162,21 @@ async function runSpeedRun() {
 
     console.log(`✅ Admin: ${adminKeypair.publicKey.toString()}\n`);
 
-    // Check admin balance
+    // Check admin balance - try multiple RPC endpoints
     let adminBalance = await connection.getBalance(adminKeypair.publicKey);
-    console.log(`💰 Admin Balance: ${(adminBalance / 1e9).toFixed(4)} SOL`);
+    console.log(`💰 Admin Balance (Helius): ${(adminBalance / 1e9).toFixed(4)} SOL`);
+    
+    // Also check public RPC in case Helius is cached
+    if (adminBalance < 1 * LAMPORTS_PER_SOL) {
+        console.log(`   Checking public RPC...`);
+        const publicConn = new Connection(RPC_URL, 'confirmed');
+        const publicBalance = await publicConn.getBalance(adminKeypair.publicKey);
+        console.log(`💰 Admin Balance (Public): ${(publicBalance / 1e9).toFixed(4)} SOL`);
+        if (publicBalance > adminBalance) {
+            adminBalance = publicBalance;
+            connection = publicConn; // Use public RPC if it has more balance
+        }
+    }
     
     const requiredSOL = (NUM_WALLETS * SOL_PER_WALLET) + 5; // +5 for fees
     
