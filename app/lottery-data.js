@@ -655,6 +655,7 @@ class LotteryDataFetcher {
                     console.warn(`⚠️  Error processing snapshot transaction ${processedCount}:`, e.message);
                     continue;
                 }
+            }
 
             return {
                 lastSnapshot: lastSnapshot,
