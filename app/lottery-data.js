@@ -628,7 +628,11 @@ function updateWinnersDisplay(state) {
         if (state.winners?.mainWinner) {
             const mainWinnerAddress = typeof state.winners.mainWinner === 'string' 
                 ? state.winners.mainWinner 
-                : state.winners.mainWinner.toString();
+                : (state.winners.mainWinner?.toString() || '');
+            if (!mainWinnerAddress) {
+                mainWinnerEl.innerHTML = '<div style="color: var(--text-secondary); font-size: 1.2em;">Invalid winner address</div>';
+                return;
+            }
             const mainPayout = state.payouts?.mainPayout || (Number(state.jackpot) * 0.5);
             mainWinnerEl.innerHTML = `
                 <div style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap;">
@@ -670,7 +674,7 @@ function updateWinnersDisplay(state) {
                 const minorWinners = validWinners
                     .map((w, idx) => {
                         const address = typeof w === 'string' ? w : (w?.toString() || '');
-                        if (!address) continue; // Skip invalid addresses
+                        if (!address || address === '11111111111111111111111111111111') return null;
                         const payout = state.payouts?.minorPayout || (Number(state.jackpot) * 0.03);
                         return `
                             <div style="margin: 12px 0; padding: 15px; background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%); border-radius: 10px; border: 2px solid #003087; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
@@ -687,6 +691,7 @@ function updateWinnersDisplay(state) {
                             </div>
                         `;
                     })
+                    .filter(w => w !== null)
                     .join('');
                 
                 minorWinnersEl.innerHTML = minorWinners;
