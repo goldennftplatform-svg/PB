@@ -890,17 +890,29 @@ function updateLotteryDisplayWithData(state) {
     console.log('🎨 updateLotteryDisplayWithData() called with:', state);
     console.log('   State keys:', Object.keys(state));
     console.log('   Jackpot value:', state.jackpot);
+    console.log('   Jackpot type:', typeof state.jackpot);
+    console.log('   Jackpot raw:', state.jackpot);
     
     // Update jackpot (always update, even if 0)
     const jackpotAmountEl = document.getElementById('jackpot-amount');
     if (jackpotAmountEl) {
-        const jackpotSOL = state.jackpot ? (state.jackpot / 1e9).toFixed(4) : '0.0000';
+        // Ensure jackpot is a number
+        let jackpotValue = state.jackpot;
+        if (typeof jackpotValue === 'string') {
+            jackpotValue = parseFloat(jackpotValue);
+        }
+        if (isNaN(jackpotValue) || jackpotValue === null || jackpotValue === undefined) {
+            jackpotValue = 0;
+        }
+        
+        const jackpotSOL = (jackpotValue / 1e9).toFixed(4);
         jackpotAmountEl.textContent = `${jackpotSOL} SOL`;
-        console.log(`💰 Updated jackpot: ${jackpotSOL} SOL`);
+        console.log(`💰 Updated jackpot: ${jackpotSOL} SOL (from ${jackpotValue} lamports)`);
         
         // Force a visual update
         jackpotAmountEl.style.display = 'block';
         jackpotAmountEl.style.visibility = 'visible';
+        jackpotAmountEl.style.opacity = '1';
     } else {
         console.error('❌ jackpot-amount element NOT FOUND in DOM!');
         console.error('   Available elements with "jackpot" in id:', 
@@ -910,17 +922,24 @@ function updateLotteryDisplayWithData(state) {
     // Update winners (even if empty)
     console.log('🏆 Updating winners display...');
     console.log('   Winners data:', state.winners);
-    updateWinnersDisplay(state);
+    if (state.winners) {
+        updateWinnersDisplay(state);
+    } else {
+        console.warn('⚠️  No winners data in state');
+    }
     
-    // Update snapshot date
+    // Update snapshot date/link
     const snapshotDateEl = document.querySelector('.draw-date');
-    if (snapshotDateEl) {
+    if (!snapshotDateEl) {
+        // Try to find any element that might show snapshot info
+        console.log('📅 Looking for snapshot display element...');
+    } else {
         if (state.lastSnapshot) {
             snapshotDateEl.textContent = 'Snapshot: ' + lotteryFetcher.formatDate(state.lastSnapshot);
             console.log('📅 Updated snapshot date');
         } else if (state.snapshotTx) {
-            snapshotDateEl.textContent = 'Snapshot pending...';
-            console.log('📅 Snapshot transaction found but no timestamp');
+            snapshotDateEl.innerHTML = `Snapshot: <a href="${EXPLORER_BASE}/tx/${state.snapshotTx}${EXPLORER_CLUSTER}" target="_blank" style="color: var(--accent-green);">View TX</a>`;
+            console.log('📅 Snapshot transaction link created');
         } else {
             snapshotDateEl.textContent = 'No snapshot yet';
             console.log('📅 No snapshot data');
@@ -928,7 +947,11 @@ function updateLotteryDisplayWithData(state) {
     }
     
     // Update payout transaction
-    updatePayoutTransaction(state);
+    if (typeof updatePayoutTransaction === 'function') {
+        updatePayoutTransaction(state);
+    } else {
+        console.warn('⚠️  updatePayoutTransaction function not found');
+    }
     
     // Clear any error messages if we got data
     const errorEl = document.getElementById('blockchain-error');
@@ -1003,63 +1026,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     loadData();
 });
-
-/**
- * Update display with data (works with test or real data)
- */
-function updateLotteryDisplayWithData(state) {
-    console.log('🎨 updateLotteryDisplayWithData() called with:', state);
-    console.log('   State keys:', Object.keys(state));
-    console.log('   Jackpot value:', state.jackpot);
-    
-    // Update jackpot (always update, even if 0)
-    const jackpotAmountEl = document.getElementById('jackpot-amount');
-    if (jackpotAmountEl) {
-        const jackpotSOL = state.jackpot ? (state.jackpot / 1e9).toFixed(4) : '0.0000';
-        jackpotAmountEl.textContent = `${jackpotSOL} SOL`;
-        console.log(`💰 Updated jackpot: ${jackpotSOL} SOL`);
-        
-        // Force a visual update
-        jackpotAmountEl.style.display = 'block';
-        jackpotAmountEl.style.visibility = 'visible';
-    } else {
-        console.error('❌ jackpot-amount element NOT FOUND in DOM!');
-        console.error('   Available elements with "jackpot" in id:', 
-            Array.from(document.querySelectorAll('[id*="jackpot"]')).map(el => el.id));
-    }
-
-    // Update winners (even if empty)
-    console.log('🏆 Updating winners display...');
-    console.log('   Winners data:', state.winners);
-    updateWinnersDisplay(state);
-    
-    // Update snapshot date
-    const snapshotDateEl = document.querySelector('.draw-date');
-    if (snapshotDateEl) {
-        if (state.lastSnapshot) {
-            snapshotDateEl.textContent = 'Snapshot: ' + lotteryFetcher.formatDate(state.lastSnapshot);
-            console.log('📅 Updated snapshot date');
-        } else if (state.snapshotTx) {
-            snapshotDateEl.textContent = 'Snapshot pending...';
-            console.log('📅 Snapshot transaction found but no timestamp');
-        } else {
-            snapshotDateEl.textContent = 'No snapshot yet';
-            console.log('📅 No snapshot data');
-        }
-    }
-    
-    // Update payout transaction
-    updatePayoutTransaction(state);
-    
-    // Clear any error messages if we got data
-    const errorEl = document.getElementById('blockchain-error');
-    if (errorEl && !state.error) {
-        errorEl.innerHTML = '';
-        console.log('✅ Cleared error message');
-    }
-    
-    console.log('✅ Display update complete!');
-}
 
     /**
      * Update the HTML with real lottery data
