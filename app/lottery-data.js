@@ -343,19 +343,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (mainWinnerEl) mainWinnerEl.innerHTML = '<div style="color: #666; font-size: 1.2em;">Loading real data from blockchain...</div>';
     if (minorWinnersEl) minorWinnersEl.innerHTML = '<div style="color: #666;">Loading real data from blockchain...</div>';
     
-    // Fetch real data from blockchain
-    try {
-        await lotteryFetcher.init();
-        await updateLotteryDisplay();
-        
-        // Update every 30 seconds
-        setInterval(updateLotteryDisplay, 30000);
-    } catch (error) {
-        console.error('Failed to load real data:', error);
-        // Show "no data" instead of fake data
-        if (mainWinnerEl) mainWinnerEl.innerHTML = '<div style="color: #666; font-size: 1.2em;">No winners yet - waiting for first payout</div>';
-        if (minorWinnersEl) minorWinnersEl.innerHTML = '<div style="color: #666;">No winners yet - waiting for first payout</div>';
-    }
+    // Fetch real data from blockchain with timeout
+    const loadData = async () => {
+        try {
+            const initPromise = lotteryFetcher.init();
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Initialization timeout')), 8000)
+            );
+            
+            await Promise.race([initPromise, timeoutPromise]);
+            
+            const updatePromise = updateLotteryDisplay();
+            const updateTimeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Update timeout')), 10000)
+            );
+            
+            await Promise.race([updatePromise, updateTimeout]);
+            
+            // Update every 30 seconds
+            setInterval(updateLotteryDisplay, 30000);
+        } catch (error) {
+            console.error('Failed to load real data:', error);
+            // Show "no data" instead of fake data
+            if (mainWinnerEl) mainWinnerEl.innerHTML = '<div style="color: #666; font-size: 1.2em;">No winners yet - waiting for first payout</div>';
+            if (minorWinnersEl) minorWinnersEl.innerHTML = '<div style="color: #666;">No winners yet - waiting for first payout</div>';
+        }
+    };
+    
+    loadData();
 });
 
 /**
