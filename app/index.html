@@ -15,59 +15,64 @@
         }
 
         :root {
-            --bg-primary: #0a0e27;
-            --bg-secondary: #141b2d;
-            --bg-card: #1a2332;
-            --accent-purple: #8b5cf6;
-            --accent-cyan: #06b6d4;
-            --accent-green: #10b981;
-            --text-primary: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --border-color: #1e293b;
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --accent-green: #00ff41;
+            --accent-green-dark: #00cc33;
+            --accent-green-light: #33ff66;
+            --accent-cyan: #00ffff;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
+            --terminal-green: #00ff41;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            font-family: 'Courier New', 'Consolas', 'Monaco', monospace;
             background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
         }
 
-        /* Header - Modern Dark */
+        /* Header - Anon/Terminal Style */
         .header {
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
-            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--accent-green);
             padding: 30px 0;
             text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
         }
 
         .header h1 {
             font-size: 2.5em;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--accent-green);
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
             margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
         }
 
         .header .subtitle {
             font-size: 1em;
             color: var(--text-secondary);
             font-weight: 400;
+            font-family: 'Courier New', monospace;
         }
 
         .testnet-badge {
             display: inline-block;
-            background: rgba(139, 92, 246, 0.2);
-            color: var(--accent-purple);
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--accent-green);
             padding: 4px 12px;
-            border-radius: 12px;
+            border-radius: 4px;
             font-size: 0.75em;
             font-weight: 600;
             margin-top: 12px;
-            border: 1px solid rgba(139, 92, 246, 0.3);
+            border: 1px solid var(--accent-green);
+            font-family: 'Courier New', monospace;
         }
 
         /* Main Container */
@@ -100,11 +105,10 @@
         .jackpot-amount {
             font-size: 3.5em;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-purple) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--accent-green);
+            text-shadow: 0 0 15px rgba(0, 255, 65, 0.6);
             margin: 16px 0;
+            font-family: 'Courier New', monospace;
         }
 
         .jackpot-timer {
@@ -145,38 +149,43 @@
             height: 60px;
             border-radius: 50%;
             background: var(--bg-secondary);
-            border: 2px solid var(--accent-cyan);
+            border: 2px solid var(--accent-green);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5em;
             font-weight: 600;
-            color: var(--accent-cyan);
+            color: var(--accent-green);
             transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
         }
 
         .number-ball:hover {
-            transform: scale(1.05);
-            border-color: var(--accent-purple);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
         }
 
         .powerball-ball {
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
-            border: 2px solid transparent;
+            background: var(--accent-green);
+            border: 2px solid var(--accent-green);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5em;
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--bg-primary);
             transition: transform 0.3s;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
         }
 
         .powerball-ball:hover {
-            transform: scale(1.05);
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.8);
         }
 
         .winners-info {
@@ -236,21 +245,26 @@
         }
 
         .action-btn {
-            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
-            color: var(--text-primary);
-            border: none;
+            background: var(--bg-secondary);
+            color: var(--accent-green);
+            border: 2px solid var(--accent-green);
             padding: 14px 32px;
             font-size: 1em;
             font-weight: 600;
-            border-radius: 12px;
+            border-radius: 4px;
             cursor: pointer;
             margin: 8px;
             transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
         }
 
         .action-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            background: rgba(0, 255, 65, 0.1);
         }
 
         .action-btn:active {
@@ -259,20 +273,25 @@
 
         .action-btn.secondary {
             background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
         }
 
         .action-btn.secondary:hover {
             background: var(--bg-card);
-            border-color: var(--accent-cyan);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
         }
 
         .action-btn.success {
             background: var(--accent-green);
+            color: var(--bg-primary);
+            border-color: var(--accent-green);
         }
 
         .action-btn.success:hover {
-            background: #059669;
+            background: var(--accent-green-dark);
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.7);
         }
 
         /* Token Address Section */
@@ -323,8 +342,10 @@
         .stat-value {
             font-size: 2em;
             font-weight: 700;
-            color: var(--accent-cyan);
+            color: var(--accent-green);
             margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.4);
         }
 
         .stat-label {
@@ -536,7 +557,7 @@
         <h1>PEPEBALL</h1>
         <div class="subtitle">Solana Powerball Lottery</div>
         <div class="testnet-badge">TESTNET</div>
-        <div style="margin-top: 8px; font-size: 0.7em; color: var(--accent-cyan); font-weight: 600;">DEPLOY v2026.01.15.19.00 - DARK THEME ACTIVE</div>
+        <div style="margin-top: 8px; font-size: 0.7em; color: var(--accent-green); font-weight: 600; font-family: 'Courier New', monospace;">DEPLOY v2026.01.15.19.15 - ANON GREEN THEME</div>
     </div>
 
     <!-- Main Container -->
@@ -690,7 +711,7 @@
         });
     </script>
     <script src="lottery-data.js?v=6"></script>
-    <script src="draw-animation.js?v=5"></script>
+    <script src="draw-animation.js?v=6"></script>
     <script src="winners-history.js?v=8"></script>
     <script>
         // Fallback: If scripts fail to load, show "No winners yet" after 15 seconds
@@ -900,8 +921,16 @@
         
         // Initialize Draw Animation
         let drawAnimation = null;
+        
+        function initDrawAnimation() {
+            if (!drawAnimation) {
+                drawAnimation = new DrawAnimation('draw-animation-canvas');
+            }
+            return drawAnimation;
+        }
+        
         document.addEventListener('DOMContentLoaded', () => {
-            drawAnimation = new DrawAnimation('draw-animation-canvas');
+            initDrawAnimation();
             
             // Listen for draw complete events
             document.addEventListener('drawComplete', (e) => {
@@ -910,45 +939,44 @@
                 if (resultEl) {
                     if (result.isOdd) {
                         resultEl.innerHTML = `
-                            <div style="color: #00ff00; text-align: center;">
+                            <div style="color: #00ff41; text-align: center; font-family: 'Courier New', monospace; text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);">
                                 🎉 ODD COUNT (${result.pepeCount}) = PAYOUT! 🎉<br>
-                                <span style="font-size: 0.9em; color: #003087;">50% Main Winner • 40% Minors • 10% House</span>
+                                <span style="font-size: 0.9em; color: #8b949e;">50% Main Winner • 40% Minors • 10% House</span>
                             </div>
                         `;
                     } else {
                         resultEl.innerHTML = `
-                            <div style="color: #ff6b00; text-align: center;">
+                            <div style="color: #00ff41; text-align: center; font-family: 'Courier New', monospace; text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);">
                                 🚀 EVEN COUNT (${result.pepeCount}) = ROLLOVER! 🚀<br>
-                                <span style="font-size: 0.9em; color: #003087;">Jackpot Grows • Timer Extended</span>
+                                <span style="font-size: 0.9em; color: #8b949e;">Jackpot Grows • Timer Extended</span>
                             </div>
                         `;
                     }
                 }
             });
-            
-            // Auto-play on load (demo)
-            setTimeout(() => {
-                triggerDrawAnimation();
-            }, 2000);
         });
         
-        // Trigger draw animation function
+        // Trigger draw animation function - MAKE IT WORK
         function triggerDrawAnimation() {
-            if (drawAnimation) {
+            const anim = initDrawAnimation();
+            if (anim && anim.canvas) {
                 // Random Pepe count for demo (1-30)
                 const pepeCount = Math.floor(Math.random() * 30) + 1;
-                drawAnimation.startAnimation(pepeCount);
+                anim.startAnimation(pepeCount);
                 
                 // Clear previous result
                 const resultEl = document.getElementById('draw-result');
                 if (resultEl) {
-                    resultEl.textContent = 'Drawing...';
+                    resultEl.innerHTML = '<div style="color: #00ff41; font-family: monospace;">Drawing...</div>';
                 }
+            } else {
+                console.error('Draw animation not initialized');
             }
         }
         
-        // Make it global
+        // Make it global and ensure it's available
         window.triggerDrawAnimation = triggerDrawAnimation;
+        window.DrawAnimation = DrawAnimation;
     </script>
 </body>
 </html>
