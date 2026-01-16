@@ -60,21 +60,37 @@ class LotteryDataFetcher {
             console.log(`✅ Connected to Solana ${NETWORK} (${version['solana-core']})`);
             
             // Derive lottery PDA - handle Buffer polyfill for browser
+            // CRITICAL: Must use exact same seed as backend scripts
             let seedBuffer;
             if (typeof Buffer !== 'undefined' && Buffer.from) {
                 try {
                     seedBuffer = Buffer.from('lottery');
+                    console.log('🔑 Using Buffer.from for seed');
                 } catch (e) {
                     // If Buffer.from fails, use TextEncoder
                     seedBuffer = new TextEncoder().encode('lottery');
+                    console.log('🔑 Using TextEncoder for seed (Buffer failed)');
                 }
             } else {
                 // Browser fallback: convert string to Uint8Array
                 seedBuffer = new TextEncoder().encode('lottery');
+                console.log('🔑 Using TextEncoder for seed (no Buffer)');
             }
             
-            console.log('🔑 Deriving PDA with seed:', seedBuffer);
+            // Verify seed is correct (should be [108, 111, 116, 116, 101, 114, 121] for "lottery")
+            const expectedSeed = [108, 111, 116, 116, 101, 114, 121];
+            const seedArray = Array.from(seedBuffer);
+            if (JSON.stringify(seedArray) !== JSON.stringify(expectedSeed)) {
+                console.error('❌ Seed buffer is wrong!');
+                console.error(`   Got: ${JSON.stringify(seedArray)}`);
+                console.error(`   Expected: ${JSON.stringify(expectedSeed)}`);
+                throw new Error('Seed buffer mismatch');
+            }
+            console.log('✅ Seed buffer verified:', seedArray);
+            
             console.log('🔑 Program ID:', LOTTERY_PROGRAM_ID);
+            const expectedPDA = 'ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb';
+            console.log('🔑 Expected PDA:', expectedPDA);
             
             try {
                 const programId = new PublicKey(LOTTERY_PROGRAM_ID);
@@ -90,10 +106,22 @@ class LotteryDataFetcher {
                 }
                 
                 const lotteryPDA = pdaResult[0];
-                console.log('🔑 PDA derived:', lotteryPDA.toString());
+                const derivedPDA = lotteryPDA.toString();
+                console.log('🔑 PDA derived:', derivedPDA);
+                
+                // Verify PDA matches expected
+                if (derivedPDA !== expectedPDA) {
+                    console.error('❌ PDA MISMATCH!');
+                    console.error(`   Derived: ${derivedPDA}`);
+                    console.error(`   Expected: ${expectedPDA}`);
+                    console.error('   This will cause "Lottery not initialized" error!');
+                    // Still set it, but log the error
+                } else {
+                    console.log('✅ PDA matches expected!');
+                }
                 
                 this.lotteryPDA = lotteryPDA;
-                console.log(`✅ Lottery PDA initialized: ${lotteryPDA.toString()}`);
+                console.log(`✅ Lottery PDA initialized: ${derivedPDA}`);
             } catch (pdaError) {
                 console.error('❌ PDA derivation error:', pdaError);
                 console.error('   Error type:', typeof pdaError);
@@ -116,12 +144,26 @@ class LotteryDataFetcher {
             const accountInfo = await this.connection.getAccountInfo(lotteryPDA);
             if (accountInfo) {
                 console.log(`✅ Lottery account found (${accountInfo.lamports / 1e9} SOL)`);
+                console.log(`   Account data length: ${accountInfo.data.length} bytes`);
+                console.log(`   Owner: ${accountInfo.owner.toString()}`);
             } else {
-                console.warn(`⚠️  Lottery account not initialized yet`);
-                console.warn(`   PDA: ${lotteryPDA.toString()}`);
-                console.warn(`   The lottery needs to be initialized on devnet first.`);
-                console.warn(`   Run: node scripts/simple-init-lottery.js`);
-                console.warn(`   Or: node scripts/reinit-lottery-50-50.js`);
+                console.warn(`⚠️  Lottery account not found at derived PDA`);
+                console.warn(`   Derived PDA: ${lotteryPDA.toString()}`);
+                console.warn(`   Expected PDA: ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb`);
+                console.warn(`   Checking if PDA derivation matches...`);
+                
+                // Try to verify the PDA is correct by checking if it matches expected
+                const expectedPDA = 'ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb';
+                if (lotteryPDA.toString() !== expectedPDA) {
+                    console.error(`❌ PDA MISMATCH!`);
+                    console.error(`   Frontend derived: ${lotteryPDA.toString()}`);
+                    console.error(`   Expected (from script): ${expectedPDA}`);
+                    console.error(`   This means the PDA derivation is wrong!`);
+                } else {
+                    console.warn(`   PDA matches expected, but account not found.`);
+                    console.warn(`   The lottery needs to be initialized on devnet first.`);
+                    console.warn(`   Run: node scripts/simple-init-lottery.js`);
+                }
             }
             
             return true;
@@ -172,12 +214,29 @@ class LotteryDataFetcher {
                 return { error: 'Lottery PDA not initialized' };
             }
             
-            console.log(`🔍 Checking account at PDA: ${this.lotteryPDA.toString()}`);
+            const pdaAddress = this.lotteryPDA.toString();
+            const expectedPDA = 'ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb';
+            
+            console.log(`🔍 Checking account at PDA: ${pdaAddress}`);
+            console.log(`   Expected PDA: ${expectedPDA}`);
+            
+            if (pdaAddress !== expectedPDA) {
+                console.error(`❌ PDA MISMATCH!`);
+                console.error(`   Frontend derived: ${pdaAddress}`);
+                console.error(`   Expected: ${expectedPDA}`);
+                console.error(`   This is a critical error - PDA derivation is wrong!`);
+                return { 
+                    error: 'PDA mismatch',
+                    message: `Frontend derived a different PDA than expected. This is a bug.`,
+                    derivedPDA: pdaAddress,
+                    expectedPDA: expectedPDA
+                };
+            }
+            
             const accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
             if (!accountInfo) {
-                const pdaAddress = this.lotteryPDA.toString();
                 console.error(`❌ Lottery account not found at PDA: ${pdaAddress}`);
-                console.error(`   Expected PDA: ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb`);
+                console.error(`   PDA is correct, but account doesn't exist.`);
                 console.error(`   The lottery needs to be initialized on devnet.`);
                 console.error(`   Run: node scripts/simple-init-lottery.js`);
                 return { 
