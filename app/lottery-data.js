@@ -121,18 +121,18 @@ class LotteryDataFetcher {
             }
             
             // Verify account exists - THIS is what matters
-            let accountInfo = await this.connection.getAccountInfo(lotteryPDA);
+            let accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
             if (accountInfo) {
                 console.log(`✅ Lottery account found (${accountInfo.lamports / 1e9} SOL)`);
                 console.log(`   Account data length: ${accountInfo.data.length} bytes`);
                 console.log(`   Owner: ${accountInfo.owner.toString()}`);
                 return true; // Account exists, we're good!
             } else {
-                console.warn(`⚠️  Lottery account not found at PDA: ${lotteryPDA.toString()}`);
+                console.warn(`⚠️  Lottery account not found at PDA: ${this.lotteryPDA.toString()}`);
                 console.warn(`   Expected PDA: ${KNOWN_LOTTERY_PDA}`);
                 
                 // Try the known PDA directly as fallback
-                if (lotteryPDA.toString() !== KNOWN_LOTTERY_PDA) {
+                if (this.lotteryPDA.toString() !== KNOWN_LOTTERY_PDA) {
                     console.log(`🔄 Trying known PDA directly as fallback...`);
                     const knownPDA = new PublicKey(KNOWN_LOTTERY_PDA);
                     accountInfo = await this.connection.getAccountInfo(knownPDA);
