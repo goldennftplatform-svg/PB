@@ -10,17 +10,18 @@ class DrawAnimation {
         this.canvas.width = 900;
         this.canvas.height = 500;
         
-        // Muted professional colors
+        // Anon/Green Terminal Colors
         this.colors = {
-            background: '#1a1a2e',
-            slotBg: '#16213e',
-            reelBg: '#0f3460',
-            ballWhite: '#f5f5f5',
-            ballBlue: '#2c5f8d',
-            ballRed: '#8b1538',
-            gold: '#d4af37',
-            text: '#e8e8e8',
-            accent: '#4a90a4'
+            background: '#0d1117',
+            slotBg: '#161b22',
+            reelBg: '#1c2128',
+            ballWhite: '#c9d1d9',
+            ballBlue: '#58a6ff',
+            ballRed: '#f85149',
+            green: '#00ff41',
+            greenDark: '#00cc33',
+            text: '#c9d1d9',
+            accent: '#00ff41'
         };
         
         this.reels = [];
@@ -124,9 +125,11 @@ class DrawAnimation {
         this.ctx.fillRect(centerX - slotWidth/2, slotY - slotHeight/2, slotWidth, slotHeight);
         
         // Draw border
-        this.ctx.strokeStyle = this.colors.gold;
+        this.ctx.strokeStyle = this.colors.green;
         this.ctx.lineWidth = 3;
         this.ctx.strokeRect(centerX - slotWidth/2, slotY - slotHeight/2, slotWidth, slotHeight);
+        this.ctx.shadowColor = this.colors.green;
+        this.ctx.shadowBlur = 10;
         
         // Draw reels
         this.reels.forEach((reel, reelIndex) => {
@@ -153,29 +156,32 @@ class DrawAnimation {
                 
                 // Highlight center position
                 if (i === 0) {
-                    this.ctx.fillStyle = 'rgba(212, 175, 55, 0.2)';
+                    this.ctx.fillStyle = 'rgba(0, 255, 65, 0.2)';
                     this.ctx.fillRect(reelX, y - 25, reelWidth, 50);
                 }
                 
                 // Draw number
-                this.ctx.fillStyle = this.colors.text;
-                this.ctx.font = 'bold 36px Arial';
+                this.ctx.fillStyle = i === 0 ? this.colors.green : this.colors.text;
+                this.ctx.font = 'bold 36px "Courier New", monospace';
                 this.ctx.textAlign = 'center';
                 this.ctx.textBaseline = 'middle';
                 this.ctx.fillText(value, reelX + reelWidth/2, y);
             }
             
             // Reel border
-            this.ctx.strokeStyle = this.colors.accent;
+            this.ctx.strokeStyle = this.colors.green;
             this.ctx.lineWidth = 2;
             this.ctx.strokeRect(reelX, reelY, reelWidth, slotHeight - 40);
         });
         
         // Draw "PEPEBALL" text above
-        this.ctx.fillStyle = this.colors.gold;
-        this.ctx.font = 'bold 32px Arial';
+        this.ctx.fillStyle = this.colors.green;
+        this.ctx.font = 'bold 32px "Courier New", monospace';
         this.ctx.textAlign = 'center';
+        this.ctx.shadowColor = this.colors.green;
+        this.ctx.shadowBlur = 15;
         this.ctx.fillText('PEPEBALL', centerX, slotY - slotHeight/2 - 20);
+        this.ctx.shadowBlur = 0;
     }
     
     drawKenoTumbler(progress) {
@@ -184,14 +190,17 @@ class DrawAnimation {
         const tumblerRadius = 180;
         
         // Draw tumbler/cage
-        this.ctx.strokeStyle = this.colors.gold;
+        this.ctx.strokeStyle = this.colors.green;
         this.ctx.lineWidth = 4;
+        this.ctx.shadowColor = this.colors.green;
+        this.ctx.shadowBlur = 10;
         this.ctx.beginPath();
         this.ctx.arc(centerX, centerY, tumblerRadius, 0, Math.PI * 2);
         this.ctx.stroke();
+        this.ctx.shadowBlur = 0;
         
         // Draw grid pattern inside
-        this.ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
+        this.ctx.strokeStyle = 'rgba(0, 255, 65, 0.3)';
         this.ctx.lineWidth = 1;
         for (let i = 0; i < 8; i++) {
             const angle = (i * Math.PI * 2) / 8;
@@ -232,14 +241,14 @@ class DrawAnimation {
             const age = this.frame - ball.selectedTime;
             const pulse = Math.sin(age * 0.2) * 3;
             
-            // Ball color (white for most, blue for some, red for powerball)
+            // Ball color (green theme)
             let ballColor = this.colors.ballWhite;
-            let textColor = '#333';
+            let textColor = '#0d1117';
             if (idx === selectedBalls.length - 1) {
-                ballColor = this.colors.ballRed; // Powerball
-                textColor = '#fff';
+                ballColor = this.colors.green; // Powerball
+                textColor = '#0d1117';
             } else if (idx % 5 === 0) {
-                ballColor = this.colors.ballBlue;
+                ballColor = this.colors.greenDark;
                 textColor = '#fff';
             }
             
@@ -254,17 +263,20 @@ class DrawAnimation {
             
             // Draw number
             this.ctx.fillStyle = textColor;
-            this.ctx.font = 'bold 16px Arial';
+            this.ctx.font = 'bold 16px "Courier New", monospace';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(ball.number, ball.x, ball.y);
         });
         
         // Draw count
-        this.ctx.fillStyle = this.colors.text;
-        this.ctx.font = 'bold 24px Arial';
+        this.ctx.fillStyle = this.colors.green;
+        this.ctx.font = 'bold 24px "Courier New", monospace';
         this.ctx.textAlign = 'center';
+        this.ctx.shadowColor = this.colors.green;
+        this.ctx.shadowBlur = 10;
         this.ctx.fillText(`Pepe Balls: ${numBallsToShow}`, centerX, centerY + tumblerRadius + 40);
+        this.ctx.shadowBlur = 0;
     }
     
     drawPowerballReveal() {
@@ -276,24 +288,32 @@ class DrawAnimation {
         this.ctx.fillRect(centerX - 300, centerY - 100, 600, 200);
         
         // Border
-        this.ctx.strokeStyle = this.isOdd ? this.colors.ballRed : this.colors.ballBlue;
+        this.ctx.strokeStyle = this.colors.green;
         this.ctx.lineWidth = 4;
+        this.ctx.shadowColor = this.colors.green;
+        this.ctx.shadowBlur = 15;
         this.ctx.strokeRect(centerX - 300, centerY - 100, 600, 200);
+        this.ctx.shadowBlur = 0;
         
         // Large number display
-        this.ctx.fillStyle = this.colors.gold;
-        this.ctx.font = 'bold 120px Arial';
+        this.ctx.fillStyle = this.colors.green;
+        this.ctx.font = 'bold 120px "Courier New", monospace';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
+        this.ctx.shadowColor = this.colors.green;
+        this.ctx.shadowBlur = 20;
         this.ctx.fillText(this.pepeCount, centerX, centerY - 20);
+        this.ctx.shadowBlur = 0;
         
         // Result text
         const resultText = this.isOdd ? 'PAYOUT!' : 'ROLLOVER';
-        const resultColor = this.isOdd ? this.colors.ballRed : this.colors.ballBlue;
         
-        this.ctx.fillStyle = resultColor;
-        this.ctx.font = 'bold 36px Arial';
+        this.ctx.fillStyle = this.colors.green;
+        this.ctx.font = 'bold 36px "Courier New", monospace';
+        this.ctx.shadowColor = this.colors.green;
+        this.ctx.shadowBlur = 15;
         this.ctx.fillText(resultText, centerX, centerY + 60);
+        this.ctx.shadowBlur = 0;
         
         // Draw balls on sides
         const ballSize = 40;
@@ -305,11 +325,14 @@ class DrawAnimation {
             
             this.ctx.beginPath();
             this.ctx.arc(x, y, ballSize, 0, Math.PI * 2);
-            this.ctx.fillStyle = i === 4 ? this.colors.ballRed : this.colors.ballWhite;
+            this.ctx.fillStyle = i === 4 ? this.colors.green : this.colors.ballWhite;
             this.ctx.fill();
-            this.ctx.strokeStyle = this.colors.gold;
+            this.ctx.strokeStyle = this.colors.green;
             this.ctx.lineWidth = 2;
+            this.ctx.shadowColor = this.colors.green;
+            this.ctx.shadowBlur = 5;
             this.ctx.stroke();
+            this.ctx.shadowBlur = 0;
         }
     }
     
@@ -382,32 +405,33 @@ style.textContent = `
     }
     
     .draw-animation-canvas {
-        border: 2px solid #d4af37;
-        border-radius: 10px;
-        background: #1a1a2e;
-        box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
+        border: 2px solid #00ff41;
+        border-radius: 4px;
+        background: #0d1117;
+        box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
     }
     
     .replay-btn {
         margin-top: 20px;
         padding: 14px 35px;
-        background: linear-gradient(135deg, #2c5f8d 0%, #4a90a4 100%);
-        color: #fff;
-        border: 2px solid #d4af37;
-        border-radius: 8px;
+        background: #161b22;
+        color: #00ff41;
+        border: 2px solid #00ff41;
+        border-radius: 4px;
         font-size: 1.1em;
         font-weight: bold;
         cursor: pointer;
         text-transform: uppercase;
         letter-spacing: 1.5px;
         transition: all 0.3s;
-        box-shadow: 0 4px 15px rgba(44, 95, 141, 0.3);
+        box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        font-family: 'Courier New', monospace;
     }
     
     .replay-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(44, 95, 141, 0.5);
-        background: linear-gradient(135deg, #4a90a4 0%, #2c5f8d 100%);
+        box-shadow: 0 0 25px rgba(0, 255, 65, 0.6);
+        background: rgba(0, 255, 65, 0.1);
     }
     
     .replay-btn:active {
