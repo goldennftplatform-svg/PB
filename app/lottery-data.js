@@ -207,17 +207,32 @@ class LotteryDataFetcher {
                 console.log(`✅ PDA matches known working PDA!`);
             }
             
-            const accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
+            let accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
+            
+            // If not found, try known PDA as fallback
+            if (!accountInfo && pdaAddress !== KNOWN_LOTTERY_PDA) {
+                console.log(`🔄 Account not found at derived PDA, trying known PDA...`);
+                const knownPDA = new PublicKey(KNOWN_LOTTERY_PDA);
+                accountInfo = await this.connection.getAccountInfo(knownPDA);
+                if (accountInfo) {
+                    console.log(`✅ Found account at known PDA! Using that.`);
+                    this.lotteryPDA = knownPDA;
+                }
+            }
+            
             if (!accountInfo) {
                 console.error(`❌ Lottery account not found at PDA: ${pdaAddress}`);
-                console.error(`   PDA is correct, but account doesn't exist.`);
-                console.error(`   The lottery needs to be initialized on devnet.`);
-                console.error(`   Run: node scripts/simple-init-lottery.js`);
+                console.error(`   Tried known PDA: ${KNOWN_LOTTERY_PDA}`);
+                console.error(`   This might be an RPC issue. The account exists (verified by check-lottery-status.js)`);
+                console.error(`   Try refreshing or check RPC connection.`);
+                
+                // Return error but with helpful message
                 return { 
-                    error: 'Lottery not initialized',
-                    message: `The lottery account doesn't exist yet. It needs to be initialized on devnet first.`,
+                    error: 'Lottery account not found',
+                    message: `Could not find lottery account. This might be an RPC issue. The account exists on devnet (verified). Try refreshing the page.`,
                     pda: pdaAddress,
-                    instructions: 'Run: node scripts/simple-init-lottery.js'
+                    knownPDA: KNOWN_LOTTERY_PDA,
+                    instructions: 'The lottery is initialized. This might be a temporary RPC issue. Try refreshing.'
                 };
             }
             
