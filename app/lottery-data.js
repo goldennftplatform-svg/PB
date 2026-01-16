@@ -143,16 +143,22 @@ class LotteryDataFetcher {
             // Fetch real winners from payout transactions
             const winnersData = await this.fetchRealWinnersFromTransactions();
             
+            // Also fetch snapshot/participant data from transactions
+            const snapshotData = await this.fetchSnapshotData();
+            
             // Get jackpot from account balance (simplified)
             const jackpot = accountInfo.lamports || 0;
             
             const data = {
                 jackpot: jackpot,
                 winners: winnersData.winners || { mainWinner: null, minorWinners: [] },
-                lastSnapshot: winnersData.lastSnapshot || null,
+                lastSnapshot: winnersData.lastSnapshot || snapshotData.lastSnapshot || null,
                 payoutTx: winnersData.payoutTx || null,
                 payoutTime: winnersData.payoutTime || null,
-                payouts: winnersData.payouts || null
+                payouts: winnersData.payouts || null,
+                participantCount: snapshotData.participantCount || 0,
+                snapshotTx: snapshotData.snapshotTx || null,
+                snapshotTime: snapshotData.snapshotTime || null
             };
             
             this.cache.lotteryState = data;
@@ -285,6 +291,72 @@ class LotteryDataFetcher {
                 payoutTime: null,
                 lastSnapshot: null,
                 payouts: null
+            };
+        }
+    }
+
+    /**
+     * Fetch snapshot data and participant info from transactions
+     */
+    async fetchSnapshotData() {
+        try {
+            if (!this.connection || !this.lotteryPDA) {
+                await this.init();
+            }
+
+            const signatures = await this.connection.getSignaturesForAddress(
+                this.lotteryPDA,
+                { limit: 50 }
+            );
+
+            let lastSnapshot = null;
+            let snapshotTx = null;
+            let snapshotTime = null;
+            let participantCount = 0;
+
+            // Look for snapshot and entry transactions
+            for (const sig of signatures) {
+                try {
+                    const tx = await this.connection.getTransaction(sig.signature, {
+                        commitment: 'confirmed',
+                        maxSupportedTransactionVersion: 0
+                    });
+
+                    if (!tx || !tx.meta || !tx.meta.logMessages) continue;
+
+                    const logs = tx.meta.logMessages.join(' ');
+
+                    // Check for snapshot
+                    if (logs.includes('take_snapshot') || logs.includes('TakeSnapshot')) {
+                        if (!lastSnapshot || sig.blockTime > lastSnapshot) {
+                            lastSnapshot = sig.blockTime;
+                            snapshotTx = sig.signature;
+                            snapshotTime = sig.blockTime;
+                        }
+                    }
+
+                    // Count entry transactions
+                    if (logs.includes('enter_lottery') || logs.includes('EnterLottery')) {
+                        participantCount++;
+                    }
+                } catch (e) {
+                    continue;
+                }
+            }
+
+            return {
+                lastSnapshot: lastSnapshot,
+                snapshotTx: snapshotTx,
+                snapshotTime: snapshotTime,
+                participantCount: participantCount
+            };
+        } catch (error) {
+            console.error('Error fetching snapshot data:', error);
+            return {
+                lastSnapshot: null,
+                snapshotTx: null,
+                snapshotTime: null,
+                participantCount: 0
             };
         }
     }
@@ -468,9 +540,24 @@ async function updateLotteryDisplay() {
     
     if (state.error) {
         console.warn('Lottery data error:', state.error);
-        // Keep test data visible if real data fails
+        // Show error but also try to show what we have
+        const mainWinnerEl = document.getElementById('main-winner-display');
+        const minorWinnersEl = document.getElementById('minor-winners-display');
+        if (mainWinnerEl) {
+            mainWinnerEl.innerHTML = `<div style="color: #f85149; font-size: 1.2em;">Error: ${state.error}</div>`;
+        }
         return;
     }
+
+    // Log what we found for debugging
+    console.log('📊 Lottery State:', {
+        jackpot: state.jackpot,
+        hasMainWinner: !!state.winners?.mainWinner,
+        minorWinnersCount: state.winners?.minorWinners?.length || 0,
+        participantCount: state.participantCount,
+        snapshotTx: state.snapshotTx,
+        payoutTx: state.payoutTx
+    });
 
     // Update with real data
     updateLotteryDisplayWithData(state);
@@ -510,26 +597,38 @@ function updateWinnersDisplay(state) {
 
     // Main winner - BIG AND VISIBLE
     if (mainWinnerEl) {
-        if (state.winners.mainWinner) {
+        if (state.winners?.mainWinner) {
             const mainWinnerAddress = typeof state.winners.mainWinner === 'string' 
                 ? state.winners.mainWinner 
                 : state.winners.mainWinner.toString();
-            const mainPayout = state.payouts?.mainPayout || (Number(state.jackpot) * 0.68);
+            const mainPayout = state.payouts?.mainPayout || (Number(state.jackpot) * 0.5);
             mainWinnerEl.innerHTML = `
                 <div style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                    <span style="font-family: 'Courier New', monospace; color: #003087; font-size: 1.1em; font-weight: bold;">
+                    <span style="font-family: 'Courier New', monospace; color: var(--accent-green); font-size: 1.1em; font-weight: bold;">
                         ${lotteryFetcher.formatAddress(mainWinnerAddress)}
                     </span>
-                    <button class="copy-btn" onclick="copyAddressToClipboard('${mainWinnerAddress}').then(() => { this.textContent='✅ COPIED!'; this.style.background='#28a745'; setTimeout(() => { this.textContent='📋 Copy'; this.style.background=''; }, 2000); })" style="padding: 8px 20px; font-size: 1em; font-weight: bold; background: #DC143C; color: white; border: 2px solid white;">📋 Copy</button>
-                    <span style="color: #DC143C; font-weight: bold; font-size: 1.3em; background: white; padding: 10px 20px; border-radius: 8px; border: 2px solid #DC143C;">
+                    <button class="copy-btn" onclick="copyAddressToClipboard('${mainWinnerAddress}').then(() => { this.textContent='✅ COPIED!'; this.style.background='#28a745'; setTimeout(() => { this.textContent='📋 Copy'; this.style.background=''; }, 2000); })" style="padding: 8px 20px; font-size: 1em; font-weight: bold; background: var(--accent-green); color: var(--bg-primary); border: 2px solid var(--accent-green);">📋 Copy</button>
+                    <span style="color: var(--accent-green); font-weight: bold; font-size: 1.3em; background: var(--bg-secondary); padding: 10px 20px; border-radius: 4px; border: 2px solid var(--accent-green);">
                         ${lotteryFetcher.formatSOL(mainPayout)} SOL
                     </span>
                     <a href="${EXPLORER_BASE}/address/${mainWinnerAddress}${EXPLORER_CLUSTER}" 
-                       target="_blank" style="color: #003087; text-decoration: none; font-size: 1.2em; font-weight: bold; background: white; padding: 10px 20px; border-radius: 8px; border: 2px solid #003087;">🔗 View</a>
+                       target="_blank" style="color: var(--accent-green); text-decoration: none; font-size: 1.2em; font-weight: bold; background: var(--bg-secondary); padding: 10px 20px; border-radius: 4px; border: 2px solid var(--accent-green);">🔗 View</a>
+                </div>
+            `;
+        } else if (state.snapshotTx) {
+            // Show snapshot info if no payout yet
+            mainWinnerEl.innerHTML = `
+                <div style="text-align: center; color: var(--accent-green); font-family: 'Courier New', monospace;">
+                    <div style="font-size: 1.2em; margin-bottom: 10px;">📸 Snapshot Taken</div>
+                    <div style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 10px;">
+                        ${state.participantCount || '?'} Participants
+                    </div>
+                    <a href="${EXPLORER_BASE}/tx/${state.snapshotTx}${EXPLORER_CLUSTER}" 
+                       target="_blank" style="color: var(--accent-green); text-decoration: none; font-size: 0.9em;">View Snapshot TX</a>
                 </div>
             `;
         } else {
-            mainWinnerEl.innerHTML = '<div style="color: #666; font-size: 1.2em;">No main winner yet</div>';
+            mainWinnerEl.innerHTML = '<div style="color: var(--text-secondary); font-size: 1.2em; font-family: monospace;">No main winner yet</div>';
         }
     }
 
