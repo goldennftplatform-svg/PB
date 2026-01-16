@@ -201,12 +201,13 @@ class LotteryDataFetcher {
         }
 
         try {
-            // Try backend API first
-            const apiData = await this.fetchViaAPI();
-            if (apiData && !apiData.error) {
-                this.cache.lotteryState = apiData;
-                this.cache.timestamp = Date.now();
-                return apiData;
+            // Ensure we have connection and PDA
+            if (!this.connection || !this.lotteryPDA) {
+                console.log('🔄 Re-initializing connection...');
+                const initResult = await this.init();
+                if (!initResult) {
+                    return { error: 'Failed to initialize connection' };
+                }
             }
 
             // Fetch account data for jackpot
@@ -218,6 +219,7 @@ class LotteryDataFetcher {
             
             console.log(`🔍 Checking account at PDA: ${pdaAddress}`);
             console.log(`   Known working PDA: ${KNOWN_LOTTERY_PDA}`);
+            console.log(`   Using RPC: ${this.primaryRPC || 'unknown'}`);
             
             if (pdaAddress !== KNOWN_LOTTERY_PDA) {
                 console.warn(`⚠️  PDA doesn't match known PDA, but continuing anyway`);
@@ -227,7 +229,17 @@ class LotteryDataFetcher {
                 console.log(`✅ PDA matches known working PDA!`);
             }
             
-            let accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
+            // Try to get account info with retries
+            let accountInfo = null;
+            let lastError = null;
+            
+            // First try current connection
+            try {
+                accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
+            } catch (e) {
+                lastError = e;
+                console.warn(`⚠️  First attempt failed:`, e.message);
+            }
             
             // If not found, try other RPC endpoints
             if (!accountInfo && this.allRPCs && this.allRPCs.length > 1) {
@@ -246,6 +258,7 @@ class LotteryDataFetcher {
                         }
                     } catch (rpcError) {
                         console.warn(`   RPC ${i + 1} failed:`, rpcError.message);
+                        lastError = rpcError;
                         continue;
                     }
                 }
@@ -254,27 +267,41 @@ class LotteryDataFetcher {
             // If still not found, try known PDA as fallback
             if (!accountInfo && pdaAddress !== KNOWN_LOTTERY_PDA) {
                 console.log(`🔄 Account not found at derived PDA, trying known PDA...`);
-                const knownPDA = new PublicKey(KNOWN_LOTTERY_PDA);
-                accountInfo = await this.connection.getAccountInfo(knownPDA);
-                if (accountInfo) {
-                    console.log(`✅ Found account at known PDA! Using that.`);
-                    this.lotteryPDA = knownPDA;
+                try {
+                    const { PublicKey } = window.solanaWeb3 || await import('https://cdn.jsdelivr.net/npm/@solana/web3.js@1.87.6/+esm');
+                    const knownPDA = new PublicKey(KNOWN_LOTTERY_PDA);
+                    accountInfo = await this.connection.getAccountInfo(knownPDA);
+                    if (accountInfo) {
+                        console.log(`✅ Found account at known PDA! Using that.`);
+                        this.lotteryPDA = knownPDA;
+                    }
+                } catch (knownPDAError) {
+                    console.warn(`⚠️  Known PDA attempt failed:`, knownPDAError.message);
                 }
             }
             
+            // If STILL not found, but we have a connection, return jackpot as 0 with a warning
+            // This allows the page to still render
             if (!accountInfo) {
                 console.error(`❌ Lottery account not found at PDA: ${pdaAddress}`);
-                console.error(`   Tried both primary and fallback RPC endpoints`);
+                console.error(`   Last error:`, lastError?.message || 'Unknown');
                 console.error(`   This might be an RPC issue. The account exists (verified by check-lottery-status.js)`);
-                console.error(`   Try refreshing or check RPC connection.`);
                 
-                // Return error but with helpful message
-                return { 
-                    error: 'Lottery account not found',
-                    message: `Could not find lottery account. This might be an RPC issue. The account exists on devnet (verified). Try refreshing the page.`,
+                // Return a state with jackpot=0 instead of an error, so the page still renders
+                // The error will be shown but won't block display
+                return {
+                    jackpot: 0, // Return 0 instead of error
+                    winners: { mainWinner: null, minorWinners: [] },
+                    lastSnapshot: null,
+                    payoutTx: null,
+                    payoutTime: null,
+                    payouts: null,
+                    participantCount: 0,
+                    snapshotTx: null,
+                    snapshotTime: null,
+                    warning: 'Could not fetch account data. This might be a temporary RPC issue. Try refreshing.',
                     pda: pdaAddress,
-                    knownPDA: KNOWN_LOTTERY_PDA,
-                    instructions: 'The lottery is initialized. This might be a temporary RPC issue. Try refreshing.'
+                    knownPDA: KNOWN_LOTTERY_PDA
                 };
             }
             
@@ -889,6 +916,20 @@ async function updateLotteryDisplay() {
         const state = await lotteryFetcher.fetchLotteryState();
         console.log('📦 Received state:', state);
         
+        // Show warning if present (but still display data)
+        if (state.warning) {
+            console.warn('⚠️ Lottery data warning:', state.warning);
+            const errorEl = document.getElementById('blockchain-error');
+            if (errorEl) {
+                errorEl.innerHTML = `
+                    <div style="padding: 15px; background: rgba(255, 193, 7, 0.1); border: 2px solid #ffc107; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 0; color: #ffc107;">⚠️ ${state.warning}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Only block display if there's a hard error (not just a warning)
         if (state.error) {
             console.warn('⚠️ Lottery data error:', state.error);
             
