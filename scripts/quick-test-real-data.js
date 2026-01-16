@@ -8,6 +8,7 @@ const crypto = require('crypto');
 
 const NETWORK = 'devnet';
 const RPC_URL = 'https://api.devnet.solana.com';
+// PROGRAM ID - Verified working
 const LOTTERY_PROGRAM_ID = new PublicKey('8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7');
 const USD_VALUE_CENTS = 2000; // $20.00 in cents
 const NUM_PARTICIPANTS = 10; // Quick test with 10 people

@@ -1,4 +1,5 @@
 // Fetch REAL winners from on-chain data - no test data
+// PROGRAM ID - Verified working in test scripts
 const LOTTERY_PROGRAM_ID = '8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7';
 const NETWORK = 'devnet';
 const RPC_URL = 'https://api.devnet.solana.com';

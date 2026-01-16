@@ -1,6 +1,7 @@
 // Lottery Data Fetcher - Fetches real winners and payout data from Solana
 // Uses @solana/web3.js to connect and fetch lottery account data
 
+// PROGRAM ID - Verified working in test scripts
 const LOTTERY_PROGRAM_ID = '8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7';
 const NETWORK = 'devnet'; // Testnet/Devnet for pre-live testing
 const RPC_URL = 'https://api.devnet.solana.com';
@@ -27,9 +28,36 @@ class LotteryDataFetcher {
     async init() {
         try {
             // Dynamically import @solana/web3.js
-            const { Connection, PublicKey } = await import('https://cdn.jsdelivr.net/npm/@solana/web3.js@1.87.6/+esm');
+            let Connection, PublicKey;
             
-            this.connection = new Connection(HELIUS_RPC_URL || RPC_URL, 'confirmed');
+            // Try to use global if available
+            if (window.solanaWeb3) {
+                Connection = window.solanaWeb3.Connection;
+                PublicKey = window.solanaWeb3.PublicKey;
+            } else if (window.web3) {
+                Connection = window.web3.Connection;
+                PublicKey = window.web3.PublicKey;
+            } else {
+                // Import from CDN
+                const solana = await import('https://cdn.jsdelivr.net/npm/@solana/web3.js@1.87.6/+esm');
+                Connection = solana.Connection;
+                PublicKey = solana.PublicKey;
+                // Store globally for reuse
+                window.solanaWeb3 = { Connection, PublicKey };
+            }
+            
+            if (!Connection || !PublicKey) {
+                throw new Error('Solana Web3.js not loaded');
+            }
+            
+            // Use Helius RPC (faster) with fallback to public RPC
+            const rpcUrl = HELIUS_RPC_URL || RPC_URL;
+            console.log(`🔗 Connecting to: ${rpcUrl.includes('helius') ? 'Helius RPC' : 'Public RPC'}`);
+            this.connection = new Connection(rpcUrl, 'confirmed');
+            
+            // Test connection
+            const version = await this.connection.getVersion();
+            console.log(`✅ Connected to Solana ${NETWORK} (${version['solana-core']})`);
             
             // Derive lottery PDA
             const [lotteryPDA] = PublicKey.findProgramAddressSync(
@@ -37,11 +65,47 @@ class LotteryDataFetcher {
                 new PublicKey(LOTTERY_PROGRAM_ID)
             );
             this.lotteryPDA = lotteryPDA;
+            console.log(`✅ Lottery PDA: ${lotteryPDA.toString()}`);
+            
+            // Verify program exists first
+            const programInfo = await this.connection.getAccountInfo(new PublicKey(LOTTERY_PROGRAM_ID));
+            if (!programInfo) {
+                console.error(`❌ CRITICAL: Program ${LOTTERY_PROGRAM_ID} NOT FOUND on ${NETWORK}!`);
+                console.error(`   The program needs to be deployed to devnet first.`);
+                console.error(`   Check: https://explorer.solana.com/address/${LOTTERY_PROGRAM_ID}?cluster=devnet`);
+                return false;
+            }
+            console.log(`✅ Program verified on-chain`);
+            
+            // Verify account exists
+            const accountInfo = await this.connection.getAccountInfo(lotteryPDA);
+            if (accountInfo) {
+                console.log(`✅ Lottery account found (${accountInfo.lamports / 1e9} SOL)`);
+            } else {
+                console.warn(`⚠️  Lottery account not initialized yet`);
+                console.warn(`   Run: node scripts/quick-test-real-data.js to initialize`);
+            }
             
             return true;
         } catch (error) {
-            console.error('Failed to initialize:', error);
-            // Fallback: Use browser fetch API
+            console.error('❌ Failed to initialize blockchain connection:', error);
+            console.error('   Error details:', error.message);
+            console.error('   Stack:', error.stack);
+            
+            // Show user-friendly error
+            const errorEl = document.getElementById('blockchain-error');
+            if (errorEl) {
+                errorEl.innerHTML = `
+                    <div style="padding: 20px; background: rgba(248, 81, 73, 0.1); border: 2px solid #f85149; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="color: #f85149; margin: 0 0 10px 0;">⚠️ Blockchain Connection Error</h3>
+                        <p style="margin: 0; color: #c9d1d9;">${error.message}</p>
+                        <p style="margin: 10px 0 0 0; font-size: 0.9em; color: #8b949e;">
+                            Check browser console for details. Verify program is deployed to devnet.
+                        </p>
+                    </div>
+                `;
+            }
+            
             return false;
         }
     }
