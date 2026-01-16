@@ -108,12 +108,34 @@ class WinnersHistory {
                             // If balance increased significantly (more than just fees)
                             if (increase > 1000000) { // More than 0.001 SOL
                                 const account = accountKeys[i];
-                                if (account && typeof account === 'object' && account.toString) {
+                                if (!account) continue; // Skip null accounts
+                                
+                                let address = null;
+                                try {
+                                    // Handle different account key formats
+                                    if (typeof account === 'string') {
+                                        address = account;
+                                    } else if (typeof account === 'object') {
+                                        // Try toString first
+                                        if (account.toString && typeof account.toString === 'function') {
+                                            address = account.toString();
+                                        } else if (account.toBase58 && typeof account.toBase58 === 'function') {
+                                            address = account.toBase58();
+                                        } else if (account.pubkey) {
+                                            address = account.pubkey.toString();
+                                        }
+                                    }
+                                    
+                                    if (!address) continue; // Skip if we couldn't get address
+                                    
                                     recipientAccounts.push({
-                                        address: account.toString(),
+                                        address: address,
                                         amount: increase / 1e9, // Convert to SOL
-                                        isSystemProgram: account.toString() === '11111111111111111111111111111111'
+                                        isSystemProgram: address === '11111111111111111111111111111111'
                                     });
+                                } catch (e) {
+                                    console.warn('Error parsing account key:', e);
+                                    continue; // Skip this account
                                 }
                             }
                         }

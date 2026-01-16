@@ -64,6 +64,9 @@ class LotteryDataFetcher {
                 [Buffer.from('lottery')],
                 new PublicKey(LOTTERY_PROGRAM_ID)
             );
+            if (!lotteryPDA) {
+                throw new Error('Failed to derive lottery PDA');
+            }
             this.lotteryPDA = lotteryPDA;
             console.log(`✅ Lottery PDA: ${lotteryPDA.toString()}`);
             
@@ -135,6 +138,10 @@ class LotteryDataFetcher {
             }
 
             // Fetch account data for jackpot
+            if (!this.lotteryPDA) {
+                return { error: 'Lottery PDA not initialized' };
+            }
+            
             const accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
             if (!accountInfo) {
                 return { error: 'Lottery not initialized' };
@@ -213,13 +220,13 @@ class LotteryDataFetcher {
 
                     if (isPayout && tx.meta.postBalances) {
                         // Extract winner addresses from account keys
-                        const accountKeys = tx.transaction.message.accountKeys;
+                        const accountKeys = tx.transaction.message.accountKeys || [];
                         const preBalances = tx.meta.preBalances || [];
                         const postBalances = tx.meta.postBalances || [];
 
                         // Find accounts that received SOL (balance increased significantly)
                         const recipientAccounts = [];
-                        for (let i = 0; i < accountKeys.length; i++) {
+                        for (let i = 0; i < accountKeys.length && i < postBalances.length; i++) {
                             const preBalance = preBalances[i] || 0;
                             const postBalance = postBalances[i] || 0;
                             const increase = postBalance - preBalance;
@@ -227,15 +234,36 @@ class LotteryDataFetcher {
                             // If balance increased significantly (more than just fees)
                             if (increase > 1000000) { // More than 0.001 SOL
                                 const account = accountKeys[i];
-                                if (account && typeof account === 'object' && account.toString) {
-                                    const address = account.toString();
-                                    // Skip system program
-                                    if (address !== '11111111111111111111111111111111') {
-                                        recipientAccounts.push({
-                                            address: address,
-                                            amount: increase
-                                        });
+                                if (!account) continue; // Skip null accounts
+                                
+                                let address = null;
+                                try {
+                                    // Handle different account key formats
+                                    if (typeof account === 'string') {
+                                        address = account;
+                                    } else if (typeof account === 'object') {
+                                        // Try toString first
+                                        if (account.toString && typeof account.toString === 'function') {
+                                            address = account.toString();
+                                        } else if (account.toBase58 && typeof account.toBase58 === 'function') {
+                                            address = account.toBase58();
+                                        } else if (account.pubkey) {
+                                            address = account.pubkey.toString();
+                                        }
                                     }
+                                    
+                                    // Skip if we couldn't get address or it's system program
+                                    if (!address || address === '11111111111111111111111111111111') {
+                                        continue;
+                                    }
+                                    
+                                    recipientAccounts.push({
+                                        address: address,
+                                        amount: increase
+                                    });
+                                } catch (e) {
+                                    console.warn('Error parsing account key:', e);
+                                    continue; // Skip this account
                                 }
                             }
                         }
@@ -417,7 +445,7 @@ class LotteryDataFetcher {
                 id: 1,
                 method: 'getAccountInfo',
                 params: [
-                    this.lotteryPDA.toString(),
+                    this.lotteryPDA ? this.lotteryPDA.toString() : null,
                     { encoding: 'base64' }
                 ]
             })
@@ -641,7 +669,8 @@ function updateWinnersDisplay(state) {
             if (validWinners.length > 0) {
                 const minorWinners = validWinners
                     .map((w, idx) => {
-                        const address = typeof w === 'string' ? w : w.toString();
+                        const address = typeof w === 'string' ? w : (w?.toString() || '');
+                        if (!address) continue; // Skip invalid addresses
                         const payout = state.payouts?.minorPayout || (Number(state.jackpot) * 0.03);
                         return `
                             <div style="margin: 12px 0; padding: 15px; background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%); border-radius: 10px; border: 2px solid #003087; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
