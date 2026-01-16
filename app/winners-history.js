@@ -195,6 +195,8 @@ class WinnersHistory {
             </div>
         `;
 
+        let winners = [];
+        
         try {
             // Initialize if needed
             if (!this.connection || !this.lotteryPDA) {
@@ -210,20 +212,13 @@ class WinnersHistory {
                 setTimeout(() => reject(new Error('Timeout')), 10000)
             );
             
-            const winners = await Promise.race([winnersPromise, timeoutPromise]);
-            
-            if (!winners || winners.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <div style="font-size: 3em; margin-bottom: 20px;">🎰</div>
-                        <div style="font-size: 1.2em; margin-bottom: 10px;">No winners yet</div>
-                        <div style="font-size: 0.9em; color: #999;">Be the first to win! Make an entry and wait for the next draw.</div>
-                    </div>
-                `;
-                return;
-            }
+            winners = await Promise.race([winnersPromise, timeoutPromise]);
         } catch (error) {
             console.error('Error loading winners:', error);
+            winners = [];
+        }
+        
+        if (!winners || winners.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 40px; color: #666;">
                     <div style="font-size: 3em; margin-bottom: 20px;">🎰</div>
@@ -233,8 +228,6 @@ class WinnersHistory {
             `;
             return;
         }
-
-        const winners = await this.fetchRealWinners();
 
         container.innerHTML = winners.map((winner, index) => {
             const isGrandPrize = winner.type === 'Grand Prize';
