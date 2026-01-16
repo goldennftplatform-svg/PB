@@ -1282,7 +1282,7 @@ function updateWinnersDisplay(state) {
                     .map((w, idx) => {
                         const address = typeof w === 'string' ? w : (w?.toString() || '');
                         if (!address || address === '11111111111111111111111111111111') return null;
-                        const payout = state.payouts?.minorPayout || (Number(state.jackpot) * 0.03);
+                        const payout = state.payouts?.minorPayout || (Number(state.jackpot) * 0.05); // 5% each
                         return `
                             <div style="margin: 12px 0; padding: 15px; background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%); border-radius: 10px; border: 2px solid #003087; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
                                 <span style="font-weight: bold; color: #DC143C; font-size: 1.3em; background: #fff3cd; padding: 8px 15px; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 3px solid #DC143C;">#${idx + 1}</span>
@@ -1303,10 +1303,40 @@ function updateWinnersDisplay(state) {
                 
                 minorWinnersEl.innerHTML = minorWinners;
             } else {
-                minorWinnersEl.textContent = 'No minor winners yet';
+                // Show helpful message if snapshot exists but no winners
+                if (state.snapshotTx && !state.payoutTx) {
+                    minorWinnersEl.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                            <div style="font-size: 1.1em; margin-bottom: 10px;">⏳ Waiting for payout</div>
+                            <div style="font-size: 0.9em; color: var(--text-secondary);">
+                                Snapshot taken with ${state.participantCount || '?'} participants
+                            </div>
+                            <div style="font-size: 0.85em; color: var(--accent-cyan); margin-top: 10px;">
+                                If snapshot was ODD, payout needs to be triggered
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    minorWinnersEl.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">No minor winners yet</div>';
+                }
             }
         } else {
-            minorWinnersEl.textContent = 'No minor winners yet';
+            // Show helpful message if snapshot exists but no winners
+            if (state.snapshotTx && !state.payoutTx) {
+                minorWinnersEl.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                        <div style="font-size: 1.1em; margin-bottom: 10px;">⏳ Waiting for payout</div>
+                        <div style="font-size: 0.9em; color: var(--text-secondary);">
+                            Snapshot taken with ${state.participantCount || '?'} participants
+                        </div>
+                        <div style="font-size: 0.85em; color: var(--accent-cyan); margin-top: 10px;">
+                            If snapshot was ODD, payout needs to be triggered
+                        </div>
+                    </div>
+                `;
+            } else {
+                minorWinnersEl.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">No minor winners yet</div>';
+            }
         }
     }
 }
@@ -1318,27 +1348,6 @@ window.copyAddressToClipboard = copyAddressToClipboard;
  * Update payout transaction display
  */
 function updatePayoutTransaction(state) {
-    // Find or create payout transaction section
-    let payoutSection = document.getElementById('payout-transaction');
-    
-    if (!payoutSection) {
-        // Create payout section if it doesn't exist
-        const winnersSection = document.querySelector('.winning-numbers-section');
-        if (winnersSection) {
-            payoutSection = document.createElement('div');
-            payoutSection.id = 'payout-transaction';
-            payoutSection.className = 'payout-tx-section';
-            payoutSection.style.cssText = `
-                margin-top: 20px;
-                padding: 15px;
-                background: rgba(52, 152, 219, 0.1);
-                border-radius: 10px;
-                border: 1px solid #3498db;
-            `;
-            winnersSection.appendChild(payoutSection);
-        }
-    }
-
     // Update payout transaction in winners section
     const payoutTxSection = document.getElementById('payout-tx-section');
     const payoutTxDisplay = document.getElementById('payout-tx-display');
@@ -1351,12 +1360,28 @@ function updatePayoutTransaction(state) {
                     ${state.payoutTx.substring(0, 20)}...${state.payoutTx.substring(state.payoutTx.length - 8)}
                 </span>
                 <button class="copy-btn" onclick="copyAddressToClipboard('${state.payoutTx}').then(() => { this.textContent='✅'; setTimeout(() => this.textContent='📋', 2000); })" style="margin-left: 10px; padding: 3px 10px; font-size: 0.8em;">📋</button>
-                <a href="${EXPLORER_BASE}/tx/${state.payoutTx}${EXPLORER_CLUSTER}" 
+                <a href="${EXPLORER_BASE}/tx/${state.payoutTx}${EXPLORER_CLUSTER}"
                    target="_blank" style="color: #003087; text-decoration: none; margin-left: 10px;">🔗 View</a>
                 ${state.payoutTime ? `<span style="color: #666; margin-left: 10px;">(${lotteryFetcher.formatDate(state.payoutTime)})</span>` : ''}
             `;
+        } else if (state.snapshotTx) {
+            // Show snapshot info if no payout yet
+            payoutTxSection.style.display = 'block';
+            payoutTxDisplay.innerHTML = `
+                <div style="text-align: center; color: var(--text-secondary);">
+                    <div style="margin-bottom: 8px;">📸 Snapshot taken, waiting for payout</div>
+                    <div style="font-size: 0.85em; color: var(--accent-cyan);">
+                        <a href="${EXPLORER_BASE}/tx/${state.snapshotTx}${EXPLORER_CLUSTER}" 
+                           target="_blank" style="color: var(--accent-cyan); text-decoration: none;">View Snapshot TX</a>
+                    </div>
+                    <div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 8px;">
+                        If snapshot was ODD, trigger payout_winners instruction
+                    </div>
+                </div>
+            `;
         } else {
-            payoutTxSection.style.display = 'none';
+            payoutTxSection.style.display = 'block';
+            payoutTxDisplay.textContent = 'No payout transaction yet';
         }
     }
 }
