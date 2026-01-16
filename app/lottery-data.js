@@ -659,11 +659,44 @@ async function updateLotteryDisplay() {
     
     if (state.error) {
         console.warn('Lottery data error:', state.error);
-        // Show error but also try to show what we have
+        
+        // Show helpful error message
+        const errorEl = document.getElementById('blockchain-error');
+        if (errorEl) {
+            let errorHtml = `
+                <div style="padding: 20px; background: rgba(248, 81, 73, 0.1); border: 2px solid #f85149; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #f85149; margin: 0 0 10px 0;">⚠️ ${state.error}</h3>
+                    <p style="margin: 0; color: #c9d1d9;">${state.message || state.error}</p>
+            `;
+            
+            // Special handling for "Lottery not initialized" error
+            if (state.error === 'Lottery not initialized') {
+                errorHtml += `
+                    <div style="margin-top: 15px; padding: 15px; background: rgba(0, 255, 65, 0.1); border: 1px solid var(--accent-green); border-radius: 4px;">
+                        <p style="margin: 0 0 10px 0; color: var(--accent-green); font-weight: bold;">📋 How to Initialize:</p>
+                        <ol style="margin: 0; padding-left: 20px; color: var(--text-primary);">
+                            <li style="margin-bottom: 8px;">Open terminal in the project directory</li>
+                            <li style="margin-bottom: 8px;">Run: <code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px;">node scripts/simple-init-lottery.js</code></li>
+                            <li style="margin-bottom: 8px;">Or: <code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px;">node scripts/reinit-lottery-50-50.js</code></li>
+                            <li>Refresh this page after initialization completes</li>
+                        </ol>
+                        ${state.pda ? `<p style="margin-top: 10px; font-size: 0.9em; color: var(--text-secondary);">PDA: <code>${state.pda}</code></p>` : ''}
+                    </div>
+                `;
+            }
+            
+            errorHtml += `</div>`;
+            errorEl.innerHTML = errorHtml;
+        }
+        
+        // Also update winner displays
         const mainWinnerEl = document.getElementById('main-winner-display');
         const minorWinnersEl = document.getElementById('minor-winners-display');
         if (mainWinnerEl) {
-            mainWinnerEl.innerHTML = `<div style="color: #f85149; font-size: 1.2em;">Error: ${state.error}</div>`;
+            mainWinnerEl.innerHTML = `<div style="color: #f85149; font-size: 1.2em;">${state.error}</div>`;
+        }
+        if (minorWinnersEl) {
+            minorWinnersEl.innerHTML = `<div style="color: #8b949e;">Lottery needs to be initialized first</div>`;
         }
         return;
     }
