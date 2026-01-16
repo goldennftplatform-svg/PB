@@ -118,7 +118,10 @@ class LotteryDataFetcher {
                 console.log(`✅ Lottery account found (${accountInfo.lamports / 1e9} SOL)`);
             } else {
                 console.warn(`⚠️  Lottery account not initialized yet`);
-                console.warn(`   Run: node scripts/quick-test-real-data.js to initialize`);
+                console.warn(`   PDA: ${lotteryPDA.toString()}`);
+                console.warn(`   The lottery needs to be initialized on devnet first.`);
+                console.warn(`   Run: node scripts/simple-init-lottery.js`);
+                console.warn(`   Or: node scripts/reinit-lottery-50-50.js`);
             }
             
             return true;
@@ -176,7 +179,16 @@ class LotteryDataFetcher {
             
             const accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
             if (!accountInfo) {
-                return { error: 'Lottery not initialized' };
+                const pdaAddress = this.lotteryPDA.toString();
+                console.error(`❌ Lottery account not found at PDA: ${pdaAddress}`);
+                console.error(`   The lottery needs to be initialized on devnet.`);
+                console.error(`   Run: node scripts/simple-init-lottery.js`);
+                return { 
+                    error: 'Lottery not initialized',
+                    message: `The lottery account doesn't exist yet. It needs to be initialized on devnet first.`,
+                    pda: pdaAddress,
+                    instructions: 'Run: node scripts/simple-init-lottery.js'
+                };
             }
 
             // Fetch real winners from payout transactions
