@@ -61,28 +61,45 @@ class LotteryDataFetcher {
             
             // Derive lottery PDA - handle Buffer polyfill for browser
             let seedBuffer;
-            if (typeof Buffer !== 'undefined') {
-                seedBuffer = Buffer.from('lottery');
+            if (typeof Buffer !== 'undefined' && Buffer.from) {
+                try {
+                    seedBuffer = Buffer.from('lottery');
+                } catch (e) {
+                    // If Buffer.from fails, use TextEncoder
+                    seedBuffer = new TextEncoder().encode('lottery');
+                }
             } else {
                 // Browser fallback: convert string to Uint8Array
                 seedBuffer = new TextEncoder().encode('lottery');
             }
             
+            console.log('🔑 Deriving PDA with seed:', seedBuffer);
+            console.log('🔑 Program ID:', LOTTERY_PROGRAM_ID);
+            
             try {
-                const [lotteryPDA] = PublicKey.findProgramAddressSync(
+                const programId = new PublicKey(LOTTERY_PROGRAM_ID);
+                console.log('🔑 Program PublicKey created:', programId.toString());
+                
+                const pdaResult = PublicKey.findProgramAddressSync(
                     [seedBuffer],
-                    new PublicKey(LOTTERY_PROGRAM_ID)
+                    programId
                 );
                 
-                if (!lotteryPDA) {
-                    throw new Error('findProgramAddressSync returned null PDA');
+                if (!pdaResult || !pdaResult[0]) {
+                    throw new Error('findProgramAddressSync returned null or empty result');
                 }
                 
+                const lotteryPDA = pdaResult[0];
+                console.log('🔑 PDA derived:', lotteryPDA.toString());
+                
                 this.lotteryPDA = lotteryPDA;
-                console.log(`✅ Lottery PDA: ${lotteryPDA.toString()}`);
+                console.log(`✅ Lottery PDA initialized: ${lotteryPDA.toString()}`);
             } catch (pdaError) {
                 console.error('❌ PDA derivation error:', pdaError);
-                throw new Error(`Failed to derive lottery PDA: ${pdaError.message}`);
+                console.error('   Error type:', typeof pdaError);
+                console.error('   Error message:', pdaError.message);
+                console.error('   Error stack:', pdaError.stack);
+                throw new Error(`Failed to derive lottery PDA: ${pdaError.message || pdaError}`);
             }
             
             // Verify program exists first
