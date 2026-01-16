@@ -627,27 +627,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Fetch real data from blockchain with timeout
     const loadData = async () => {
         try {
+            console.log('📦 Creating LotteryDataFetcher...');
+            lotteryFetcher = new LotteryDataFetcher();
+            
+            console.log('🔗 Initializing connection...');
             const initPromise = lotteryFetcher.init();
             const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Initialization timeout')), 8000)
+                setTimeout(() => reject(new Error('Initialization timeout after 15 seconds')), 15000)
             );
             
-            await Promise.race([initPromise, timeoutPromise]);
+            const initResult = await Promise.race([initPromise, timeoutPromise]);
+            console.log('✅ Initialization complete:', initResult);
             
+            console.log('📊 Fetching lottery state...');
             const updatePromise = updateLotteryDisplay();
             const updateTimeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Update timeout')), 10000)
+                setTimeout(() => reject(new Error('Update timeout after 20 seconds')), 20000)
             );
             
             await Promise.race([updatePromise, updateTimeout]);
+            console.log('✅ Initial update complete!');
             
             // Update every 30 seconds
-            setInterval(updateLotteryDisplay, 30000);
+            console.log('⏰ Setting up auto-refresh (every 30 seconds)...');
+            setInterval(() => {
+                console.log('🔄 Auto-refresh triggered');
+                updateLotteryDisplay().catch(err => console.error('Auto-refresh error:', err));
+            }, 30000);
         } catch (error) {
-            console.error('Failed to load real data:', error);
+            console.error('❌ Failed to load real data:', error);
+            console.error('   Error message:', error.message);
+            console.error('   Error stack:', error.stack);
+            
+            // Show error message
+            const errorEl = document.getElementById('blockchain-error');
+            if (errorEl) {
+                errorEl.innerHTML = `
+                    <div style="padding: 20px; background: rgba(248, 81, 73, 0.1); border: 2px solid #f85149; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="color: #f85149; margin: 0 0 10px 0;">⚠️ Failed to Load Data</h3>
+                        <p style="margin: 0; color: #c9d1d9;">${error.message || 'Unknown error'}</p>
+                        <p style="margin: 10px 0 0 0; font-size: 0.9em; color: #8b949e;">Check browser console (F12) for detailed logs.</p>
+                    </div>
+                `;
+            }
+            
             // Show "no data" instead of fake data
-            if (mainWinnerEl) mainWinnerEl.innerHTML = '<div style="color: #666; font-size: 1.2em;">No winners yet - waiting for first payout</div>';
-            if (minorWinnersEl) minorWinnersEl.innerHTML = '<div style="color: #666;">No winners yet - waiting for first payout</div>';
+            if (mainWinnerEl) mainWinnerEl.innerHTML = '<div style="color: var(--text-secondary); font-size: 1.2em;">⚠️ Failed to load data - check console</div>';
+            if (minorWinnersEl) minorWinnersEl.innerHTML = '<div style="color: var(--text-secondary);">⚠️ Failed to load data - check console</div>';
         }
     };
     
