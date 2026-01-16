@@ -12,52 +12,59 @@
         }
 
         :root {
-            --powerball-red: #DC143C;
-            --powerball-blue: #003087;
-            --powerball-white: #FFFFFF;
-            --powerball-gold: #FFD700;
-            --powerball-dark: #1a1a1a;
+            --bg-primary: #0a0e27;
+            --bg-secondary: #141b2d;
+            --bg-card: #1a2332;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border-color: #1e293b;
         }
 
         body {
-            font-family: 'Arial', 'Helvetica', sans-serif;
-            background: linear-gradient(180deg, #f5f5f5 0%, #e8e8e8 100%);
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
+            min-height: 100vh;
         }
 
-        /* Header - Powerball Style */
+        /* Header - Modern Dark */
         .header {
-            background: var(--powerball-blue);
-            color: var(--powerball-white);
-            padding: 20px 0;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 30px 0;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
         .header h1 {
-            font-size: 3.5em;
-            font-weight: bold;
-            letter-spacing: 3px;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
         }
 
         .header .subtitle {
-            font-size: 1.2em;
-            opacity: 0.9;
-            font-weight: 300;
+            font-size: 1em;
+            color: var(--text-secondary);
+            font-weight: 400;
         }
 
         .testnet-badge {
             display: inline-block;
-            background: var(--powerball-gold);
-            color: var(--powerball-dark);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: bold;
-            margin-top: 10px;
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-purple);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-top: 12px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
         }
 
         /* Main Container */
@@ -67,58 +74,58 @@
             padding: 30px 20px;
         }
 
-        /* Jackpot Section - Powerball Style */
+        /* Jackpot Section - Clean Modern */
         .jackpot-section {
-            background: var(--powerball-white);
-            border: 4px solid var(--powerball-red);
-            border-radius: 15px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
             padding: 40px;
             text-align: center;
             margin: 30px 0;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
         }
 
         .jackpot-label {
-            font-size: 1.5em;
-            color: #666;
-            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
+            font-weight: 600;
         }
 
         .jackpot-amount {
-            font-size: 4.5em;
-            font-weight: bold;
-            color: var(--powerball-red);
-            margin: 20px 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-size: 3.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 16px 0;
         }
 
         .jackpot-timer {
-            font-size: 1.3em;
-            color: var(--powerball-blue);
-            font-weight: 600;
-            margin-top: 20px;
+            font-size: 1em;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-top: 16px;
         }
 
-        /* Winning Numbers - Powerball Style */
+        /* Winning Numbers - Clean */
         .winning-numbers-section {
-            background: var(--powerball-white);
-            border: 3px solid var(--powerball-blue);
-            border-radius: 15px;
-            padding: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
             margin: 30px 0;
             text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
 
         .section-title {
-            font-size: 2em;
-            color: var(--powerball-blue);
-            margin-bottom: 30px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            font-size: 1.5em;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            font-weight: 600;
         }
 
         .winning-numbers {
@@ -131,43 +138,42 @@
         }
 
         .number-ball {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: var(--powerball-white);
-            border: 4px solid var(--powerball-blue);
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-cyan);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2em;
-            font-weight: bold;
-            color: var(--powerball-blue);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: transform 0.3s;
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            transition: all 0.3s;
         }
 
         .number-ball:hover {
-            transform: scale(1.1);
+            transform: scale(1.05);
+            border-color: var(--accent-purple);
         }
 
         .powerball-ball {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: var(--powerball-red);
-            border: 4px solid var(--powerball-red);
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            border: 2px solid transparent;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2em;
-            font-weight: bold;
-            color: var(--powerball-white);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--text-primary);
             transition: transform 0.3s;
         }
 
         .powerball-ball:hover {
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         .winners-info {
@@ -218,35 +224,30 @@
 
         /* Action Buttons */
         .action-section {
-            background: var(--powerball-white);
-            border: 3px solid var(--powerball-blue);
-            border-radius: 15px;
-            padding: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
             margin: 30px 0;
             text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
 
         .action-btn {
-            background: var(--powerball-red);
-            color: var(--powerball-white);
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            color: var(--text-primary);
             border: none;
-            padding: 18px 40px;
-            font-size: 1.3em;
-            font-weight: bold;
-            border-radius: 8px;
+            padding: 14px 32px;
+            font-size: 1em;
+            font-weight: 600;
+            border-radius: 12px;
             cursor: pointer;
-            margin: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin: 8px;
             transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
         .action-btn:hover {
-            background: #b01030;
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
         }
 
         .action-btn:active {
@@ -254,29 +255,30 @@
         }
 
         .action-btn.secondary {
-            background: var(--powerball-blue);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
         }
 
         .action-btn.secondary:hover {
-            background: #002066;
+            background: var(--bg-card);
+            border-color: var(--accent-cyan);
         }
 
         .action-btn.success {
-            background: #28a745;
+            background: var(--accent-green);
         }
 
         .action-btn.success:hover {
-            background: #218838;
+            background: #059669;
         }
 
         /* Token Address Section */
         .token-section {
-            background: var(--powerball-white);
-            border: 3px solid var(--powerball-blue);
-            border-radius: 15px;
-            padding: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
             margin: 30px 0;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
 
         .token-address {
@@ -308,37 +310,36 @@
         }
 
         .stat-card {
-            background: var(--powerball-white);
-            border: 2px solid var(--powerball-blue);
-            border-radius: 10px;
-            padding: 25px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
             text-align: center;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
 
         .stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: var(--powerball-red);
-            margin: 10px 0;
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin: 8px 0;
         }
 
         .stat-label {
-            font-size: 1em;
-            color: #666;
+            font-size: 0.85em;
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 600;
         }
 
         /* Wallet Connection */
         .wallet-section {
-            background: var(--powerball-white);
-            border: 3px solid var(--powerball-blue);
-            border-radius: 15px;
-            padding: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
             margin: 30px 0;
             text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
 
         .wallet-status {
@@ -362,8 +363,9 @@
 
         /* Footer */
         .footer {
-            background: var(--powerball-dark);
-            color: var(--powerball-white);
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
             padding: 30px 20px;
             text-align: center;
             margin-top: 50px;
@@ -540,18 +542,18 @@
             <div class="jackpot-label">Estimated Jackpot</div>
             <div class="jackpot-amount" id="jackpot-amount">20.5 SOL</div>
             <div class="jackpot-timer" id="jackpot-timer">Next Draw: 2d 14h 32m</div>
-            <div id="lottery-status" style="margin-top: 15px; font-weight: 600; color: #003087;">
-                Network: <span style="color:#28a745;">Devnet</span> • Program live on-chain
+            <div id="lottery-status" style="margin-top: 15px; font-weight: 500; color: var(--text-secondary); font-size: 0.9em;">
+                Network: <span style="color:var(--accent-green);">Devnet</span> • Program live on-chain
             </div>
-            <div style="margin-top: 10px; font-size: 0.85em;">
+            <div style="margin-top: 12px; font-size: 0.85em;">
                 <a href="https://explorer.solana.com/address/8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7?cluster=devnet"
                    target="_blank"
-                   style="color:#003087; text-decoration:none; margin-right:10px;">
+                   style="color:var(--accent-cyan); text-decoration:none; margin-right:12px;">
                     🔗 Lottery Program
                 </a>
                 <a href="https://explorer.solana.com/address/ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb?cluster=devnet"
                    target="_blank"
-                   style="color:#003087; text-decoration:none;">
+                   style="color:var(--accent-cyan); text-decoration:none;">
                     🔗 Lottery PDA
                 </a>
             </div>
@@ -578,7 +580,7 @@
             </div>
             <!-- Last 10 Winners Section - Powerball Style -->
             <div class="section-title" style="margin-top: 50px; margin-bottom: 30px;">🏆 Last 10 Winners</div>
-            <div id="last-10-winners" style="background: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div id="last-10-winners" style="background: var(--bg-card); padding: 24px; border-radius: 12px; border: 1px solid var(--border-color);">
                 <div id="winners-list" style="display: grid; gap: 20px;">
                     <div style="text-align: center; padding: 40px; color: #666;">
                         <div style="font-size: 3em; margin-bottom: 20px;">⏳</div>
@@ -587,31 +589,31 @@
                 </div>
             </div>
             
-            <div class="winners-info" id="winners-info" style="min-height: 500px; background: #ffffff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-top: 30px;">
-                <!-- MAIN WINNER - BIG AND BOLD -->
-                <div class="winner-item" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px; border: 5px solid #DC143C; box-shadow: 0 8px 25px rgba(220, 20, 60, 0.5); text-align: center;">
-                    <div style="font-size: 2.5em; margin-bottom: 15px;">🏆</div>
-                    <strong style="color: #DC143C; font-size: 1.8em; display: block; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">MAIN WINNER</strong>
-                    <div style="color: #8B0000; font-size: 1.3em; margin-bottom: 10px; font-weight: bold;">50% of Jackpot</div>
-                    <div style="margin-top: 15px; font-size: 1.2em; font-weight: bold; color: #003087; background: white; padding: 15px; border-radius: 8px; border: 2px solid #DC143C;" id="main-winner-display">Loading real data from blockchain...</div>
+            <div class="winners-info" id="winners-info" style="min-height: 400px; background: var(--bg-card); padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 24px;">
+                <!-- MAIN WINNER -->
+                <div class="winner-item" style="background: var(--bg-secondary); padding: 24px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--accent-purple); text-align: center;">
+                    <div style="font-size: 2em; margin-bottom: 12px;">🏆</div>
+                    <strong style="color: var(--accent-purple); font-size: 1.3em; display: block; margin-bottom: 8px; font-weight: 600;">Main Winner</strong>
+                    <div style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 12px;">50% of Jackpot</div>
+                    <div style="margin-top: 12px; font-size: 1em; font-weight: 500; color: var(--text-primary); background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);" id="main-winner-display">Loading real data from blockchain...</div>
                 </div>
                 
-                <!-- MINOR WINNERS - CLEAR LIST -->
-                <div class="winner-item" style="background: linear-gradient(135deg, #E6F3FF 0%, #B3D9FF 100%); padding: 25px; border-radius: 15px; border: 4px solid #003087; box-shadow: 0 6px 20px rgba(0, 48, 135, 0.3);">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <div style="font-size: 2em; margin-bottom: 10px;">🎯</div>
-                        <strong style="color: #003087; font-size: 1.6em; display: block; text-transform: uppercase; letter-spacing: 2px;">8 MINOR WINNERS</strong>
-                        <div style="color: #001f5c; font-size: 1.2em; margin-top: 5px;">5% Each (40% total)</div>
+                <!-- MINOR WINNERS -->
+                <div class="winner-item" style="background: var(--bg-secondary); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <div style="font-size: 1.5em; margin-bottom: 8px;">🎯</div>
+                        <strong style="color: var(--text-primary); font-size: 1.2em; display: block; font-weight: 600;">8 Minor Winners</strong>
+                        <div style="color: var(--text-secondary); font-size: 0.85em; margin-top: 4px;">5% Each (40% total)</div>
                     </div>
-                    <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 10px; border: 2px solid #003087;" id="minor-winners-display">Loading real data from blockchain...</div>
+                    <div style="margin-top: 16px; background: var(--bg-card); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);" id="minor-winners-display">Loading real data from blockchain...</div>
                 </div>
                 
                 <!-- PAYOUT TRANSACTION -->
-                <div class="winner-item" id="payout-tx-section" style="display: block; margin-top: 25px; padding: 20px; background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); border-radius: 12px; border: 3px solid #28a745; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">
+                <div class="winner-item" id="payout-tx-section" style="display: block; margin-top: 20px; padding: 16px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--accent-green);">
                     <div style="text-align: center;">
-                        <div style="font-size: 2em; margin-bottom: 10px;">💰</div>
-                        <strong style="color: #155724; font-size: 1.4em; display: block; margin-bottom: 15px; text-transform: uppercase;">Payout Transaction</strong>
-                        <div style="margin-top: 10px; background: white; padding: 15px; border-radius: 8px; border: 2px solid #28a745; font-family: 'Courier New', monospace; font-size: 1.1em;" id="payout-tx-display">No payout transaction yet</div>
+                        <div style="font-size: 1.5em; margin-bottom: 8px;">💰</div>
+                        <strong style="color: var(--accent-green); font-size: 1.1em; display: block; margin-bottom: 12px; font-weight: 600;">Payout Transaction</strong>
+                        <div style="margin-top: 8px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Courier New', monospace; font-size: 0.9em; color: var(--text-secondary);" id="payout-tx-display">No payout transaction yet</div>
                     </div>
                 </div>
             </div>
@@ -619,7 +621,7 @@
 
         <!-- Action Buttons -->
         <div class="action-section">
-            <h2 style="color: var(--powerball-blue); margin-bottom: 20px;">Get Started</h2>
+            <h2 style="color: var(--text-primary); margin-bottom: 20px; font-weight: 600;">Get Started</h2>
             <button class="action-btn" onclick="buyTokens()">🛒 Buy Tokens on Orca</button>
             <button class="action-btn secondary" onclick="connectWallet()" id="connect-btn">🔗 Connect Wallet</button>
             <button class="action-btn success" onclick="addTokenToWallet()" id="add-token-btn">➕ Add Token to Wallet</button>
@@ -627,7 +629,7 @@
 
         <!-- Token Address Section -->
         <div class="token-section">
-            <h3 style="color: var(--powerball-blue); margin-bottom: 15px;">Token Contract Address</h3>
+            <h3 style="color: var(--text-primary); margin-bottom: 15px; font-weight: 600;">Token Contract Address</h3>
             <div class="token-address">
                 <span class="token-address-text" id="token-address">CXcoVCAuQB2XigJmyGz162aj1MCgJxC9Hgo5SEuRuFto</span>
                 <button class="copy-btn" onclick="copyTokenAddress()" id="copy-token-btn">📋 Copy</button>
@@ -659,7 +661,7 @@
 
         <!-- Wallet Connection Status -->
         <div class="wallet-section">
-            <h3 style="color: var(--powerball-blue); margin-bottom: 15px;">Wallet Connection</h3>
+            <h3 style="color: var(--text-primary); margin-bottom: 15px; font-weight: 600;">Wallet Connection</h3>
             <div class="wallet-status disconnected" id="wallet-status">
                 🔴 Not Connected
             </div>
