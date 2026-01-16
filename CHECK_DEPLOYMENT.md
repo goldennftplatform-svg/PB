@@ -4,9 +4,9 @@
 
 ### 1. Verify Files Are Deployed
 Visit these URLs directly:
-- `https://pb-n7kx.vercel.app/winners-history.js?v=2`
-- `https://pb-n7kx.vercel.app/draw-animation.js?v=2`
-- `https://pb-n7kx.vercel.app/lottery-data.js?v=2`
+- `https://pb-n7kx.vercel.app/winners-history.js?v=3`
+- `https://pb-n7kx.vercel.app/draw-animation.js?v=3`
+- `https://pb-n7kx.vercel.app/lottery-data.js?v=3`
 
 If you see 404, the files aren't deployed.
 
@@ -36,7 +36,7 @@ In Vercel dashboard:
 
 ## What Should Work Now
 
-✅ Cache-busting added (`?v=2` on scripts)
+✅ Cache-busting added (`?v=3` on scripts)
 ✅ Cache control headers added
 ✅ Vercel config updated
 ✅ Files pushed to GitHub
@@ -55,4 +55,10 @@ In Vercel dashboard:
 - Loading spinner while fetching
 - Real winner data from blockchain
 - Mobile-responsive design
+
+
+
+
+
+
 
