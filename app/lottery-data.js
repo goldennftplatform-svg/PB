@@ -13,10 +13,19 @@ window.RPC_URL = 'https://api.devnet.solana.com';
 const RPC_URL = window.RPC_URL;
 
 // Use Helius for faster RPC (works on devnet)
+// Primary Helius API key
 window.HELIUS_API_KEY = '431ca765-2f35-4b23-8abd-db03796bd85f';
 const HELIUS_API_KEY = window.HELIUS_API_KEY;
 window.HELIUS_RPC_URL = `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`;
 const HELIUS_RPC_URL = window.HELIUS_RPC_URL;
+
+// Fallback Helius API key (if you get another one, add it here)
+// For now, we'll rotate between primary and public RPC
+const HELIUS_RPC_URLS = [
+    HELIUS_RPC_URL,
+    RPC_URL // Public RPC as fallback
+];
+let currentRPCIndex = 0;
 
 // Explorer URLs for testnet
 const EXPLORER_BASE = `https://explorer.solana.com`;
@@ -59,7 +68,8 @@ class LotteryDataFetcher {
             }
             
             // Use Helius RPC (faster) with fallback to public RPC
-            let rpcUrl = HELIUS_RPC_URL || RPC_URL;
+            // Rotate RPC to avoid rate limits
+            let rpcUrl = HELIUS_RPC_URLS[currentRPCIndex] || RPC_URL;
             console.log(`🔗 Connecting to: ${rpcUrl.includes('helius') ? 'Helius RPC' : 'Public RPC'}`);
             this.connection = new Connection(rpcUrl, 'confirmed');
             
@@ -67,9 +77,11 @@ class LotteryDataFetcher {
             const version = await this.connection.getVersion();
             console.log(`✅ Connected to Solana ${NETWORK} (${version['solana-core']})`);
             
-            // Store original RPC for fallback
+            // Store RPC info for fallback
             this.primaryRPC = rpcUrl;
             this.fallbackRPC = rpcUrl.includes('helius') ? RPC_URL : HELIUS_RPC_URL || RPC_URL;
+            this.allRPCs = HELIUS_RPC_URLS;
+            this.currentRPCIndex = currentRPCIndex;
             
             // Use known PDA directly (bypasses derivation issues in browser)
             // This PDA is verified to exist on devnet
@@ -217,18 +229,25 @@ class LotteryDataFetcher {
             
             let accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
             
-            // If not found and we're using Helius, try public RPC as fallback
-            if (!accountInfo && this.primaryRPC && this.primaryRPC.includes('helius')) {
-                console.log(`🔄 Account not found via Helius RPC, trying public RPC fallback...`);
-                try {
-                    const fallbackConnection = new Connection(this.fallbackRPC || RPC_URL, 'confirmed');
-                    accountInfo = await fallbackConnection.getAccountInfo(this.lotteryPDA);
-                    if (accountInfo) {
-                        console.log(`✅ Found account via public RPC! Switching to public RPC.`);
-                        this.connection = fallbackConnection;
+            // If not found, try other RPC endpoints
+            if (!accountInfo && this.allRPCs && this.allRPCs.length > 1) {
+                console.log(`🔄 Account not found, trying other RPC endpoints...`);
+                for (let i = 0; i < this.allRPCs.length; i++) {
+                    if (this.allRPCs[i] === this.primaryRPC) continue; // Skip the one we already tried
+                    try {
+                        console.log(`   Trying RPC ${i + 1}/${this.allRPCs.length}...`);
+                        const testConnection = new Connection(this.allRPCs[i], 'confirmed');
+                        accountInfo = await testConnection.getAccountInfo(this.lotteryPDA);
+                        if (accountInfo) {
+                            console.log(`✅ Found account via RPC ${i + 1}! Switching to that RPC.`);
+                            this.connection = testConnection;
+                            this.primaryRPC = this.allRPCs[i];
+                            break;
+                        }
+                    } catch (rpcError) {
+                        console.warn(`   RPC ${i + 1} failed:`, rpcError.message);
+                        continue;
                     }
-                } catch (fallbackError) {
-                    console.warn(`⚠️  Fallback RPC also failed:`, fallbackError.message);
                 }
             }
             
@@ -601,19 +620,12 @@ class LotteryDataFetcher {
                     if (logs.includes('enter_lottery') || logs.includes('EnterLottery')) {
                         participantCount++;
                     }
-                    } catch (e) {
-                        if (e.message && e.message.includes('429')) {
-                            console.warn(`⚠️  Rate limited at snapshot transaction ${processedCount}, stopping`);
-                            break;
-                        }
-                        continue;
-                    }
-                } catch (rateLimitError) {
-                    if (rateLimitError.message && rateLimitError.message.includes('429')) {
-                        console.warn(`⚠️  Rate limited, stopping snapshot fetch`);
+                } catch (e) {
+                    if (e.message && (e.message.includes('429') || e.message.includes('Too many requests'))) {
+                        console.warn(`⚠️  Rate limited at snapshot transaction ${processedCount}, stopping`);
                         break;
                     }
-                    console.warn(`⚠️  Error processing snapshot transaction ${processedCount}:`, rateLimitError.message);
+                    console.warn(`⚠️  Error processing snapshot transaction ${processedCount}:`, e.message);
                     continue;
                 }
 
