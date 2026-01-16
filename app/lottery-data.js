@@ -65,19 +65,31 @@ class LotteryDataFetcher {
                 return apiData;
             }
 
-            // Fallback: Use direct RPC (may have CORS issues)
+            // Fallback: Use direct RPC to fetch real winners from transactions
             if (!this.connection) {
                 await this.init();
             }
 
-            // Fetch account data
+            // Fetch account data for jackpot
             const accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
             if (!accountInfo) {
                 return { error: 'Lottery not initialized' };
             }
 
-            // Parse account data (simplified - would need full IDL parsing)
-            const data = await this.parseAccountData(accountInfo);
+            // Fetch real winners from payout transactions
+            const winnersData = await this.fetchRealWinnersFromTransactions();
+            
+            // Get jackpot from account balance (simplified)
+            const jackpot = accountInfo.lamports || 0;
+            
+            const data = {
+                jackpot: jackpot,
+                winners: winnersData.winners || { mainWinner: null, minorWinners: [] },
+                lastSnapshot: winnersData.lastSnapshot || null,
+                payoutTx: winnersData.payoutTx || null,
+                payoutTime: winnersData.payoutTime || null,
+                payouts: winnersData.payouts || null
+            };
             
             this.cache.lotteryState = data;
             this.cache.timestamp = Date.now();
@@ -86,6 +98,130 @@ class LotteryDataFetcher {
         } catch (error) {
             console.error('Error fetching lottery state:', error);
             return { error: error.message };
+        }
+    }
+
+    /**
+     * Fetch real winners from payout transactions on-chain
+     */
+    async fetchRealWinnersFromTransactions() {
+        try {
+            if (!this.connection || !this.lotteryPDA) {
+                await this.init();
+            }
+
+            // Get recent transactions for the lottery PDA
+            const signatures = await this.connection.getSignaturesForAddress(
+                this.lotteryPDA,
+                { limit: 100 }
+            );
+
+            let mainWinner = null;
+            const minorWinners = [];
+            let payoutTx = null;
+            let payoutTime = null;
+            let lastSnapshot = null;
+            let payouts = null;
+
+            // Look for payout transactions
+            for (const sig of signatures) {
+                try {
+                    const tx = await this.connection.getTransaction(sig.signature, {
+                        commitment: 'confirmed',
+                        maxSupportedTransactionVersion: 0
+                    });
+
+                    if (!tx || !tx.meta || !tx.meta.logMessages) continue;
+
+                    // Check if this is a payout transaction
+                    const isPayout = tx.meta.logMessages.some(log => 
+                        log.includes('PayoutWinners') || 
+                        log.includes('payout_winners') ||
+                        log.includes('Winner') ||
+                        (log.includes('Transfer') && log.includes('SOL'))
+                    );
+
+                    if (isPayout && tx.meta.postBalances) {
+                        // Extract winner addresses from account keys
+                        const accountKeys = tx.transaction.message.accountKeys;
+                        const preBalances = tx.meta.preBalances || [];
+                        const postBalances = tx.meta.postBalances || [];
+
+                        // Find accounts that received SOL (balance increased significantly)
+                        const recipientAccounts = [];
+                        for (let i = 0; i < accountKeys.length; i++) {
+                            const preBalance = preBalances[i] || 0;
+                            const postBalance = postBalances[i] || 0;
+                            const increase = postBalance - preBalance;
+
+                            // If balance increased significantly (more than just fees)
+                            if (increase > 1000000) { // More than 0.001 SOL
+                                const account = accountKeys[i];
+                                if (account && typeof account === 'object' && account.toString) {
+                                    const address = account.toString();
+                                    // Skip system program
+                                    if (address !== '11111111111111111111111111111111') {
+                                        recipientAccounts.push({
+                                            address: address,
+                                            amount: increase
+                                        });
+                                    }
+                                }
+                            }
+                        }
+
+                        // Sort by amount (largest first)
+                        recipientAccounts.sort((a, b) => b.amount - a.amount);
+
+                        if (recipientAccounts.length > 0) {
+                            // Main winner is the one who received the most
+                            mainWinner = recipientAccounts[0].address;
+                            
+                            // Next 8 are minor winners
+                            const minors = recipientAccounts.slice(1, 9).map(w => w.address);
+                            minorWinners.push(...minors);
+
+                            payoutTx = sig.signature;
+                            payoutTime = sig.blockTime;
+                            
+                            // Calculate payouts
+                            const mainPayout = recipientAccounts[0].amount;
+                            const minorPayout = recipientAccounts.length > 1 ? recipientAccounts[1].amount : 0;
+                            
+                            payouts = {
+                                mainPayout: mainPayout,
+                                minorPayout: minorPayout
+                            };
+
+                            // Found the most recent payout, break
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error processing transaction:', e);
+                    continue;
+                }
+            }
+
+            return {
+                winners: {
+                    mainWinner: mainWinner,
+                    minorWinners: minorWinners
+                },
+                payoutTx: payoutTx,
+                payoutTime: payoutTime,
+                lastSnapshot: lastSnapshot,
+                payouts: payouts
+            };
+        } catch (error) {
+            console.error('Error fetching real winners:', error);
+            return {
+                winners: { mainWinner: null, minorWinners: [] },
+                payoutTx: null,
+                payoutTime: null,
+                lastSnapshot: null,
+                payouts: null
+            };
         }
     }
 
@@ -109,20 +245,6 @@ class LotteryDataFetcher {
         }
     }
 
-    /**
-     * Parse account data (simplified - full parsing would need IDL)
-     */
-    async parseAccountData(accountInfo) {
-        // This is a placeholder - full implementation would deserialize using IDL
-        // For now, return structure that matches expected format
-        return {
-            jackpot: 0,
-            winners: { mainWinner: null, minorWinners: [] },
-            lastSnapshot: null,
-            payoutTx: null,
-            error: 'Full parsing requires IDL - use backend API'
-        };
-    }
 
     /**
      * Fetch via RPC with account data parsing
@@ -215,10 +337,13 @@ const lotteryFetcher = new LotteryDataFetcher();
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
-    // Show test data immediately for visual verification
-    showTestData();
+    // Show loading state
+    const mainWinnerEl = document.getElementById('main-winner-display');
+    const minorWinnersEl = document.getElementById('minor-winners-display');
+    if (mainWinnerEl) mainWinnerEl.innerHTML = '<div style="color: #666; font-size: 1.2em;">Loading real data from blockchain...</div>';
+    if (minorWinnersEl) minorWinnersEl.innerHTML = '<div style="color: #666;">Loading real data from blockchain...</div>';
     
-    // Then try to fetch real data
+    // Fetch real data from blockchain
     try {
         await lotteryFetcher.init();
         await updateLotteryDisplay();
@@ -226,40 +351,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update every 30 seconds
         setInterval(updateLotteryDisplay, 30000);
     } catch (error) {
-        console.error('Failed to load real data, using test data:', error);
+        console.error('Failed to load real data:', error);
+        // Show "no data" instead of fake data
+        if (mainWinnerEl) mainWinnerEl.innerHTML = '<div style="color: #666; font-size: 1.2em;">No winners yet - waiting for first payout</div>';
+        if (minorWinnersEl) minorWinnersEl.innerHTML = '<div style="color: #666;">No winners yet - waiting for first payout</div>';
     }
 });
-
-/**
- * Show test data immediately so website looks good
- */
-function showTestData() {
-    const testState = {
-        jackpot: 20500000000, // 20.5 SOL in lamports
-        winners: {
-            mainWinner: '7xK8mP2nQ9rT5vW3yZ1aB4cD6eF8gH0jK2lM4nP6qR8sT0uV2wX4yZ6aB8cD0',
-            minorWinners: [
-                '4xL2mN8pQ1rS3tU5vW7xY9zA1bC3dE5fG7hI9jK1lM3nP5qR7sT9uV1wX3yZ5aB7cD9',
-                '9mR5nP2qR8sT0uV2wX4yZ6aB8cD0eF2gH4jK6lM8nP0qR2sT4uV6wX8yZ0aB2cD4eF6',
-                '6pS3qR7sT9uV1wX3yZ5aB7cD9eF1gH3jK5lM7nP9qR1sT3uV5wX7yZ9aB1cD3eF5gH7',
-                '8tV7wX1yZ3aB5cD7eF9gH1jK3lM5nP7qR9sT1uV3wX5yZ7aB9cD1eF3gH5jK7lM9nP1',
-                '3wX9yZ1aB3cD5eF7gH9jK1lM3nP5qR7sT9uV1wX3yZ5aB7cD9eF1gH3jK5lM7nP9qR1',
-                '5yZ7aB9cD1eF3gH5jK7lM9nP1qR3sT5uV7wX9yZ1aB3cD5eF7gH9jK1lM3nP5qR7sT9',
-                '2aB4cD6eF8gH0jK2lM4nP6qR8sT0uV2wX4yZ6aB8cD0eF2gH4jK6lM8nP0qR2sT4uV6',
-                '1cD3eF5gH7jK9lM1nP3qR5sT7uV9wX1yZ3aB5cD7eF9gH1jK3lM5nP7qR9sT1uV3wX5'
-            ]
-        },
-        payouts: {
-            mainPayout: 13940000000, // 68% of 20.5 SOL
-            minorPayout: 615000000 // 3% of 20.5 SOL each
-        },
-        lastSnapshot: Math.floor(Date.now() / 1000) - 3600, // 1 hour ago
-        payoutTx: '5xK8mP2nQ9rT5vW3yZ1aB4cD6eF8gH0jK2lM4nP6qR8sT0uV2wX4yZ6aB8cD0eF2gH4jK6lM8nP0qR2sT4uV6wX8yZ0aB2cD4eF6gH8',
-        payoutTime: Math.floor(Date.now() / 1000) - 1800 // 30 min ago
-    };
-    
-    updateLotteryDisplayWithData(testState);
-}
 
 /**
  * Update display with data (works with test or real data)
