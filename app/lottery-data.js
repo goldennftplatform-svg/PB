@@ -342,12 +342,28 @@ class LotteryDataFetcher {
             let payouts = null;
 
             // Look for payout transactions
+            let processedCount = 0;
+            const maxTransactions = 10; // Limit to first 10 to avoid rate limits
+            
             for (const sig of signatures) {
+                if (mainWinner) break; // Found the most recent payout, break
+                if (processedCount >= maxTransactions) {
+                    console.log(`⏸️  Reached transaction limit (${maxTransactions}) to avoid rate limits`);
+                    break;
+                }
+                
                 try {
+                    // Add small delay to avoid rate limits
+                    if (processedCount > 0 && processedCount % 3 === 0) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
                     const tx = await this.connection.getTransaction(sig.signature, {
                         commitment: 'confirmed',
                         maxSupportedTransactionVersion: 0
                     });
+                    
+                    processedCount++;
 
                     if (!tx || !tx.meta || !tx.meta.logMessages) continue;
 
@@ -450,7 +466,11 @@ class LotteryDataFetcher {
                         }
                     }
                 } catch (e) {
-                    console.error('Error processing transaction:', e);
+                    if (e.message && (e.message.includes('429') || e.message.includes('Too many requests'))) {
+                        console.warn(`⚠️  Rate limited at transaction ${processedCount}, stopping fetch`);
+                        break; // Stop if rate limited
+                    }
+                    console.warn(`⚠️  Error processing transaction ${processedCount}:`, e.message);
                     continue;
                 }
             }
@@ -515,12 +535,27 @@ class LotteryDataFetcher {
             let participantCount = 0;
 
             // Look for snapshot and entry transactions
+            let processedCount = 0;
+            const maxTransactions = 10; // Limit to avoid rate limits
+            
             for (const sig of signatures) {
+                if (processedCount >= maxTransactions) {
+                    console.log(`⏸️  Reached transaction limit (${maxTransactions}) for snapshot data`);
+                    break;
+                }
+                
                 try {
+                    // Add small delay to avoid rate limits
+                    if (processedCount > 0 && processedCount % 3 === 0) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
                     const tx = await this.connection.getTransaction(sig.signature, {
                         commitment: 'confirmed',
                         maxSupportedTransactionVersion: 0
                     });
+                    
+                    processedCount++;
 
                     if (!tx || !tx.meta || !tx.meta.logMessages) continue;
 
