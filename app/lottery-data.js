@@ -788,6 +788,8 @@ document.addEventListener('DOMContentLoaded', async () => {
  */
 function updateLotteryDisplayWithData(state) {
     console.log('🎨 updateLotteryDisplayWithData() called with:', state);
+    console.log('   State keys:', Object.keys(state));
+    console.log('   Jackpot value:', state.jackpot);
     
     // Update jackpot (always update, even if 0)
     const jackpotAmountEl = document.getElementById('jackpot-amount');
@@ -795,12 +797,19 @@ function updateLotteryDisplayWithData(state) {
         const jackpotSOL = state.jackpot ? (state.jackpot / 1e9).toFixed(4) : '0.0000';
         jackpotAmountEl.textContent = `${jackpotSOL} SOL`;
         console.log(`💰 Updated jackpot: ${jackpotSOL} SOL`);
+        
+        // Force a visual update
+        jackpotAmountEl.style.display = 'block';
+        jackpotAmountEl.style.visibility = 'visible';
     } else {
-        console.warn('⚠️  jackpot-amount element not found');
+        console.error('❌ jackpot-amount element NOT FOUND in DOM!');
+        console.error('   Available elements with "jackpot" in id:', 
+            Array.from(document.querySelectorAll('[id*="jackpot"]')).map(el => el.id));
     }
 
-    // Update winners
+    // Update winners (even if empty)
     console.log('🏆 Updating winners display...');
+    console.log('   Winners data:', state.winners);
     updateWinnersDisplay(state);
     
     // Update snapshot date
@@ -893,13 +902,21 @@ async function updateLotteryDisplay() {
             minorWinnersCount: state.winners?.minorWinners?.length || 0,
             participantCount: state.participantCount,
             snapshotTx: state.snapshotTx,
-            payoutTx: state.payoutTx
+            payoutTx: state.payoutTx,
+            hasError: !!state.error
         });
 
-        // Update with real data (even if empty)
+        // Always update display, even if no winners
         console.log('🎨 Updating display with data...');
-        updateLotteryDisplayWithData(state);
-        console.log('✅ Display updated!');
+        console.log('   State to display:', JSON.stringify(state, null, 2));
+        
+        // Force update even if data seems empty
+        if (!state.error) {
+            updateLotteryDisplayWithData(state);
+            console.log('✅ Display updated!');
+        } else {
+            console.warn('⚠️  Not updating display due to error:', state.error);
+        }
     } catch (error) {
         console.error('❌ Error in updateLotteryDisplay:', error);
         console.error('   Stack:', error.stack);
@@ -940,12 +957,22 @@ async function copyAddressToClipboard(address) {
  * Update winners display with copy buttons
  */
 function updateWinnersDisplay(state) {
+    console.log('🏆 updateWinnersDisplay() called');
     const mainWinnerEl = document.getElementById('main-winner-display');
     const minorWinnersEl = document.getElementById('minor-winners-display');
     
+    console.log('   Main winner element found:', !!mainWinnerEl);
+    console.log('   Minor winners element found:', !!minorWinnersEl);
+    console.log('   State.winners:', state.winners);
+    
     if (!state.winners) {
-        if (mainWinnerEl) mainWinnerEl.textContent = 'No winners yet';
-        if (minorWinnersEl) minorWinnersEl.textContent = 'No winners yet';
+        console.log('   No winners object, showing "No winners yet"');
+        if (mainWinnerEl) {
+            mainWinnerEl.innerHTML = '<div style="color: var(--text-secondary); font-size: 1.2em;">No winners yet</div>';
+        }
+        if (minorWinnersEl) {
+            minorWinnersEl.innerHTML = '<div style="color: var(--text-secondary);">No winners yet</div>';
+        }
         return;
     }
 
