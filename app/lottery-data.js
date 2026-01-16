@@ -270,8 +270,9 @@ class LotteryDataFetcher {
             // Get jackpot from account balance (simplified)
             const jackpot = accountInfo.lamports || 0;
             
+            // ALWAYS return data, even if transaction fetching failed
             const data = {
-                jackpot: jackpot,
+                jackpot: jackpot, // This is the most important - always have it
                 winners: winnersData?.winners || { mainWinner: null, minorWinners: [] },
                 lastSnapshot: winnersData?.lastSnapshot || snapshotData?.lastSnapshot || null,
                 payoutTx: winnersData?.payoutTx || null,
@@ -284,15 +285,18 @@ class LotteryDataFetcher {
             
             console.log('✅ Final lottery state:', {
                 jackpot: `${(data.jackpot / 1e9).toFixed(4)} SOL`,
+                jackpotRaw: data.jackpot,
                 hasMainWinner: !!data.winners?.mainWinner,
                 minorWinners: data.winners?.minorWinners?.length || 0,
                 participantCount: data.participantCount,
                 hasSnapshot: !!data.snapshotTx
             });
             
+            // Cache and return - ALWAYS return data even if incomplete
             this.cache.lotteryState = data;
             this.cache.timestamp = Date.now();
             
+            console.log('📤 Returning data object:', data);
             return data;
         } catch (error) {
             console.error('❌ Error fetching lottery state:', error);
