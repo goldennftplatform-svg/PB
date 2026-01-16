@@ -167,20 +167,17 @@ class LotteryDataFetcher {
                 return apiData;
             }
 
-            // Fallback: Use direct RPC to fetch real winners from transactions
-            if (!this.connection) {
-                await this.init();
-            }
-
             // Fetch account data for jackpot
             if (!this.lotteryPDA) {
                 return { error: 'Lottery PDA not initialized' };
             }
             
+            console.log(`🔍 Checking account at PDA: ${this.lotteryPDA.toString()}`);
             const accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
             if (!accountInfo) {
                 const pdaAddress = this.lotteryPDA.toString();
                 console.error(`❌ Lottery account not found at PDA: ${pdaAddress}`);
+                console.error(`   Expected PDA: ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb`);
                 console.error(`   The lottery needs to be initialized on devnet.`);
                 console.error(`   Run: node scripts/simple-init-lottery.js`);
                 return { 
@@ -190,6 +187,8 @@ class LotteryDataFetcher {
                     instructions: 'Run: node scripts/simple-init-lottery.js'
                 };
             }
+            
+            console.log(`✅ Account found! Balance: ${accountInfo.lamports / 1e9} SOL, Data: ${accountInfo.data.length} bytes`);
 
             // Fetch real winners from payout transactions
             const winnersData = await this.fetchRealWinnersFromTransactions();
