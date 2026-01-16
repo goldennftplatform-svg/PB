@@ -716,9 +716,27 @@
             }
         });
     </script>
+    <script>
+        // Global error handler to catch and log all errors
+        window.addEventListener('error', (event) => {
+            console.error('❌ GLOBAL ERROR:', event.error);
+            console.error('   Message:', event.message);
+            console.error('   File:', event.filename, 'Line:', event.lineno);
+            if (event.error && event.error.stack) {
+                console.error('   Stack:', event.error.stack);
+            }
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('❌ UNHANDLED PROMISE REJECTION:', event.reason);
+            if (event.reason && event.reason.stack) {
+                console.error('   Stack:', event.reason.stack);
+            }
+        });
+    </script>
     <script src="lottery-data.js?v=12"></script>
     <script src="draw-animation.js?v=7"></script>
-    <script src="winners-history.js?v=8"></script>
+    <script src="winners-history.js?v=9"></script>
     <script>
         // Fallback: If scripts fail to load, show "No winners yet" after 15 seconds
         setTimeout(() => {
