@@ -272,15 +272,23 @@ class LotteryDataFetcher {
             
             const data = {
                 jackpot: jackpot,
-                winners: winnersData.winners || { mainWinner: null, minorWinners: [] },
-                lastSnapshot: winnersData.lastSnapshot || snapshotData.lastSnapshot || null,
-                payoutTx: winnersData.payoutTx || null,
-                payoutTime: winnersData.payoutTime || null,
-                payouts: winnersData.payouts || null,
-                participantCount: snapshotData.participantCount || 0,
-                snapshotTx: snapshotData.snapshotTx || null,
-                snapshotTime: snapshotData.snapshotTime || null
+                winners: winnersData?.winners || { mainWinner: null, minorWinners: [] },
+                lastSnapshot: winnersData?.lastSnapshot || snapshotData?.lastSnapshot || null,
+                payoutTx: winnersData?.payoutTx || null,
+                payoutTime: winnersData?.payoutTime || null,
+                payouts: winnersData?.payouts || null,
+                participantCount: snapshotData?.participantCount || 0,
+                snapshotTx: snapshotData?.snapshotTx || null,
+                snapshotTime: snapshotData?.snapshotTime || null
             };
+            
+            console.log('✅ Final lottery state:', {
+                jackpot: `${(data.jackpot / 1e9).toFixed(4)} SOL`,
+                hasMainWinner: !!data.winners?.mainWinner,
+                minorWinners: data.winners?.minorWinners?.length || 0,
+                participantCount: data.participantCount,
+                hasSnapshot: !!data.snapshotTx
+            });
             
             this.cache.lotteryState = data;
             this.cache.timestamp = Date.now();
@@ -318,11 +326,13 @@ class LotteryDataFetcher {
                 throw new Error('Lottery PDA not initialized');
             }
 
-            // Get recent transactions for the lottery PDA
+            // Get recent transactions for the lottery PDA (reduced limit to avoid rate limits)
             const signatures = await this.connection.getSignaturesForAddress(
                 this.lotteryPDA,
-                { limit: 100 }
+                { limit: 20 } // Reduced from 100 to avoid rate limits
             );
+            
+            console.log(`📋 Found ${signatures.length} recent transactions`);
 
             let mainWinner = null;
             const minorWinners = [];
@@ -494,8 +504,10 @@ class LotteryDataFetcher {
 
             const signatures = await this.connection.getSignaturesForAddress(
                 this.lotteryPDA,
-                { limit: 50 }
+                { limit: 20 } // Reduced from 50 to avoid rate limits
             );
+            
+            console.log(`📋 Found ${signatures.length} signatures for snapshot data`);
 
             let lastSnapshot = null;
             let snapshotTx = null;
@@ -527,10 +539,21 @@ class LotteryDataFetcher {
                     if (logs.includes('enter_lottery') || logs.includes('EnterLottery')) {
                         participantCount++;
                     }
-                } catch (e) {
+                    } catch (e) {
+                        if (e.message && e.message.includes('429')) {
+                            console.warn(`⚠️  Rate limited at snapshot transaction ${processedCount}, stopping`);
+                            break;
+                        }
+                        continue;
+                    }
+                } catch (rateLimitError) {
+                    if (rateLimitError.message && rateLimitError.message.includes('429')) {
+                        console.warn(`⚠️  Rate limited, stopping snapshot fetch`);
+                        break;
+                    }
+                    console.warn(`⚠️  Error processing snapshot transaction ${processedCount}:`, rateLimitError.message);
                     continue;
                 }
-            }
 
             return {
                 lastSnapshot: lastSnapshot,
