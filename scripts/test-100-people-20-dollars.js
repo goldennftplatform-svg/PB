@@ -205,42 +205,41 @@ async function runTest() {
         console.log(`✅ Created ${wallets.length} wallets\n`);
     }
 
-    // Fund wallets with delay to avoid rate limits
+    // Fund wallets by transferring from admin (avoids rate limits)
     console.log(`💸 Funding ${wallets.length} wallets with 0.1 SOL each...`);
-    console.log(`   (Using delays to avoid rate limits)\n`);
+    console.log(`   (Transferring from admin wallet to avoid rate limits)\n`);
+    
+    const transferAmount = 0.1 * LAMPORTS_PER_SOL;
     
     for (let i = 0; i < wallets.length; i++) {
         try {
             const balance = await connection.getBalance(wallets[i].keypair.publicKey);
             if (balance < 0.05 * LAMPORTS_PER_SOL) {
-                try {
-                    const sig = await connection.requestAirdrop(
-                        wallets[i].keypair.publicKey,
-                        0.1 * LAMPORTS_PER_SOL
-                    );
-                    await connection.confirmTransaction(sig, 'confirmed');
-                } catch (error) {
-                    if (error.message.includes('429')) {
-                        console.log(`   ⏳ Rate limited, waiting 5 seconds...`);
-                        await new Promise(resolve => setTimeout(resolve, 5000));
-                        // Retry once
-                        const sig = await connection.requestAirdrop(
-                            wallets[i].keypair.publicKey,
-                            0.1 * LAMPORTS_PER_SOL
-                        );
-                        await connection.confirmTransaction(sig, 'confirmed');
-                    } else {
-                        throw error;
-                    }
-                }
+                const tx = new Transaction().add(
+                    SystemProgram.transfer({
+                        fromPubkey: adminKeypair.publicKey,
+                        toPubkey: wallets[i].keypair.publicKey,
+                        lamports: transferAmount,
+                    })
+                );
+                
+                const { blockhash } = await connection.getLatestBlockhash();
+                tx.recentBlockhash = blockhash;
+                tx.feePayer = adminKeypair.publicKey;
+                tx.sign(adminKeypair);
+                
+                const sig = await connection.sendRawTransaction(tx.serialize(), {
+                    skipPreflight: false,
+                });
+                await connection.confirmTransaction(sig, 'confirmed');
             }
             
-            if ((i + 1) % 10 === 0) {
+            if ((i + 1) % 20 === 0) {
                 console.log(`   ✅ Funded ${i + 1}/${wallets.length}...`);
             }
             
-            // Delay between requests
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Small delay
+            await new Promise(resolve => setTimeout(resolve, 100));
         } catch (error) {
             console.error(`\n❌ Failed to fund wallet ${i + 1}:`, error.message);
         }
