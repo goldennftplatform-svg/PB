@@ -205,27 +205,46 @@ async function runTest() {
         console.log(`✅ Created ${wallets.length} wallets\n`);
     }
 
-    // Fund wallets
+    // Fund wallets with delay to avoid rate limits
     console.log(`💸 Funding ${wallets.length} wallets with 0.1 SOL each...`);
-    const fundPromises = wallets.map(async (wallet, idx) => {
-        try {
-            const balance = await connection.getBalance(wallet.keypair.publicKey);
-            if (balance < 0.05 * LAMPORTS_PER_SOL) {
-                const sig = await connection.requestAirdrop(
-                    wallet.keypair.publicKey,
-                    0.1 * LAMPORTS_PER_SOL
-                );
-                await connection.confirmTransaction(sig, 'confirmed');
-            }
-            if ((idx + 1) % 20 === 0) {
-                process.stdout.write(`   Funded ${idx + 1}/${wallets.length}...\r`);
-            }
-        } catch (error) {
-            console.error(`\n❌ Failed to fund wallet ${idx + 1}:`, error.message);
-        }
-    });
+    console.log(`   (Using delays to avoid rate limits)\n`);
     
-    await Promise.all(fundPromises);
+    for (let i = 0; i < wallets.length; i++) {
+        try {
+            const balance = await connection.getBalance(wallets[i].keypair.publicKey);
+            if (balance < 0.05 * LAMPORTS_PER_SOL) {
+                try {
+                    const sig = await connection.requestAirdrop(
+                        wallets[i].keypair.publicKey,
+                        0.1 * LAMPORTS_PER_SOL
+                    );
+                    await connection.confirmTransaction(sig, 'confirmed');
+                } catch (error) {
+                    if (error.message.includes('429')) {
+                        console.log(`   ⏳ Rate limited, waiting 5 seconds...`);
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                        // Retry once
+                        const sig = await connection.requestAirdrop(
+                            wallets[i].keypair.publicKey,
+                            0.1 * LAMPORTS_PER_SOL
+                        );
+                        await connection.confirmTransaction(sig, 'confirmed');
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+            
+            if ((i + 1) % 10 === 0) {
+                console.log(`   ✅ Funded ${i + 1}/${wallets.length}...`);
+            }
+            
+            // Delay between requests
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        } catch (error) {
+            console.error(`\n❌ Failed to fund wallet ${i + 1}:`, error.message);
+        }
+    }
     console.log(`✅ All wallets funded!\n`);
 
     // Make entries

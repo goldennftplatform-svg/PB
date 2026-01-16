@@ -14,7 +14,23 @@ class WinnersHistory {
 
     async init() {
         try {
-            const { Connection, PublicKey } = window.solanaWeb3 || {};
+            // Wait for Solana Web3.js to load
+            let Connection, PublicKey;
+            
+            // Try multiple ways to get the library
+            if (window.solanaWeb3 && window.solanaWeb3.Connection) {
+                Connection = window.solanaWeb3.Connection;
+                PublicKey = window.solanaWeb3.PublicKey;
+            } else if (window.web3 && window.web3.Connection) {
+                Connection = window.web3.Connection;
+                PublicKey = window.web3.PublicKey;
+            } else {
+                // Dynamically import if not available
+                const solana = await import('https://cdn.jsdelivr.net/npm/@solana/web3.js@1.87.6/+esm');
+                Connection = solana.Connection;
+                PublicKey = solana.PublicKey;
+            }
+            
             if (!Connection || !PublicKey) {
                 console.error('Solana Web3.js not loaded');
                 return false;
