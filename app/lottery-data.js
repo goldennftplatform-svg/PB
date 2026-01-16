@@ -250,15 +250,26 @@ class LotteryDataFetcher {
                                 let address = null;
                                 try {
                                     // Handle different account key formats
+                                    if (!account) {
+                                        continue; // Skip null accounts
+                                    }
+                                    
                                     if (typeof account === 'string') {
                                         address = account;
-                                    } else if (typeof account === 'object') {
-                                        // Try toString first
+                                    } else if (account && typeof account === 'object') {
+                                        // Try toString first (safest)
                                         if (account.toString && typeof account.toString === 'function') {
-                                            address = account.toString();
+                                            try {
+                                                address = account.toString();
+                                            } catch (e) {
+                                                // If toString fails, try toBase58
+                                                if (account.toBase58 && typeof account.toBase58 === 'function') {
+                                                    address = account.toBase58();
+                                                }
+                                            }
                                         } else if (account.toBase58 && typeof account.toBase58 === 'function') {
                                             address = account.toBase58();
-                                        } else if (account.pubkey) {
+                                        } else if (account.pubkey && account.pubkey.toString) {
                                             address = account.pubkey.toString();
                                         }
                                     }
