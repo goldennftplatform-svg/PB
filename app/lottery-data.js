@@ -59,13 +59,17 @@ class LotteryDataFetcher {
             }
             
             // Use Helius RPC (faster) with fallback to public RPC
-            const rpcUrl = HELIUS_RPC_URL || RPC_URL;
+            let rpcUrl = HELIUS_RPC_URL || RPC_URL;
             console.log(`🔗 Connecting to: ${rpcUrl.includes('helius') ? 'Helius RPC' : 'Public RPC'}`);
             this.connection = new Connection(rpcUrl, 'confirmed');
             
             // Test connection
             const version = await this.connection.getVersion();
             console.log(`✅ Connected to Solana ${NETWORK} (${version['solana-core']})`);
+            
+            // Store original RPC for fallback
+            this.primaryRPC = rpcUrl;
+            this.fallbackRPC = rpcUrl.includes('helius') ? RPC_URL : HELIUS_RPC_URL || RPC_URL;
             
             // Use known PDA directly (bypasses derivation issues in browser)
             // This PDA is verified to exist on devnet
@@ -122,6 +126,22 @@ class LotteryDataFetcher {
             
             // Verify account exists - THIS is what matters
             let accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
+            
+            // If not found and we're using Helius, try public RPC as fallback
+            if (!accountInfo && this.primaryRPC.includes('helius')) {
+                console.log(`🔄 Account not found via Helius RPC, trying public RPC fallback...`);
+                try {
+                    const fallbackConnection = new Connection(this.fallbackRPC, 'confirmed');
+                    accountInfo = await fallbackConnection.getAccountInfo(this.lotteryPDA);
+                    if (accountInfo) {
+                        console.log(`✅ Found account via public RPC! Switching to public RPC.`);
+                        this.connection = fallbackConnection;
+                    }
+                } catch (fallbackError) {
+                    console.warn(`⚠️  Fallback RPC also failed:`, fallbackError.message);
+                }
+            }
+            
             if (accountInfo) {
                 console.log(`✅ Lottery account found (${accountInfo.lamports / 1e9} SOL)`);
                 console.log(`   Account data length: ${accountInfo.data.length} bytes`);
@@ -129,25 +149,9 @@ class LotteryDataFetcher {
                 return true; // Account exists, we're good!
             } else {
                 console.warn(`⚠️  Lottery account not found at PDA: ${this.lotteryPDA.toString()}`);
-                console.warn(`   Expected PDA: ${KNOWN_LOTTERY_PDA}`);
-                
-                // Try the known PDA directly as fallback
-                if (this.lotteryPDA.toString() !== KNOWN_LOTTERY_PDA) {
-                    console.log(`🔄 Trying known PDA directly as fallback...`);
-                    const knownPDA = new PublicKey(KNOWN_LOTTERY_PDA);
-                    accountInfo = await this.connection.getAccountInfo(knownPDA);
-                    if (accountInfo) {
-                        console.log(`✅ Found account at known PDA! Using that instead.`);
-                        this.lotteryPDA = knownPDA;
-                        return true;
-                    }
-                }
-                
-                console.warn(`   Account not found. This might be an RPC issue.`);
+                console.warn(`   Tried both primary and fallback RPC endpoints`);
                 console.warn(`   The lottery is initialized (verified by check-lottery-status.js)`);
-                console.warn(`   Try refreshing or check RPC connection.`);
-                // Don't return false - let it continue and try to fetch anyway
-                // The account might exist but RPC is having issues
+                console.warn(`   This might be a temporary RPC issue.`);
             }
             
             return true; // Always return true - let fetchLotteryState handle the error
@@ -213,7 +217,22 @@ class LotteryDataFetcher {
             
             let accountInfo = await this.connection.getAccountInfo(this.lotteryPDA);
             
-            // If not found, try known PDA as fallback
+            // If not found and we're using Helius, try public RPC as fallback
+            if (!accountInfo && this.primaryRPC && this.primaryRPC.includes('helius')) {
+                console.log(`🔄 Account not found via Helius RPC, trying public RPC fallback...`);
+                try {
+                    const fallbackConnection = new Connection(this.fallbackRPC || RPC_URL, 'confirmed');
+                    accountInfo = await fallbackConnection.getAccountInfo(this.lotteryPDA);
+                    if (accountInfo) {
+                        console.log(`✅ Found account via public RPC! Switching to public RPC.`);
+                        this.connection = fallbackConnection;
+                    }
+                } catch (fallbackError) {
+                    console.warn(`⚠️  Fallback RPC also failed:`, fallbackError.message);
+                }
+            }
+            
+            // If still not found, try known PDA as fallback
             if (!accountInfo && pdaAddress !== KNOWN_LOTTERY_PDA) {
                 console.log(`🔄 Account not found at derived PDA, trying known PDA...`);
                 const knownPDA = new PublicKey(KNOWN_LOTTERY_PDA);
@@ -226,7 +245,7 @@ class LotteryDataFetcher {
             
             if (!accountInfo) {
                 console.error(`❌ Lottery account not found at PDA: ${pdaAddress}`);
-                console.error(`   Tried known PDA: ${KNOWN_LOTTERY_PDA}`);
+                console.error(`   Tried both primary and fallback RPC endpoints`);
                 console.error(`   This might be an RPC issue. The account exists (verified by check-lottery-status.js)`);
                 console.error(`   Try refreshing or check RPC connection.`);
                 
