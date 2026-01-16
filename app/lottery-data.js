@@ -173,8 +173,10 @@ class LotteryDataFetcher {
             
             return data;
         } catch (error) {
-            console.error('Error fetching lottery state:', error);
-            return { error: error.message };
+            console.error('❌ Error fetching lottery state:', error);
+            console.error('   Message:', error.message);
+            console.error('   Stack:', error.stack);
+            return { error: error.message || 'Unknown error' };
         }
     }
 
@@ -184,7 +186,14 @@ class LotteryDataFetcher {
     async fetchRealWinnersFromTransactions() {
         try {
             if (!this.connection || !this.lotteryPDA) {
-                await this.init();
+                const initResult = await this.init();
+                if (!initResult) {
+                    throw new Error('Failed to initialize connection');
+                }
+            }
+
+            if (!this.lotteryPDA) {
+                throw new Error('Lottery PDA not initialized');
             }
 
             // Get recent transactions for the lottery PDA
@@ -218,11 +227,13 @@ class LotteryDataFetcher {
                         (log.includes('Transfer') && log.includes('SOL'))
                     );
 
-                    if (isPayout && tx.meta.postBalances) {
+                    if (isPayout && tx.meta.postBalances && tx.transaction && tx.transaction.message) {
                         // Extract winner addresses from account keys
-                        const accountKeys = tx.transaction.message.accountKeys || [];
+                        const accountKeys = (tx.transaction.message.accountKeys || []);
                         const preBalances = tx.meta.preBalances || [];
                         const postBalances = tx.meta.postBalances || [];
+                        
+                        if (!Array.isArray(accountKeys) || accountKeys.length === 0) continue;
 
                         // Find accounts that received SOL (balance increased significantly)
                         const recipientAccounts = [];
@@ -312,7 +323,8 @@ class LotteryDataFetcher {
                 payouts: payouts
             };
         } catch (error) {
-            console.error('Error fetching real winners:', error);
+            console.error('❌ Error fetching real winners:', error);
+            console.error('   Stack:', error.stack);
             return {
                 winners: { mainWinner: null, minorWinners: [] },
                 payoutTx: null,
@@ -329,7 +341,10 @@ class LotteryDataFetcher {
     async fetchSnapshotData() {
         try {
             if (!this.connection || !this.lotteryPDA) {
-                await this.init();
+                const initResult = await this.init();
+                if (!initResult || !this.lotteryPDA) {
+                    throw new Error('Failed to initialize connection or PDA');
+                }
             }
 
             const signatures = await this.connection.getSignaturesForAddress(
@@ -379,7 +394,8 @@ class LotteryDataFetcher {
                 participantCount: participantCount
             };
         } catch (error) {
-            console.error('Error fetching snapshot data:', error);
+            console.error('❌ Error fetching snapshot data:', error);
+            console.error('   Stack:', error.stack);
             return {
                 lastSnapshot: null,
                 snapshotTx: null,
