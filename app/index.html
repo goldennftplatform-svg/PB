@@ -593,7 +593,7 @@
                     <div style="font-size: 2.5em; margin-bottom: 15px;">🏆</div>
                     <strong style="color: #DC143C; font-size: 1.8em; display: block; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">MAIN WINNER</strong>
                     <div style="color: #8B0000; font-size: 1.3em; margin-bottom: 10px; font-weight: bold;">50% of Jackpot</div>
-                    <div style="margin-top: 15px; font-size: 1.2em; font-weight: bold; color: #003087; background: white; padding: 15px; border-radius: 8px; border: 2px solid #DC143C;" id="main-winner-display">Loading winners...</div>
+                    <div style="margin-top: 15px; font-size: 1.2em; font-weight: bold; color: #003087; background: white; padding: 15px; border-radius: 8px; border: 2px solid #DC143C;" id="main-winner-display">Loading real data from blockchain...</div>
                 </div>
                 
                 <!-- MINOR WINNERS - CLEAR LIST -->
@@ -603,7 +603,7 @@
                         <strong style="color: #003087; font-size: 1.6em; display: block; text-transform: uppercase; letter-spacing: 2px;">8 MINOR WINNERS</strong>
                         <div style="color: #001f5c; font-size: 1.2em; margin-top: 5px;">5% Each (40% total)</div>
                     </div>
-                    <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 10px; border: 2px solid #003087;" id="minor-winners-display">Loading winners...</div>
+                    <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 10px; border: 2px solid #003087;" id="minor-winners-display">Loading real data from blockchain...</div>
                 </div>
                 
                 <!-- PAYOUT TRANSACTION -->
@@ -611,7 +611,7 @@
                     <div style="text-align: center;">
                         <div style="font-size: 2em; margin-bottom: 10px;">💰</div>
                         <strong style="color: #155724; font-size: 1.4em; display: block; margin-bottom: 15px; text-transform: uppercase;">Payout Transaction</strong>
-                        <div style="margin-top: 10px; background: white; padding: 15px; border-radius: 8px; border: 2px solid #28a745; font-family: 'Courier New', monospace; font-size: 1.1em;" id="payout-tx-display">Loading transaction...</div>
+                        <div style="margin-top: 10px; background: white; padding: 15px; border-radius: 8px; border: 2px solid #28a745; font-family: 'Courier New', monospace; font-size: 1.1em;" id="payout-tx-display">No payout transaction yet</div>
                     </div>
                 </div>
             </div>
@@ -683,9 +683,33 @@
             }
         });
     </script>
-    <script src="lottery-data.js?v=5"></script>
+    <script src="lottery-data.js?v=6"></script>
     <script src="draw-animation.js?v=5"></script>
-    <script src="winners-history.js?v=7"></script>
+    <script src="winners-history.js?v=8"></script>
+    <script>
+        // Fallback: If scripts fail to load, show "No winners yet" after 15 seconds
+        setTimeout(() => {
+            const mainWinner = document.getElementById('main-winner-display');
+            const minorWinners = document.getElementById('minor-winners-display');
+            const winnersList = document.getElementById('winners-list');
+            
+            if (mainWinner && mainWinner.textContent.includes('Loading')) {
+                mainWinner.innerHTML = '<div style="color: #666; font-size: 1.2em;">No winners yet - waiting for first payout</div>';
+            }
+            if (minorWinners && minorWinners.textContent.includes('Loading')) {
+                minorWinners.innerHTML = '<div style="color: #666;">No winners yet - waiting for first payout</div>';
+            }
+            if (winnersList && winnersList.innerHTML.includes('Loading')) {
+                winnersList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">🎰</div>
+                        <div style="font-size: 1.2em; margin-bottom: 10px;">No winners yet</div>
+                        <div style="font-size: 0.9em; color: #999;">Be the first to win! Make an entry and wait for the next draw.</div>
+                    </div>
+                `;
+            }
+        }, 15000);
+    </script>
     <script>
         // Token Address
         const TOKEN_ADDRESS = 'CXcoVCAuQB2XigJmyGz162aj1MCgJxC9Hgo5SEuRuFto';
