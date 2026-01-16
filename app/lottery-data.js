@@ -59,16 +59,31 @@ class LotteryDataFetcher {
             const version = await this.connection.getVersion();
             console.log(`✅ Connected to Solana ${NETWORK} (${version['solana-core']})`);
             
-            // Derive lottery PDA
-            const [lotteryPDA] = PublicKey.findProgramAddressSync(
-                [Buffer.from('lottery')],
-                new PublicKey(LOTTERY_PROGRAM_ID)
-            );
-            if (!lotteryPDA) {
-                throw new Error('Failed to derive lottery PDA');
+            // Derive lottery PDA - handle Buffer polyfill for browser
+            let seedBuffer;
+            if (typeof Buffer !== 'undefined') {
+                seedBuffer = Buffer.from('lottery');
+            } else {
+                // Browser fallback: convert string to Uint8Array
+                seedBuffer = new TextEncoder().encode('lottery');
             }
-            this.lotteryPDA = lotteryPDA;
-            console.log(`✅ Lottery PDA: ${lotteryPDA.toString()}`);
+            
+            try {
+                const [lotteryPDA] = PublicKey.findProgramAddressSync(
+                    [seedBuffer],
+                    new PublicKey(LOTTERY_PROGRAM_ID)
+                );
+                
+                if (!lotteryPDA) {
+                    throw new Error('findProgramAddressSync returned null PDA');
+                }
+                
+                this.lotteryPDA = lotteryPDA;
+                console.log(`✅ Lottery PDA: ${lotteryPDA.toString()}`);
+            } catch (pdaError) {
+                console.error('❌ PDA derivation error:', pdaError);
+                throw new Error(`Failed to derive lottery PDA: ${pdaError.message}`);
+            }
             
             // Verify program exists first
             const programInfo = await this.connection.getAccountInfo(new PublicKey(LOTTERY_PROGRAM_ID));
@@ -185,14 +200,22 @@ class LotteryDataFetcher {
      */
     async fetchRealWinnersFromTransactions() {
         try {
+            // Ensure initialization
             if (!this.connection || !this.lotteryPDA) {
+                console.log('🔄 Initializing connection for winners fetch...');
                 const initResult = await this.init();
                 if (!initResult) {
+                    console.error('❌ Init returned false in fetchRealWinnersFromTransactions');
                     throw new Error('Failed to initialize connection');
+                }
+                if (!this.lotteryPDA) {
+                    console.error('❌ PDA still null after init in fetchRealWinnersFromTransactions');
+                    throw new Error('Lottery PDA not initialized after init()');
                 }
             }
 
             if (!this.lotteryPDA) {
+                console.error('❌ PDA is null in fetchRealWinnersFromTransactions');
                 throw new Error('Lottery PDA not initialized');
             }
 
@@ -351,11 +374,23 @@ class LotteryDataFetcher {
      */
     async fetchSnapshotData() {
         try {
+            // Ensure initialization
             if (!this.connection || !this.lotteryPDA) {
+                console.log('🔄 Initializing connection for snapshot fetch...');
                 const initResult = await this.init();
-                if (!initResult || !this.lotteryPDA) {
-                    throw new Error('Failed to initialize connection or PDA');
+                if (!initResult) {
+                    console.error('❌ Init returned false in fetchSnapshotData');
+                    throw new Error('Failed to initialize connection');
                 }
+                if (!this.lotteryPDA) {
+                    console.error('❌ PDA still null after init in fetchSnapshotData');
+                    throw new Error('Lottery PDA not initialized after init()');
+                }
+            }
+            
+            if (!this.lotteryPDA) {
+                console.error('❌ PDA is null in fetchSnapshotData');
+                throw new Error('Lottery PDA not initialized');
             }
 
             const signatures = await this.connection.getSignaturesForAddress(
