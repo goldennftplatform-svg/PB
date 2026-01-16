@@ -2,15 +2,21 @@
 // Uses @solana/web3.js to connect and fetch lottery account data
 
 // PROGRAM ID - Verified working in test scripts
-const LOTTERY_PROGRAM_ID = '8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7';
+// Make these available globally to avoid duplicate declarations
+window.LOTTERY_PROGRAM_ID = '8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7';
+const LOTTERY_PROGRAM_ID = window.LOTTERY_PROGRAM_ID;
 // KNOWN PDA - Verified exists on devnet (from check-lottery-status.js)
 const KNOWN_LOTTERY_PDA = 'ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb';
-const NETWORK = 'devnet'; // Testnet/Devnet for pre-live testing
-const RPC_URL = 'https://api.devnet.solana.com';
+window.NETWORK = 'devnet'; // Testnet/Devnet for pre-live testing
+const NETWORK = window.NETWORK;
+window.RPC_URL = 'https://api.devnet.solana.com';
+const RPC_URL = window.RPC_URL;
 
 // Use Helius for faster RPC (works on devnet)
-const HELIUS_API_KEY = '431ca765-2f35-4b23-8abd-db03796bd85f';
-const HELIUS_RPC_URL = `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`;
+window.HELIUS_API_KEY = '431ca765-2f35-4b23-8abd-db03796bd85f';
+const HELIUS_API_KEY = window.HELIUS_API_KEY;
+window.HELIUS_RPC_URL = `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`;
+const HELIUS_RPC_URL = window.HELIUS_RPC_URL;
 
 // Explorer URLs for testnet
 const EXPLORER_BASE = `https://explorer.solana.com`;
@@ -614,7 +620,8 @@ class LotteryDataFetcher {
 }
 
 // Global instance
-const lotteryFetcher = new LotteryDataFetcher();
+// Global lottery fetcher instance (will be initialized in DOMContentLoaded)
+let lotteryFetcher = null;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {

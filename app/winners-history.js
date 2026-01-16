@@ -1,10 +1,11 @@
 // Fetch REAL winners from on-chain data - no test data
-// PROGRAM ID - Verified working in test scripts
-const LOTTERY_PROGRAM_ID = '8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7';
-const NETWORK = 'devnet';
-const RPC_URL = 'https://api.devnet.solana.com';
-const HELIUS_API_KEY = '431ca765-2f35-4b23-8abd-db03796bd85f';
-const HELIUS_RPC_URL = `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`;
+// Use constants from lottery-data.js (avoid duplicate declarations)
+// If lottery-data.js hasn't loaded yet, define fallback constants
+const LOTTERY_PROGRAM_ID = window.LOTTERY_PROGRAM_ID || '8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7';
+const NETWORK = window.NETWORK || 'devnet';
+const RPC_URL = window.RPC_URL || 'https://api.devnet.solana.com';
+const HELIUS_API_KEY = window.HELIUS_API_KEY || '431ca765-2f35-4b23-8abd-db03796bd85f';
+const HELIUS_RPC_URL = window.HELIUS_RPC_URL || `https://rpc.helius.xyz/?api-key=${HELIUS_API_KEY}`;
 
 class WinnersHistory {
     constructor() {
