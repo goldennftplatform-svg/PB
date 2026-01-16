@@ -440,15 +440,38 @@ class LotteryDataFetcher {
 
                     if (!tx || !tx.meta || !tx.meta.logMessages) continue;
 
-                    // Check if this is a payout transaction
-                    const isPayout = tx.meta.logMessages.some(log => 
-                        log.includes('PayoutWinners') || 
-                        log.includes('payout_winners') ||
-                        log.includes('Winner') ||
-                        (log.includes('Transfer') && log.includes('SOL'))
-                    );
+                    // Check if this is a payout transaction - look for multiple indicators
+                    const logs = tx.meta.logMessages.join(' ');
+                    const isPayout = logs.includes('PayoutWinners') || 
+                                    logs.includes('payout_winners') ||
+                                    logs.includes('payout') ||
+                                    logs.includes('Winner') ||
+                                    logs.includes('winner') ||
+                                    (logs.includes('Transfer') && logs.includes('SOL'));
 
-                    if (isPayout && tx.meta.postBalances && tx.transaction && tx.transaction.message) {
+                    // Also check if this transaction has multiple large SOL transfers (indicating payouts)
+                    const hasLargeTransfers = tx.meta.postBalances && tx.meta.preBalances && 
+                        tx.transaction && tx.transaction.message;
+                    
+                    let largeTransferCount = 0;
+                    if (hasLargeTransfers) {
+                        const preBalances = tx.meta.preBalances || [];
+                        const postBalances = tx.meta.postBalances || [];
+                        for (let i = 0; i < Math.min(preBalances.length, postBalances.length); i++) {
+                            const increase = postBalances[i] - preBalances[i];
+                            if (increase > 10000000) { // More than 0.01 SOL
+                                largeTransferCount++;
+                            }
+                        }
+                    }
+                    
+                    // Consider it a payout if it has payout logs OR multiple large transfers (9+ recipients = winners)
+                    const looksLikePayout = isPayout || largeTransferCount >= 3;
+
+                    if (looksLikePayout && tx.meta.postBalances && tx.transaction && tx.transaction.message) {
+                        console.log(`💰 Found potential payout transaction: ${sig.signature.substring(0, 16)}...`);
+                        console.log(`   Large transfers: ${largeTransferCount}`);
+                        console.log(`   Has payout logs: ${isPayout}`);
                         // Extract winner addresses from account keys
                         const accountKeys = (tx.transaction.message.accountKeys || []);
                         const preBalances = tx.meta.preBalances || [];
@@ -464,7 +487,8 @@ class LotteryDataFetcher {
                             const increase = postBalance - preBalance;
 
                             // If balance increased significantly (more than just fees)
-                            if (increase > 1000000) { // More than 0.001 SOL
+                            // Lower threshold to catch smaller payouts
+                            if (increase > 500000) { // More than 0.0005 SOL (lowered from 0.001)
                                 const account = accountKeys[i];
                                 if (!account) continue; // Skip null accounts
                                 
@@ -511,31 +535,49 @@ class LotteryDataFetcher {
                             }
                         }
 
-                        // Sort by amount (largest first)
-                        recipientAccounts.sort((a, b) => b.amount - a.amount);
+                        // Filter out known system accounts and lottery PDA
+                        const filteredRecipients = recipientAccounts.filter(acc => {
+                            return acc.address !== KNOWN_LOTTERY_PDA &&
+                                   acc.address !== '11111111111111111111111111111111' &&
+                                   acc.address !== 'So11111111111111111111111111111111111111112'; // Wrapped SOL
+                        });
 
-                        if (recipientAccounts.length > 0) {
+                        // Sort by amount (largest first)
+                        filteredRecipients.sort((a, b) => b.amount - a.amount);
+
+                        console.log(`   Found ${filteredRecipients.length} recipient accounts after filtering`);
+
+                        if (filteredRecipients.length > 0) {
                             // Main winner is the one who received the most
-                            mainWinner = recipientAccounts[0].address;
+                            mainWinner = filteredRecipients[0].address;
+                            console.log(`   Main winner: ${mainWinner.substring(0, 16)}... (${(filteredRecipients[0].amount / 1e9).toFixed(4)} SOL)`);
                             
-                            // Next 8 are minor winners
-                            const minors = recipientAccounts.slice(1, 9).map(w => w.address);
+                            // Next 8 are minor winners (or all remaining if less than 8)
+                            const minors = filteredRecipients.slice(1, 9).map(w => {
+                                console.log(`   Minor winner: ${w.address.substring(0, 16)}... (${(w.amount / 1e9).toFixed(4)} SOL)`);
+                                return w.address;
+                            });
                             minorWinners.push(...minors);
 
                             payoutTx = sig.signature;
                             payoutTime = sig.blockTime;
                             
                             // Calculate payouts
-                            const mainPayout = recipientAccounts[0].amount;
-                            const minorPayout = recipientAccounts.length > 1 ? recipientAccounts[1].amount : 0;
+                            const mainPayout = filteredRecipients[0].amount;
+                            const minorPayout = filteredRecipients.length > 1 ? filteredRecipients[1].amount : 0;
                             
                             payouts = {
                                 mainPayout: mainPayout,
-                                minorPayout: minorPayout
+                                minorPayout: minorPayout,
+                                totalRecipients: filteredRecipients.length
                             };
+
+                            console.log(`✅ Payout transaction found! Main: ${(mainPayout / 1e9).toFixed(4)} SOL, Minors: ${minors.length}`);
 
                             // Found the most recent payout, break
                             break;
+                        } else {
+                            console.log(`   No valid recipients found (filtered out system accounts)`);
                         }
                     }
                 } catch (e) {
@@ -640,6 +682,11 @@ class LotteryDataFetcher {
                             lastSnapshot = sig.blockTime;
                             snapshotTx = sig.signature;
                             snapshotTime = sig.blockTime;
+                            
+                            // Try to determine if it was ODD (payout) or EVEN (rollover)
+                            const isOdd = logs.includes('ODD') || logs.includes('PAYOUT TIME');
+                            const isEven = logs.includes('EVEN') || logs.includes('ROLLOVER');
+                            console.log(`   Snapshot result: ${isOdd ? 'ODD (PAYOUT TIME!)' : isEven ? 'EVEN (ROLLOVER)' : 'Unknown'}`);
                         }
                     }
 
@@ -1203,12 +1250,18 @@ function updateWinnersDisplay(state) {
             `;
         } else if (state.snapshotTx) {
             // Show snapshot info if no payout yet
+            // Check if we can determine if it was ODD (payout time) or EVEN (rollover)
+            const isRollover = !state.payoutTx && state.snapshotTx;
             mainWinnerEl.innerHTML = `
                 <div style="text-align: center; color: var(--accent-green); font-family: 'Courier New', monospace;">
                     <div style="font-size: 1.2em; margin-bottom: 10px;">📸 Snapshot Taken</div>
                     <div style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 10px;">
                         ${state.participantCount || '?'} Participants
                     </div>
+                    ${isRollover ? 
+                        '<div style="font-size: 0.85em; color: var(--accent-cyan); margin-bottom: 10px;">🚀 Rollover - No payout yet</div>' :
+                        '<div style="font-size: 0.85em; color: var(--text-secondary); margin-bottom: 10px;">⏳ Waiting for payout...</div>'
+                    }
                     <a href="${EXPLORER_BASE}/tx/${state.snapshotTx}${EXPLORER_CLUSTER}" 
                        target="_blank" style="color: var(--accent-green); text-decoration: none; font-size: 0.9em;">View Snapshot TX</a>
                 </div>
