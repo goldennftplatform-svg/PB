@@ -261,14 +261,37 @@ class LotteryDataFetcher {
             
             console.log(`✅ Account found! Balance: ${accountInfo.lamports / 1e9} SOL, Data: ${accountInfo.data.length} bytes`);
 
-            // Fetch real winners from payout transactions
-            const winnersData = await this.fetchRealWinnersFromTransactions();
-            
-            // Also fetch snapshot/participant data from transactions
-            const snapshotData = await this.fetchSnapshotData();
-            
-            // Get jackpot from account balance (simplified)
+            // Get jackpot from account balance FIRST (so we always have it)
             const jackpot = accountInfo.lamports || 0;
+            console.log(`💰 Jackpot from account: ${(jackpot / 1e9).toFixed(4)} SOL`);
+
+            // Fetch real winners from payout transactions (with timeout to avoid hanging)
+            console.log('🔍 Fetching winners from transactions...');
+            let winnersData = { winners: { mainWinner: null, minorWinners: [] }, payoutTx: null, payoutTime: null, payouts: null };
+            try {
+                const winnersPromise = this.fetchRealWinnersFromTransactions();
+                const winnersTimeout = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Winners fetch timeout after 5s')), 5000)
+                );
+                winnersData = await Promise.race([winnersPromise, winnersTimeout]);
+                console.log('✅ Winners data fetched');
+            } catch (error) {
+                console.warn('⚠️  Error/timeout fetching winners, using empty data:', error.message);
+            }
+            
+            // Also fetch snapshot/participant data from transactions (with timeout)
+            console.log('🔍 Fetching snapshot data...');
+            let snapshotData = { lastSnapshot: null, snapshotTx: null, snapshotTime: null, participantCount: 0 };
+            try {
+                const snapshotPromise = this.fetchSnapshotData();
+                const snapshotTimeout = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Snapshot fetch timeout after 5s')), 5000)
+                );
+                snapshotData = await Promise.race([snapshotPromise, snapshotTimeout]);
+                console.log('✅ Snapshot data fetched');
+            } catch (error) {
+                console.warn('⚠️  Error/timeout fetching snapshot, using empty data:', error.message);
+            }
             
             // ALWAYS return data, even if transaction fetching failed
             const data = {
