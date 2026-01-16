@@ -786,6 +786,160 @@ class LotteryDataFetcher {
 // Global lottery fetcher instance (will be initialized in DOMContentLoaded)
 let lotteryFetcher = null;
 
+/**
+ * Update the HTML with real lottery data
+ */
+async function updateLotteryDisplay() {
+    console.log('🔄 updateLotteryDisplay() called');
+    
+    try {
+        const state = await lotteryFetcher.fetchLotteryState();
+        console.log('📦 Received state:', state);
+        
+        // Show warning if present (but still display data)
+        if (state.warning) {
+            console.warn('⚠️ Lottery data warning:', state.warning);
+            const errorEl = document.getElementById('blockchain-error');
+            if (errorEl) {
+                errorEl.innerHTML = `
+                    <div style="padding: 15px; background: rgba(255, 193, 7, 0.1); border: 2px solid #ffc107; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 0; color: #ffc107;">⚠️ ${state.warning}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Only block display if there's a hard error (not just a warning)
+        if (state.error) {
+            console.warn('⚠️ Lottery data error:', state.error);
+            
+            // Show helpful error message
+            const errorEl = document.getElementById('blockchain-error');
+            if (errorEl) {
+                let errorHtml = `
+                    <div style="padding: 20px; background: rgba(248, 81, 73, 0.1); border: 2px solid #f85149; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="color: #f85149; margin: 0 0 10px 0;">⚠️ ${state.error}</h3>
+                        <p style="margin: 0; color: #c9d1d9;">${state.message || state.error}</p>
+                `;
+                
+                // Special handling for "Lottery not initialized" error
+                if (state.error === 'Lottery not initialized') {
+                    errorHtml += `
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(0, 255, 65, 0.1); border: 1px solid var(--accent-green); border-radius: 4px;">
+                            <p style="margin: 0 0 10px 0; color: var(--accent-green); font-weight: bold;">📋 How to Initialize:</p>
+                            <ol style="margin: 0; padding-left: 20px; color: var(--text-primary);">
+                                <li style="margin-bottom: 8px;">Open terminal in the project directory</li>
+                                <li style="margin-bottom: 8px;">Run: <code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px;">node scripts/simple-init-lottery.js</code></li>
+                                <li style="margin-bottom: 8px;">Or: <code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px;">node scripts/reinit-lottery-50-50.js</code></li>
+                                <li>Refresh this page after initialization completes</li>
+                            </ol>
+                            ${state.pda ? `<p style="margin-top: 10px; font-size: 0.9em; color: var(--text-secondary);">PDA: <code>${state.pda}</code></p>` : ''}
+                        </div>
+                    `;
+                }
+                
+                errorHtml += `</div>`;
+                errorEl.innerHTML = errorHtml;
+            }
+            
+            // Also update winner displays
+            const mainWinnerEl = document.getElementById('main-winner-display');
+            const minorWinnersEl = document.getElementById('minor-winners-display');
+            if (mainWinnerEl) {
+                mainWinnerEl.innerHTML = `<div style="color: #f85149; font-size: 1.2em;">${state.error}</div>`;
+            }
+            if (minorWinnersEl) {
+                minorWinnersEl.innerHTML = `<div style="color: #8b949e;">Lottery needs to be initialized first</div>`;
+            }
+            return;
+        }
+
+        // Log what we found for debugging
+        console.log('📊 Lottery State:', {
+            jackpot: state.jackpot,
+            jackpotSOL: state.jackpot ? (state.jackpot / 1e9).toFixed(4) + ' SOL' : '0 SOL',
+            hasMainWinner: !!state.winners?.mainWinner,
+            minorWinnersCount: state.winners?.minorWinners?.length || 0,
+            participantCount: state.participantCount,
+            snapshotTx: state.snapshotTx,
+            payoutTx: state.payoutTx,
+            hasError: !!state.error
+        });
+
+        // Always update display, even if no winners
+        console.log('🎨 Updating display with data...');
+        console.log('   State to display:', JSON.stringify(state, null, 2));
+        
+        // Force update even if data seems empty
+        if (!state.error) {
+            updateLotteryDisplayWithData(state);
+            console.log('✅ Display updated!');
+        } else {
+            console.warn('⚠️  Not updating display due to error:', state.error);
+        }
+    } catch (error) {
+        console.error('❌ Error in updateLotteryDisplay:', error);
+        console.error('   Stack:', error.stack);
+    }
+}
+
+/**
+ * Update display with data (works with test or real data)
+ */
+function updateLotteryDisplayWithData(state) {
+    console.log('🎨 updateLotteryDisplayWithData() called with:', state);
+    console.log('   State keys:', Object.keys(state));
+    console.log('   Jackpot value:', state.jackpot);
+    
+    // Update jackpot (always update, even if 0)
+    const jackpotAmountEl = document.getElementById('jackpot-amount');
+    if (jackpotAmountEl) {
+        const jackpotSOL = state.jackpot ? (state.jackpot / 1e9).toFixed(4) : '0.0000';
+        jackpotAmountEl.textContent = `${jackpotSOL} SOL`;
+        console.log(`💰 Updated jackpot: ${jackpotSOL} SOL`);
+        
+        // Force a visual update
+        jackpotAmountEl.style.display = 'block';
+        jackpotAmountEl.style.visibility = 'visible';
+    } else {
+        console.error('❌ jackpot-amount element NOT FOUND in DOM!');
+        console.error('   Available elements with "jackpot" in id:', 
+            Array.from(document.querySelectorAll('[id*="jackpot"]')).map(el => el.id));
+    }
+
+    // Update winners (even if empty)
+    console.log('🏆 Updating winners display...');
+    console.log('   Winners data:', state.winners);
+    updateWinnersDisplay(state);
+    
+    // Update snapshot date
+    const snapshotDateEl = document.querySelector('.draw-date');
+    if (snapshotDateEl) {
+        if (state.lastSnapshot) {
+            snapshotDateEl.textContent = 'Snapshot: ' + lotteryFetcher.formatDate(state.lastSnapshot);
+            console.log('📅 Updated snapshot date');
+        } else if (state.snapshotTx) {
+            snapshotDateEl.textContent = 'Snapshot pending...';
+            console.log('📅 Snapshot transaction found but no timestamp');
+        } else {
+            snapshotDateEl.textContent = 'No snapshot yet';
+            console.log('📅 No snapshot data');
+        }
+    }
+    
+    // Update payout transaction
+    updatePayoutTransaction(state);
+    
+    // Clear any error messages if we got data
+    const errorEl = document.getElementById('blockchain-error');
+    if (errorEl && !state.error) {
+        errorEl.innerHTML = '';
+        console.log('✅ Cleared error message');
+    }
+    
+    console.log('✅ Display update complete!');
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
     // Show loading state
