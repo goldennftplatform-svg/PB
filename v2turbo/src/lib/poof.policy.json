@@ -1,0 +1,363 @@
+{
+  "uploadedImages/$imageId": {
+    "type": "storage",
+    "description": "Storage for uploaded images",
+    "rules": {
+      "read": "true",
+      "create": "true",
+      "update": "false",
+      "delete": "true"
+    },
+    "operationDetails": {
+      "read": "Anyone can read uploaded images.",
+      "create": "Anyone can upload images.",
+      "update": "Not applicable for storage collections.",
+      "delete": "Anyone can delete images."
+    }
+  },
+  "commonQueries/$queryId": {
+    "description": "Common utility queries for token balances and swap quotes",
+    "operationDetails": {
+      "read": "Anyone can use these queries: (1) Balance queries - check SOL, USDC, or any SPL token balance for any wallet address. (2) Jupiter swap quotes - get expected output amounts for token swaps via Jupiter aggregator. (3) Meteora swap quotes - get expected output amounts for Meteora dynamic bonding curve pools.",
+      "create": "Not allowed. This collection is for queries only.",
+      "update": "Not allowed. This collection is for queries only.",
+      "delete": "Not allowed. This collection is for queries only."
+    },
+    "onchain": false,
+    "fields": {},
+    "rules": {
+      "read": "true",
+      "create": "false",
+      "update": "false",
+      "delete": "false"
+    },
+    "queries": {
+      "solBalance": {
+        "description": "Get SOL balance for a wallet address in lamports (1 SOL = 1,000,000,000 lamports). Pass walletAddress as parameter.",
+        "returnType": "UInt",
+        "query": "@TokenPlugin.getBalance(@newData.walletAddress, @constants.SOL)"
+      },
+      "usdcBalance": {
+        "description": "Get USDC balance for a wallet address in base units (1 USDC = 1,000,000 base units with 6 decimals). Pass walletAddress as parameter.",
+        "returnType": "UInt",
+        "query": "@TokenPlugin.getBalance(@newData.walletAddress, @constants.USDC)"
+      },
+      "tokenBalance": {
+        "description": "Get balance for any SPL token mint for a wallet address. Pass walletAddress and tokenMint as parameters. Returns balance in the token's smallest units based on its decimals.",
+        "returnType": "UInt",
+        "query": "@TokenPlugin.getBalance(@newData.walletAddress, @newData.tokenMint)"
+      },
+      "jupiterSwapQuote": {
+        "description": "Get a Jupiter swap quote for exchanging tokens. Pass inputMint (token to sell, use @constants.SOL for native SOL), outputMint (token to buy), and amount (in smallest units like lamports). Returns the expected output amount.",
+        "returnType": "UInt",
+        "query": "@DeFiPlugin.getSwapQuote(@newData.inputMint, @newData.outputMint, @newData.amount)"
+      },
+      "meteoraSwapQuote": {
+        "description": "Get a Meteora dynamic bonding curve swap quote. Pass tokenMintAddress (the pool's base token), tokenToSwapInMintAddress (token to swap in, use @constants.SOL for native SOL), and tokenAmount (in smallest units). Returns the expected output amount.",
+        "returnType": "UInt",
+        "query": "@DeFiPlugin.getMeteoraSwapQuote(@newData.tokenMintAddress, @newData.tokenToSwapInMintAddress, @newData.tokenAmount)"
+      }
+    }
+  },
+  "jackpot/$jackpotId": {
+    "description": "Tracks lottery jackpot state including balance, next drawing time, and drawing count",
+    "fields": {
+      "balance": "UInt",
+      "nextDrawingAt": "UInt",
+      "drawingNumber": "UInt",
+      "isOver200Sol": "Bool",
+      "lastUpdatedAt": "UInt"
+    },
+    "onchain": false,
+    "rules": {
+      "read": "true",
+      "create": "true",
+      "update": "true",
+      "delete": "true"
+    },
+    "operationDetails": {
+      "read": "Anyone can read jackpot state to see current balance, next drawing time, and drawing count.",
+      "create": "Anyone can create the jackpot document for stress testing.",
+      "update": "Anyone can update balance, nextDrawingAt, drawingNumber, and isOver200Sol flag for stress testing.",
+      "delete": "Anyone can delete the jackpot document for stress testing."
+    }
+  },
+  "drawings/$drawingId": {
+    "description": "Basic drawing records for tracking lottery rounds",
+    "fields": {
+      "status": "String",
+      "endTime": "UInt?",
+      "jackpot": "UInt?"
+    },
+    "onchain": false,
+    "rules": {
+      "read": "true",
+      "create": "true",
+      "update": "true",
+      "delete": "true"
+    },
+    "operationDetails": {
+      "read": "Anyone can read drawings to see active drawings and past results.",
+      "create": "Anyone can create a drawing for stress testing. Set status to 'active' for new drawings.",
+      "update": "Anyone can update drawing status (active to completed) and add results for stress testing.",
+      "delete": "Anyone can delete drawings for stress testing."
+    }
+  },
+  "entries/$entryId": {
+    "description": "Basic lottery entries for offchain tracking",
+    "fields": {
+      "wallet": "Address",
+      "drawingId": "String",
+      "tokenBalance": "UInt",
+      "enteredAt": "UInt"
+    },
+    "onchain": false,
+    "rules": {
+      "read": "true",
+      "create": "true",
+      "update": "true",
+      "delete": "true"
+    },
+    "operationDetails": {
+      "read": "Anyone can read entries",
+      "create": "Anyone can create entries",
+      "update": "Anyone can update entries",
+      "delete": "Anyone can delete entries"
+    }
+  },
+  "jackpotDeposits/$depositId": {
+    "description": "Records of admin SOL deposits to fund the jackpot",
+    "fields": {
+      "amount": "UInt",
+      "depositedBy": "Address",
+      "depositedAt": "UInt",
+      "note": "String?"
+    },
+    "onchain": false,
+    "rules": {
+      "read": "true",
+      "create": "@user.address == @constants.ADMIN_ADDRESS",
+      "update": "false",
+      "delete": "false"
+    },
+    "operationDetails": {
+      "read": "Anyone can view deposit history for transparency.",
+      "create": "Admin deposits SOL to fund the jackpot. For testing phase, this is manual. Later will be automated via buy/sell tax.",
+      "update": "Not allowed. Deposit records are immutable.",
+      "delete": "Not allowed. Deposit records are immutable."
+    }
+  },
+  "lotteryHouse/$houseId": {
+    "description": "House escrow PDA - holds SOL for lottery payouts",
+    "fields": {
+      "active": "Bool!"
+    },
+    "onchain": true,
+    "rules": {
+      "read": "true",
+      "create": "@user.address == @constants.ADMIN_ADDRESS && $houseId == @constants.LOTTERY_HOUSE_ID && @newData.active == true",
+      "update": "false",
+      "delete": "false"
+    },
+    "hooks": {
+      "onchain": {
+        "create": "@AccountPlugin.createAccount(@constants.LOTTERY_HOUSE_ID)"
+      }
+    },
+    "operationDetails": {
+      "read": "Anyone can check house balance and status for transparency.",
+      "create": "Admin creates house escrow once. Creates PDA that holds SOL for lottery payouts.",
+      "update": "Not allowed. House config is immutable once created.",
+      "delete": "Not allowed. House cannot be deleted."
+    },
+    "queries": {
+      "getHouseBalance": {
+        "returnType": "UInt",
+        "query": "@TokenPlugin.getBalance(@constants.LOTTERY_HOUSE_ID, @constants.SOL)"
+      }
+    }
+  },
+  "houseFunding/$fundingId": {
+    "description": "Admin deposits SOL into house escrow for payouts",
+    "fields": {
+      "amt": "UInt!"
+    },
+    "onchain": true,
+    "isPassthrough": true,
+    "rules": {
+      "read": "true",
+      "create": "@user.address == @constants.ADMIN_ADDRESS && @newData.amt > 0"
+    },
+    "hooks": {
+      "onchain": {
+        "create": "@TokenPlugin.transfer(@user.address, @constants.LOTTERY_HOUSE_ID, @constants.SOL, @newData.amt)"
+      }
+    },
+    "operationDetails": {
+      "read": "Anyone can view funding history for transparency.",
+      "create": "Admin deposits SOL to fund house for lottery payouts. Transfers SOL from admin to house PDA.",
+      "update": "Not applicable (passthrough collection).",
+      "delete": "Not applicable (passthrough collection)."
+    }
+  },
+  "vrfDrawings/$drawingId": {
+    "description": "VRF lottery drawings - admin triggers drawing, oracle reveals result",
+    "fields": {
+      "drawNum": "UInt!",
+      "jackpot": "UInt!",
+      "entries": "UInt!",
+      "result": "UInt?",
+      "winner": "Address?",
+      "payout": "UInt?",
+      "settled": "Bool?",
+      "payoutTxHash": "String?",
+      "evenOddResult": "String?",
+      "scheduledRevealAt": "UInt?",
+      "actualRevealAt": "UInt?"
+    },
+    "onchain": true,
+    "rules": {
+      "read": "true",
+      "create": "@user.address == @constants.ADMIN_ADDRESS && @newData.result == null && @newData.winner == null && @newData.settled == null",
+      "update": "@user.address == @constants.ADMIN_ADDRESS",
+      "delete": "false"
+    },
+    "hooks": {
+      "onchain": {
+        "create": "@OraclePlugin.requestRandomness($drawingId, /vrfReveals/$drawingId)"
+      }
+    },
+    "operationDetails": {
+      "read": "Anyone can view drawing details. result=null means pending VRF fulfillment.",
+      "create": "Admin triggers a lottery drawing. Requests VRF randomness. Drawing ID should be unique (e.g., draw_1, draw_2).",
+      "update": "Admin or oracle callback updates drawing with result, winner, and payout after VRF reveals.",
+      "delete": "Not allowed. Drawing records are immutable for audit trail."
+    },
+    "queries": {
+      "getVRFAddress": {
+        "returnType": "Address",
+        "query": "@OraclePlugin.getVRFAddress($drawingId)"
+      }
+    }
+  },
+  "vrfReveals/$drawingId": {
+    "description": "VRF callback - oracle creates reveal record after randomness is fulfilled",
+    "fields": {},
+    "onchain": true,
+    "rules": {
+      "read": "true",
+      "create": "get(/vrfDrawings/$drawingId) != null && get(/vrfDrawings/$drawingId).result == null",
+      "update": "false",
+      "delete": "false"
+    },
+    "hooks": {
+      "onchain": {
+        "create": "(get(/vrfDrawings/$drawingId).result == null && @DocumentPlugin.updateField(/vrfDrawings/$drawingId, 'result', @OraclePlugin.getRandomNumber($drawingId, 0, get(/vrfDrawings/$drawingId).entries)) && @DocumentPlugin.updateField(/vrfDrawings/$drawingId, 'actualRevealAt', @time.now)) || true"
+      }
+    },
+    "operationDetails": {
+      "read": "Anyone can view reveal records to verify VRF execution.",
+      "create": "Oracle callback. Reads random number in range [0, entries), updates drawing with result. Winner selection done offchain based on result index.",
+      "update": "Not allowed. Reveal records are immutable.",
+      "delete": "Not allowed. Reveal records are immutable."
+    }
+  },
+  "vrfEntries/$entryId": {
+    "description": "VRF lottery entries - token-gated, requires minimum PEPEBALL holding",
+    "fields": {
+      "drawId": "String!",
+      "wallet": "Address!",
+      "idx": "UInt!"
+    },
+    "onchain": true,
+    "rules": {
+      "read": "true",
+      "create": "@newData.wallet == @user.address && @TokenPlugin.getBalance(@user.address, @constants.PEPEBALL_MINT) >= @constants.MIN_HOLDING_TOKENS",
+      "update": "false",
+      "delete": "false"
+    },
+    "operationDetails": {
+      "read": "Anyone can view entries to verify eligibility and entry order.",
+      "create": "Anyone holding at least MIN_HOLDING_TOKENS (1000 tokens with 9 decimals) of PEPEBALL can register as entry. Entry ID should be drawId_wallet format. idx is the entry index (0-based) for winner selection. Validates user holds minimum PEPEBALL balance before allowing entry.",
+      "update": "Not allowed. Entries are immutable once created.",
+      "delete": "Not allowed. Entries are immutable for audit trail."
+    }
+  },
+  "feeHarvests/$harvestId": {
+    "description": "Records of fee harvests from the token transfer tax",
+    "fields": {
+      "amount": "UInt",
+      "harvestedAt": "UInt",
+      "harvestedBy": "Address",
+      "tokenMint": "String",
+      "txSignature": "String?"
+    },
+    "onchain": false,
+    "rules": {
+      "read": "true",
+      "create": "@user.address == @constants.ADMIN_ADDRESS",
+      "update": "false",
+      "delete": "false"
+    },
+    "operationDetails": {
+      "read": "Anyone can read harvest history for transparency. Shows all past fee harvests with amounts and timestamps.",
+      "create": "Admin only. Records a fee harvest event with amount in smallest units (lamports), timestamp, harvester address, token mint, and optional transaction signature.",
+      "update": "Not allowed. Harvest records are immutable.",
+      "delete": "Not allowed. Harvest records are immutable."
+    }
+  },
+  "vrfSettlements/$drawingId": {
+    "description": "Settlement records - admin settles lottery after VRF reveal",
+    "fields": {
+      "entryId": "String!",
+      "winner": "Address!",
+      "payout": "UInt!",
+      "fees": "UInt!"
+    },
+    "onchain": true,
+    "rules": {
+      "read": "true",
+      "create": "@user.address == @constants.ADMIN_ADDRESS && get(/vrfDrawings/$drawingId) != null && get(/vrfDrawings/$drawingId).result != null && get(/vrfDrawings/$drawingId).settled != true && get(/vrfEntries/@newData.entryId) != null && get(/vrfEntries/@newData.entryId).idx == get(/vrfDrawings/$drawingId).result && get(/vrfEntries/@newData.entryId).wallet == @newData.winner",
+      "update": "false",
+      "delete": "false"
+    },
+    "hooks": {
+      "onchain": {
+        "create": "@TokenPlugin.transfer(@constants.LOTTERY_HOUSE_ID, @newData.winner, @constants.SOL, @newData.payout) && @TokenPlugin.transfer(@constants.LOTTERY_HOUSE_ID, @constants.ADMIN_ADDRESS, @constants.SOL, @newData.fees) && @DocumentPlugin.updateField(/vrfDrawings/$drawingId, 'settled', true) && @DocumentPlugin.updateField(/vrfDrawings/$drawingId, 'winner', @newData.winner) && @DocumentPlugin.updateField(/vrfDrawings/$drawingId, 'payout', @newData.payout)"
+      }
+    },
+    "operationDetails": {
+      "read": "Anyone can view settlement records for transparency.",
+      "create": "Admin only. Creates settlement by passing entryId (the winning entry ID in format drawId_wallet), winner wallet address, payout amount (in lamports after fees calculated), and fees amount. Hook validates: (1) drawing exists with result, (2) not already settled, (3) entry exists with matching idx to result, (4) entry wallet matches winner. Then transfers payout to winner, fees to admin, and marks drawing as settled.",
+      "update": "Not allowed. Settlement records are immutable.",
+      "delete": "Not allowed. Settlement records are immutable."
+    }
+  },
+  "transfers/$transferId": {
+    "description": "Token transfers with onchain execution",
+    "fields": {
+      "from": "Address!",
+      "to": "Address!",
+      "amt": "UInt!",
+      "mint": "Address!",
+      "ts": "UInt!"
+    },
+    "onchain": true,
+    "isPassthrough": true,
+    "rules": {
+      "read": "true",
+      "create": "@newData.from == @user.address"
+    },
+    "hooks": {
+      "onchain": {
+        "create": "@TokenPlugin.transfer(@newData.from, @newData.to, @newData.mint, @newData.amt)"
+      }
+    },
+    "operationDetails": {
+      "read": "Anyone can read transfer records for transparency and history viewing.",
+      "create": "Authenticated users can create transfers FROM their own wallet only (from must equal user address). Hook executes @TokenPlugin.transfer onchain to move tokens. Amount is in raw units (9 decimals for PBALL). isPassthrough means data stored offchain only to reduce costs.",
+      "update": "Not applicable for passthrough collections.",
+      "delete": "Not applicable for passthrough collections."
+    }
+  }
+}

@@ -1,0 +1,35 @@
+import HomePage from '@/components/HomePage';
+import { Toaster } from '@/components/ui/sonner';
+// import { OAuthProvider } from '@/contexts/OAuthContext';
+import { AnimatePresence } from 'framer-motion';
+import { JSX } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
+
+function App(): JSX.Element {
+  const location = useLocation();
+
+  return (
+    <>
+      {/* NOTE: UI Generator - Uncomment OAuthProvider wrapper below if OAuth functionality is needed.
+          See .claude/skills/oauth/docs/implementation-guide.md for OAuth implementation guide. */}
+      {/* <OAuthProvider> */}
+      <div
+        id='app-container'
+        className='relative min-h-screen flex flex-col bg-background bg-grid-pattern'
+      >
+        <main id='app-main' className='flex-1'>
+          <AnimatePresence mode='wait'>
+            <Routes location={location} key={location.pathname}>
+              <Route path='/' element={<HomePage />} />
+            </Routes>
+          </AnimatePresence>
+        </main>
+
+        <Toaster />
+      </div>
+      {/* </OAuthProvider> */}
+    </>
+  );
+}
+
+export default App;

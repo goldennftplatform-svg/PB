@@ -1,0 +1,43 @@
+export const ADMIN_ADDRESS = "2QAQ367aBeHgCoHQwHo8x7ga34dANguG5Nu82Rs4ky42";
+export const PROJECT_VAULT_ADDRESS = "FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje";
+export const SOL = "solana";
+export const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+/** Lottery token mint (live test: 3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump) */
+export const PEPEBALL_MINT = "3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump";
+export const MIN_HOLDING_USD = "20";
+export const DRAWING_INTERVAL_NORMAL = "172800";
+export const DRAWING_INTERVAL_HIGH_JACKPOT = "259200";
+export const HIGH_JACKPOT_THRESHOLD = "200000000000";
+export const JACKPOT_ID = "main";
+export const MAIN_WINNER_PERCENT = "60";
+export const SECONDARY_WINNER_PERCENT = "4";
+export const ROLLOVER_PERCENT = "6";
+export const DEV_PERCENT = "2";
+export const LOTTERY_HOUSE_ID = "lottery_house";
+export const TOKEN_MINT_ADDRESS = "3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump";
+export const TOKEN_TAX_BPS = "250";
+export const TAX_RECIPIENT_ADDRESS = "FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje";
+export const TOKEN_TAX_MAX_FEE = "1000000";
+export const HARVEST_BOT_ENABLED = "false";
+export const TAROBASE_ENV = "devnet";
+/** Min tokens to enter (raw units). Live test: 1 token at 6 decimals = 1_000_000. */
+export const MIN_HOLDING_TOKENS = "1000000";
+
+// ─── Static value (display / eligibility) ───────────────────────────────────
+// Use a fixed USD-per-token for UI and checks when not using live price. Replace
+// with Jupiter/Meteora quote when you want live. Live test token uses 6 decimals.
+export const TOKEN_DECIMALS = 6;
+/** Static USD per 1 token. Tune to current price for live token (e.g. DexScreener). */
+export const STATIC_USD_PER_TOKEN = 0.0001;
+
+/** Raw token units → USD using static price (for display only unless you rely on it for gating). */
+export function tokensToStaticUsd(rawUnits: number): number {
+  const tokens = rawUnits / 10 ** TOKEN_DECIMALS;
+  return tokens * STATIC_USD_PER_TOKEN;
+}
+
+/** USD → raw token units using static price. */
+export function staticUsdToTokenRaw(usd: number): number {
+  const tokens = usd / STATIC_USD_PER_TOKEN;
+  return Math.floor(tokens * 10 ** TOKEN_DECIMALS);
+}

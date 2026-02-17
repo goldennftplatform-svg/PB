@@ -1,0 +1,201 @@
+/*
+ * ⚠️ AI AGENT: THIS FILE MUST BE COMPLETELY CUSTOMIZED!
+ *
+ * The grayscale placeholder colors below are INTENTIONALLY GENERIC.
+ * You MUST replace them with a DISTINCTIVE, BOLD color scheme.
+ *
+ * Required button variables for consistent styling:
+ * --button: Background color
+ * --button-foreground: Text color
+ * --button-border: Border color
+ * --button-hover: Hover background color
+ * --button-hover-foreground: Hover text color
+ * --button-hover-border: Hover border color
+ *
+ * EXAMPLE DISTINCTIVE THEMES (pick ONE direction and commit fully):
+ *
+ * 🌙 Dark luxury: Deep navy (#0a1628), gold accents (#d4af37), cream text
+ * 🔥 Brutalist: Pure black/white, neon red (#ff0000), sharp contrasts
+ * 🌿 Organic: Warm earth tones, sage green (#87ae73), terracotta (#e07a5f)
+ * 💜 Cyberpunk: Dark purple (#1a0a2e), electric cyan (#00ffff), hot pink (#ff00ff)
+ * 🎨 Retro: Muted pastels, dusty rose (#d4a5a5), seafoam (#98d6c5)
+ * 🌅 Warm minimal: Off-white (#faf8f5), warm gray (#6b6b6b), coral accent (#ff7f7f)
+ *
+ * DO NOT leave these as grayscale! Generic colors = AI slop.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /*
+     * ⚠️ MANDATORY REPLACEMENT REQUIRED:
+     *
+     * These are PLACEHOLDER colors. Replace ALL values with your chosen theme.
+     * Use HSL format: hue (0-360) saturation% lightness%
+     *
+     * AVOID: Pure grayscale, generic blue (#0066cc), purple gradients on white
+     * EMBRACE: Bold, distinctive colors that create a memorable aesthetic
+     */
+  :root {
+    /* 🎨 BASE COLORS - Replace with your theme's foundation */
+    --background: 0 0% 100%; /* REPLACE: Your background color */
+    --foreground: 0 0% 0%; /* REPLACE: Your text color */
+
+    /* 🃏 CARD/SURFACE COLORS - Create depth in your design */
+    --card: 0 0% 100%; /* REPLACE: Elevated surface color */
+    --card-foreground: 0 0% 0%; /* REPLACE: Text on cards */
+
+    --popover: 0 0% 100%; /* REPLACE: Popup/modal background */
+    --popover-foreground: 0 0% 0%; /* REPLACE: Popup text */
+
+    /* ⭐ PRIMARY - Your brand's main color (MAKE IT DISTINCTIVE!) */
+    --primary: 215 15% 25%; /* REPLACE: Your primary brand color */
+    --primary-foreground: 0 0% 100%; /* REPLACE: Text on primary */
+
+    /* 🔄 SECONDARY - Supporting color for hierarchy */
+    --secondary: 0 0% 96%; /* REPLACE: Secondary actions/surfaces */
+    --secondary-foreground: 0 0% 9%; /* REPLACE: Text on secondary */
+
+    /* 💤 MUTED - Subtle, recessed elements */
+    --muted: 0 0% 96%; /* REPLACE: Muted backgrounds */
+    --muted-foreground: 0 0% 45%; /* REPLACE: Muted text */
+
+    /* ✨ ACCENT - Eye-catching highlight color (MAKE IT POP!) */
+    --accent: 0 0% 96%; /* REPLACE: Your accent/highlight color */
+    --accent-foreground: 0 0% 9%; /* REPLACE: Text on accent */
+
+    /* 🚨 DESTRUCTIVE - Error/danger states */
+    --destructive: 0 84% 60%; /* Can keep or adjust to match theme */
+    --destructive-foreground: 0 0% 100%;
+
+    /* 📏 BORDERS/INPUTS - Structural elements */
+    --border: 0 0% 89%; /* REPLACE: Border color */
+    --input: 0 0% 89%; /* REPLACE: Input field borders */
+    --ring: 0 0% 89%; /* REPLACE: Focus ring color */
+
+    /* 🔗 LINKS - Interactive text elements */
+    --link: 0 0% 9%; /* REPLACE: Link color */
+    --link-hover: 0 0% 0%; /* REPLACE: Link hover state */
+
+    /* 🔘 BUTTON - Interactive button styling */
+    --button: 0 0% 100%; /* REPLACE: Button background */
+    --button-foreground: 0 0% 9%; /* REPLACE: Button text */
+    --button-border: 215 20% 85%; /* REPLACE: Button border */
+    --button-hover: 210 20% 98%; /* REPLACE: Button hover bg */
+    --button-hover-foreground: 215 25% 7%; /* REPLACE: Button hover text */
+    --button-hover-border: 215 25% 75%; /* REPLACE: Button hover border */
+    --button-ring: 215 20% 85%; /* REPLACE: Button focus ring */
+
+    /* 📊 CHART COLORS - Data visualization palette */
+    --chart-1: 0 0% 20%; /* REPLACE: Chart color 1 */
+    --chart-2: 0 0% 35%; /* REPLACE: Chart color 2 */
+    --chart-3: 0 0% 50%; /* REPLACE: Chart color 3 */
+    --chart-4: 0 0% 65%; /* REPLACE: Chart color 4 */
+    --chart-5: 0 0% 80%; /* REPLACE: Chart color 5 */
+
+    /* 📁 SIDEBAR - Navigation theming */
+    --sidebar-background: 0 0% 98%; /* REPLACE: Sidebar bg */
+    --sidebar-foreground: 240 5.3% 26.1%; /* REPLACE: Sidebar text */
+    --sidebar-primary: 240 5.9% 10%; /* REPLACE: Sidebar primary */
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%; /* REPLACE: Sidebar accent */
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%; /* REPLACE: Sidebar borders */
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* 📐 FIXED VALUES - Adjust radius to match your aesthetic */
+    --radius: 0.375rem; /* Adjust: 0 for sharp, 1rem for rounded, etc. */
+  }
+  .dark {
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+/* Ensure body has no layout spacing that react-remove-scroll can convert */
+html,
+body {
+  margin: 0;
+}
+
+/* App chrome layout */
+:root {
+  --preview-h: 48px;
+  --warn-h: 40px;
+}
+
+#app-shell {
+  min-height: 100vh;
+}
+
+/* Reserve space for the fixed bars on the WRAPPER, not body */
+#app-shell.with-preview.with-warning {
+  padding-top: calc(var(--preview-h) + var(--warn-h));
+}
+#app-shell.with-preview:not(.with-warning) {
+  padding-top: var(--preview-h);
+}
+#app-shell.with-warning:not(.with-preview) {
+  padding-top: var(--warn-h);
+}
+
+/* Bars are truly fixed - GPU accelerated for scroll performance */
+.poof-preview-bar,
+.poof-integration-warning-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Preview bar at top */
+.poof-preview-bar {
+  top: 0;
+  height: var(--preview-h);
+}
+
+/* Warning bar sits below preview if present, else at top */
+.poof-integration-warning-bar {
+  top: 0;
+  height: var(--warn-h);
+}
+#app-shell.with-preview .poof-integration-warning-bar {
+  top: var(--preview-h);
+}
+
+/* Optional: if anything ever still toggles scroll-lock, keep our spacing stable */
+body[data-scroll-locked] {
+  padding-top: 0 !important;
+}
+
+/* Subtle network indicator animation */
+@keyframes subtle-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+/*
+ ---break---
+ */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

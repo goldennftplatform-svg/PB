@@ -1,0 +1,54 @@
+{
+  "info": {
+    "title": "Poof PartyServer API",
+    "version": "1.0.0",
+    "description": "Type-safe HTTP API for real-time applications",
+    "generatedAt": "2026-02-04T16:02:43.081Z"
+  },
+  "authentication": {
+    "strategies": [
+      "public",
+      "jwt",
+      "tarobase"
+    ],
+    "default": "public"
+  },
+  "standardStatusCodes": {
+    "SUCCESS": 200,
+    "BAD_REQUEST": 400,
+    "UNAUTHORIZED": 401,
+    "NOT_FOUND": 404,
+    "INTERNAL_ERROR": 500
+  },
+  "routes": [
+    {
+      "endpoint": "GET /health",
+      "method": "GET",
+      "path": "/health",
+      "description": "Retrieves comprehensive system health information including service status, uptime, and connectivity to external services like Tarobase. Use this endpoint to monitor system availability and diagnose potential issues before they affect users.",
+      "tags": [
+        "system",
+        "monitoring"
+      ],
+      "public": true,
+      "admin": false,
+      "cron": false,
+      "authentication": {
+        "required": false,
+        "types": []
+      },
+      "rateLimit": {
+        "requests": 100,
+        "window": 60
+      },
+      "secrets": [],
+      "schemas": {
+        "response": "export const HealthResponseSchema = z.object({\n  status: z.enum(['healthy', 'degraded', 'unhealthy']),\n  timestamp: z.number(),\n  version: z.string(),\n  uptime: z.number(),\n  services: z.object({\n    tarobase: z.object({\n      status: z.enum(['connected', 'disconnected', 'error']),\n      latency: z.number().optional(),\n    })"
+      },
+      "statusCodes": [
+        200,
+        500
+      ]
+    }
+  ]
+}

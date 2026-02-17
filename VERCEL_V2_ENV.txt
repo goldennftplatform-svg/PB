@@ -1,0 +1,10 @@
+# One-time: add these in Vercel Dashboard → your project → Settings → Environment Variables
+# (Production and Preview.) Then redeploy.
+
+VITE_TAROBASE_APP_ID=697010c4c6f87869899205a3
+VITE_ENV=PREVIEW
+VITE_CHAIN=offchain
+VITE_RPC_URL=https://celestia-cegncv-fast-mainnet.helius-rpc.com
+VITE_WS_API_URL=wss://api.tarobase.com/ws/v2
+VITE_API_URL=https://api.tarobase.com
+VITE_AUTH_API_URL=https://auth.tarobase.com
