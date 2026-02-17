@@ -3,7 +3,18 @@
 
 import { $ } from "bun";
 
-const VITE_ENV = process.env.VITE_ENV || "PREVIEW";
+// Defaults so Vercel build works without configuring env vars in the dashboard
+const DEFAULTS = {
+  VITE_TAROBASE_APP_ID: "697010c4c6f87869899205a3",
+  VITE_ENV: "PREVIEW",
+  VITE_CHAIN: "offchain",
+  VITE_RPC_URL: "https://celestia-cegncv-fast-mainnet.helius-rpc.com",
+  VITE_WS_API_URL: "wss://api.tarobase.com/ws/v2",
+  VITE_API_URL: "https://api.tarobase.com",
+  VITE_AUTH_API_URL: "https://auth.tarobase.com",
+};
+
+const VITE_ENV = process.env.VITE_ENV || DEFAULTS.VITE_ENV;
 const BUILD_PROFILE = process.env.BUILD_PROFILE;
 const isProduction = BUILD_PROFILE === "production";
 
@@ -55,16 +66,14 @@ const result = await Bun.build({
       MODE: isProduction ? "production" : "development",
       DEV: !isProduction,
       PROD: isProduction,
-      VITE_TAROBASE_APP_ID: process.env.VITE_TAROBASE_APP_ID || "",
+      VITE_TAROBASE_APP_ID: process.env.VITE_TAROBASE_APP_ID || DEFAULTS.VITE_TAROBASE_APP_ID,
       VITE_PARTYSERVER_URL: process.env.VITE_PARTYSERVER_URL || "",
-      VITE_CHAIN: process.env.VITE_CHAIN || "",
-      VITE_RPC_URL: process.env.VITE_RPC_URL || "",
+      VITE_CHAIN: process.env.VITE_CHAIN || DEFAULTS.VITE_CHAIN,
+      VITE_RPC_URL: process.env.VITE_RPC_URL || DEFAULTS.VITE_RPC_URL,
       VITE_AUTH_METHOD: process.env.VITE_AUTH_METHOD || "",
-      VITE_WS_API_URL: process.env.VITE_WS_API_URL || "",
-      VITE_API_URL: process.env.VITE_API_URL || "",
-      VITE_AUTH_API_URL: process.env.VITE_AUTH_API_URL || "",
-      // Deployment tier: 'preview', 'mainnet-preview', or 'production'
-      // Used to distinguish mainnet preview from production (both have VITE_ENV='LIVE')
+      VITE_WS_API_URL: process.env.VITE_WS_API_URL || DEFAULTS.VITE_WS_API_URL,
+      VITE_API_URL: process.env.VITE_API_URL || DEFAULTS.VITE_API_URL,
+      VITE_AUTH_API_URL: process.env.VITE_AUTH_API_URL || DEFAULTS.VITE_AUTH_API_URL,
       VITE_DEPLOYMENT_TIER: process.env.VITE_DEPLOYMENT_TIER || "preview",
     }),
     "process.env.NODE_ENV": JSON.stringify(isProduction ? "production" : "development"),
