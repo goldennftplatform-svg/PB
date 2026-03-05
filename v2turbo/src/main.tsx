@@ -51,6 +51,13 @@ async function runInit(): Promise<void> {
   let config: Partial<ClientConfig> = { ...baseConfig };
 
   if (privyCustomAppId) {
+    let solanaConnectors: unknown[] | undefined;
+    try {
+      const solanaModule = await import('@privy-io/react-auth/solana');
+      solanaConnectors = (solanaModule.toSolanaWalletConnectors?.() ?? []) as unknown[];
+    } catch {
+      solanaConnectors = undefined;
+    }
     config = {
       ...config,
       privyConfig: {
@@ -60,6 +67,9 @@ async function runInit(): Promise<void> {
           appearance: {
             walletChainType: 'solana-only',
           },
+          ...(solanaConnectors?.length
+            ? { externalWallets: { solana: { connectors: solanaConnectors } } }
+            : {}),
         },
       },
     };
