@@ -11,3 +11,47 @@
 .hover\:animate-bounce-gentle:hover {
   animation: bounce-gentle 2s ease-in-out infinite;
 }
+
+/* PEPEBALL – OG-style animations */
+@keyframes pepe-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pepe-spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes jackpot-glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 65, 0.4); }
+  50% { text-shadow: 0 0 20px rgba(0, 255, 65, 0.8); }
+}
+
+.pepe-float {
+  animation: pepe-float 3s ease-in-out infinite;
+}
+
+.pepe-spin-slow {
+  animation: pepe-spin-slow 8s linear infinite;
+}
+
+.jackpot-glow {
+  animation: jackpot-glow 2s ease-in-out infinite;
+}
+
+.ball-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.ball-hover:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+}
+
+.pepe-ball-ball {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.pepe-ball-ball:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 25px rgba(0, 255, 65, 0.8);
+}

@@ -92,11 +92,13 @@ export const HomePage: React.FC = () => {
         }}
       >
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-          <img
-            src={pepeBallSrc}
-            alt="Pepe Ball"
-            className="w-20 h-20 sm:w-24 sm:h-24 object-contain flex-shrink-0"
-          />
+          <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center pepe-float">
+            <img
+              src={pepeBallSrc}
+              alt="Pepe Ball"
+              className="w-full h-full object-contain"
+            />
+          </div>
           <div>
             <h1
               className="text-2xl sm:text-3xl font-bold tracking-wide"
@@ -121,7 +123,7 @@ export const HomePage: React.FC = () => {
         {/* Jackpot + countdown row */}
         <section className="mb-8">
           <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>JACKPOT_BALANCE</div>
-          <div className="text-4xl font-bold tabular-nums mb-6" style={{ color: terminal.accent }}>
+          <div className="text-4xl font-bold tabular-nums mb-6 jackpot-glow" style={{ color: terminal.accent }}>
             {loading ? '...' : error ? '—' : jackpotSol != null ? `${jackpotSol} SOL` : '—'}
           </div>
           <div className="flex flex-wrap items-center gap-6">
@@ -153,21 +155,30 @@ export const HomePage: React.FC = () => {
             5 BALLS + PEPE // SUM EVEN = PAYOUT // SUM ODD = ROLLOVER
           </p>
           <div className="text-xs uppercase mb-4" style={{ color: terminal.dim }}>FORTUNE_REVEALED</div>
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
             {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
-                className="w-14 h-14 rounded-full border-2 flex items-center justify-center text-xl font-bold"
-                style={{ borderColor: terminal.border, background: terminal.bg }}
+                className="ball-hover w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 flex items-center justify-center text-xl font-bold"
+                style={{
+                  borderColor: terminal.accent,
+                  background: terminal.bg,
+                  color: terminal.accent,
+                  boxShadow: '0 0 10px rgba(0, 255, 65, 0.3)',
+                }}
               >
                 ?
               </div>
             ))}
             <div
-              className="w-14 h-14 rounded-full border-2 flex items-center justify-center overflow-hidden flex-shrink-0"
-              style={{ borderColor: terminal.accent, background: terminal.bg }}
+              className="pepe-ball-ball w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 flex items-center justify-center flex-shrink-0 p-0.5"
+              style={{
+                borderColor: terminal.accent,
+                background: terminal.bg,
+                boxShadow: '0 0 15px rgba(0, 255, 65, 0.5)',
+              }}
             >
-              <img src={pepeBallSrc} alt="PEPE" className="w-full h-full object-cover" />
+              <img src={pepeBallSrc} alt="PEPE" className="w-full h-full object-contain" />
             </div>
             <span className="text-sm ml-1" style={{ color: terminal.dim }}>PEPE</span>
           </div>
@@ -176,8 +187,12 @@ export const HomePage: React.FC = () => {
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <button
-              className="px-6 py-2 rounded border-2 font-semibold uppercase text-sm"
-              style={{ borderColor: terminal.accent, color: terminal.accent, background: 'transparent' }}
+              className="px-6 py-2 rounded border-2 font-semibold uppercase text-sm transition-all duration-300 hover:shadow-[0_0_15px_rgba(0,255,65,0.4)]"
+              style={{
+                borderColor: terminal.accent,
+                color: terminal.accent,
+                background: 'transparent',
+              }}
             >
               ENTER_DRAWING
             </button>
