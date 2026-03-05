@@ -26,8 +26,11 @@ export const LOTTERY_HOUSE_ID = "lottery_house";
 export const LOTTERY_PROGRAM_ID = "8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7";
 /** Lottery state PDA (devnet) — snapshot / game account */
 export const LOTTERY_PDA = "ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb";
+/** Jackpot wallet = tax recipient. SOL and token tax land here; payouts go from here. Same wallet. */
+export const JACKPOT_SOL_DESTINATION_MAINNET = "FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje";
 export const TOKEN_MINT_ADDRESS = "3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump";
 export const TOKEN_TAX_BPS = "250";
+/** Tax from 3X36... and manual SOL (e.g. 0.01) go here. This IS the jackpot wallet — payouts from here. */
 export const TAX_RECIPIENT_ADDRESS = "FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje";
 export const TOKEN_TAX_MAX_FEE = "1000000";
 export const HARVEST_BOT_ENABLED = "false";
