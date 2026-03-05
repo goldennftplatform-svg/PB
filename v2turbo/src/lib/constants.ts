@@ -1,4 +1,11 @@
 export const ADMIN_ADDRESS = "2QAQ367aBeHgCoHQwHo8x7ga34dANguG5Nu82Rs4ky42";
+
+/** Privy app ID for wallet connect (Poof/Privy plug-and-play). Set VITE_PRIVY_APP_ID in Vercel or .env. */
+export const PRIVY_CUSTOM_APP_ID = import.meta.env?.VITE_PRIVY_APP_ID ?? undefined;
+/** Custom Privy API URL (e.g. self-hosted or proxy). Set VITE_PRIVY_API_URL to use your own Privy API. */
+export const PRIVY_API_URL = import.meta.env?.VITE_PRIVY_API_URL ?? undefined;
+/** Phantom app ID for Phantom wallet connect. Set VITE_PHANTOM_APP_ID in Vercel or .env. */
+export const PHANTOM_APP_ID = import.meta.env?.VITE_PHANTOM_APP_ID ?? undefined;
 export const PROJECT_VAULT_ADDRESS = "FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje";
 export const SOL = "solana";
 export const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";

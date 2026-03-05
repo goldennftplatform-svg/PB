@@ -36,8 +36,15 @@ function formatCountdownShort(nextDrawingAt: number): string {
   return `${mins}m`;
 }
 
+const FIRST_VISIT_KEY = 'pepball-draw-seen';
+const SPIN_DURATION_MS = 2800;
+const BALL_TICK_MS = 80;
+
 export const HomePage: React.FC = () => {
   const [tick, setTick] = useState(0);
+  const [drawPhase, setDrawPhase] = useState<'idle' | 'spinning' | 'revealed'>('idle');
+  const [ballValues, setBallValues] = useState<number[]>([0, 0, 0, 0, 0]);
+  const [drawResult, setDrawResult] = useState<{ sum: number; isEven: boolean; winnerIndex: number } | null>(null);
   const { data: jackpot, loading, error } = useRealtimeData<JackpotResponse | null>(
     subscribeJackpot,
     true,
@@ -49,6 +56,40 @@ export const HomePage: React.FC = () => {
     const id = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(id);
   }, [jackpot?.nextDrawingAt]);
+
+  const runDrawingAnimation = React.useCallback(() => {
+    if (drawPhase === 'spinning') return;
+    setDrawPhase('spinning');
+    setDrawResult(null);
+    setBallValues([0, 0, 0, 0, 0]);
+    const start = Date.now();
+    const spinInterval = setInterval(() => {
+      setBallValues(() => Array.from({ length: 5 }, () => Math.floor(Math.random() * 100)));
+    }, BALL_TICK_MS);
+    const stopAt = start + SPIN_DURATION_MS;
+    const stopInterval = setInterval(() => {
+      if (Date.now() < stopAt) return;
+      clearInterval(spinInterval);
+      clearInterval(stopInterval);
+      const final = Array.from({ length: 5 }, () => Math.floor(Math.random() * 100));
+      setBallValues(final);
+      const sum = final.reduce((a, b) => a + b, 0);
+      const isEven = sum % 2 === 0;
+      setDrawResult({ sum, isEven, winnerIndex: Math.floor(Math.random() * 50) + 1 });
+      setDrawPhase('revealed');
+      try { sessionStorage.setItem(FIRST_VISIT_KEY, '1'); } catch { /* ignore */ }
+    }, 100);
+    return () => { clearInterval(spinInterval); clearInterval(stopInterval); };
+  }, [drawPhase]);
+
+  useEffect(() => {
+    if (drawPhase !== 'idle') return;
+    try {
+      if (sessionStorage.getItem(FIRST_VISIT_KEY)) return;
+    } catch { /* ignore */ }
+    const t = setTimeout(runDrawingAnimation, 900);
+    return () => clearTimeout(t);
+  }, [drawPhase, runDrawingAnimation]);
 
   const jackpotSol = useMemo(() => {
     if (!jackpot?.balance) return null;
@@ -179,38 +220,61 @@ export const HomePage: React.FC = () => {
             5 BALLS + PEPE // SUM EVEN = PAYOUT // SUM ODD = ROLLOVER
           </p>
           <div className="text-xs uppercase mb-4" style={{ color: terminal.dim }}>FORTUNE_REVEALED</div>
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
-            {[1, 2, 3, 4, 5].map((i) => (
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-4">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex flex-col items-center">
+                <div
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 flex items-center justify-center text-lg sm:text-xl font-bold tabular-nums"
+                  style={{
+                    borderColor: terminal.accent,
+                    background: drawPhase === 'spinning' ? terminal.panel : terminal.bg,
+                    color: terminal.accent,
+                    boxShadow: '0 0 10px rgba(0, 255, 65, 0.3)',
+                    transition: 'background 0.2s',
+                  }}
+                >
+                  {drawPhase === 'idle' ? '?' : String(ballValues[i] ?? 0).padStart(2, '0')}
+                </div>
+                <span className="text-xs mt-1" style={{ color: terminal.dim }}>#{i + 1}</span>
+              </div>
+            ))}
+            <div className="flex flex-col items-center">
               <div
-                key={i}
-                className="pepball-ball-hover w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 flex items-center justify-center text-xl font-bold"
+                className="pepball-ball-hover w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 flex items-center justify-center flex-shrink-0 p-0.5"
                 style={{
                   borderColor: terminal.accent,
                   background: terminal.bg,
-                  color: terminal.accent,
-                  boxShadow: '0 0 10px rgba(0, 255, 65, 0.3)',
+                  boxShadow: '0 0 15px rgba(0, 255, 65, 0.5)',
                 }}
               >
-                ?
+                <img src={pepeBallSrc} alt="PEPE" className="w-full h-full object-contain" />
               </div>
-            ))}
-            <div
-              className="pepball-ball-hover w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 flex items-center justify-center flex-shrink-0 p-0.5"
-              style={{
-                borderColor: terminal.accent,
-                background: terminal.bg,
-                boxShadow: '0 0 15px rgba(0, 255, 65, 0.5)',
-              }}
-            >
-              <img src={pepeBallSrc} alt="PEPE" className="w-full h-full object-contain" />
+              <span className="text-xs mt-1" style={{ color: terminal.dim }}>PEPE</span>
             </div>
-            <span className="text-sm ml-1" style={{ color: terminal.dim }}>PEPE</span>
           </div>
+          {drawPhase === 'revealed' && drawResult && (
+            <div className="mb-6 p-4 rounded-lg border-2 text-center" style={{ borderColor: terminal.accent, background: terminal.bg }}>
+              <div className="text-xs uppercase mb-2" style={{ color: terminal.dim }}>FINAL_SUM</div>
+              <div className="text-3xl font-bold tabular-nums pepball-glow mb-2" style={{ color: terminal.accent }}>{drawResult.sum}</div>
+              <div className="text-sm font-semibold mb-2" style={{ color: terminal.accent }}>
+                {drawResult.isEven ? 'EVEN = PAYOUT' : 'ODD = ROLLOVER'}
+              </div>
+              <div className="text-base font-bold py-2 px-4 rounded inline-block mb-2" style={{ color: terminal.accent, border: `2px solid ${terminal.accent}` }}>
+                SUM: {drawResult.sum} — {drawResult.isEven ? 'EVEN PAYOUT!' : 'ODD ROLLOVER!'}
+              </div>
+              {drawResult.isEven && <p className="text-sm" style={{ color: terminal.gold }}>PEPE CELEBRATES! WINNERS PAID OUT!</p>}
+              <div className="mt-3 py-2 px-4 rounded font-bold" style={{ background: 'rgba(212,165,32,0.2)', color: terminal.gold, border: `1px solid ${terminal.gold}` }}>
+                WINNER INDEX: #{drawResult.winnerIndex}
+              </div>
+            </div>
+          )}
           <p className="text-xs uppercase text-center mb-4" style={{ color: terminal.dim }}>
-            FORTUNE_SPINS_WHEN_COUNTDOWN_ENDS
+            {drawPhase === 'spinning' ? 'SPINNING...' : 'FORTUNE_SPINS_WHEN_COUNTDOWN_ENDS'}
           </p>
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-wrap gap-4 justify-center items-center">
             <button
+              type="button"
+              onClick={runDrawingAnimation}
               className="px-6 py-2 rounded border-2 font-semibold uppercase text-sm transition-all duration-300 hover:shadow-[0_0_15px_rgba(0,255,65,0.4)]"
               style={{
                 borderColor: terminal.accent,
@@ -218,9 +282,16 @@ export const HomePage: React.FC = () => {
                 background: 'transparent',
               }}
             >
+              {drawPhase === 'revealed' ? 'PLAY DRAWING AGAIN' : 'PLAY DRAWING'}
+            </button>
+            <button
+              type="button"
+              className="px-6 py-2 rounded border-2 font-semibold uppercase text-sm opacity-80"
+              style={{ borderColor: terminal.border, color: terminal.dim, background: 'transparent' }}
+            >
               ENTER_DRAWING
             </button>
-            <span className="text-xs self-center uppercase" style={{ color: terminal.dim }}>CONNECT_WALLET_TO_ENTER</span>
+            <span className="text-xs uppercase" style={{ color: terminal.dim }}>CONNECT_WALLET_TO_ENTER</span>
           </div>
         </section>
 

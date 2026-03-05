@@ -25,10 +25,12 @@ const { appId, chain, rpcUrl, authMethod, wsApiUrl, apiUrl, authApiUrl, mockAuth
     }
 
     let privyCustomAppId: string | undefined;
+    let privyApiUrl: string | undefined;
     let phantomAppId: string | undefined;
     try {
       const constantsModule = await import('./lib/constants');
       privyCustomAppId = (constantsModule as any).PRIVY_CUSTOM_APP_ID;
+      privyApiUrl = (constantsModule as any).PRIVY_API_URL;
       phantomAppId = (constantsModule as any).PHANTOM_APP_ID;
     } catch {
       // optional
@@ -54,6 +56,7 @@ const { appId, chain, rpcUrl, authMethod, wsApiUrl, apiUrl, authApiUrl, mockAuth
         ...config,
         privyConfig: {
           appId: privyCustomAppId,
+          ...(privyApiUrl ? { apiUrl: privyApiUrl } : {}),
           config: {
             appearance: {
               walletChainType: 'solana-only',

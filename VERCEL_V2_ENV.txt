@@ -8,3 +8,14 @@ VITE_RPC_URL=https://celestia-cegncv-fast-mainnet.helius-rpc.com
 VITE_WS_API_URL=wss://api.tarobase.com/ws/v2
 VITE_API_URL=https://api.tarobase.com
 VITE_AUTH_API_URL=https://auth.tarobase.com
+
+# Wallet (Privy) — App ID is set below; Connect Wallet uses it
+VITE_PRIVY_APP_ID=cmmdygahu007n0cl7vqdv5cpy
+# IMPORTANT: Privy app SECRET is for server-side only. If you need it (e.g. backend auth),
+# add it in Vercel as PRIVY_APP_SECRET (no VITE_ prefix) and never commit or expose it.
+# Optional: use your own Privy API (self-hosted or custom domain). Default is Privy cloud.
+# VITE_PRIVY_API_URL=https://auth.privy.io
+# Optional: Phantom deep link app ID
+# VITE_PHANTOM_APP_ID=
+# Optional: force auth method (default is privy)
+# VITE_AUTH_METHOD=privy
