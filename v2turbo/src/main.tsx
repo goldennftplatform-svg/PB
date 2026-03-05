@@ -18,69 +18,64 @@ import './styles/base.css';
 const { appId, chain, rpcUrl, authMethod, wsApiUrl, apiUrl, authApiUrl, mockAuth, mockAddress } =
   TAROBASE_CONFIG;
 
-(async () => {
+async function runInit(): Promise<void> {
+  if (mockAuth && mockAddress) {
+    sessionStorage.setItem('test-user-address', mockAddress);
+  }
+
+  let privyCustomAppId: string | undefined;
+  let privyApiUrl: string | undefined;
+  let phantomAppId: string | undefined;
   try {
-    if (mockAuth && mockAddress) {
-      sessionStorage.setItem('test-user-address', mockAddress);
-    }
+    const constantsModule = await import('./lib/constants');
+    privyCustomAppId = (constantsModule as any).PRIVY_CUSTOM_APP_ID;
+    privyApiUrl = (constantsModule as any).PRIVY_API_URL;
+    phantomAppId = (constantsModule as any).PHANTOM_APP_ID;
+  } catch {
+    // optional
+  }
 
-    let privyCustomAppId: string | undefined;
-    let privyApiUrl: string | undefined;
-    let phantomAppId: string | undefined;
-    try {
-      const constantsModule = await import('./lib/constants');
-      privyCustomAppId = (constantsModule as any).PRIVY_CUSTOM_APP_ID;
-      privyApiUrl = (constantsModule as any).PRIVY_API_URL;
-      phantomAppId = (constantsModule as any).PHANTOM_APP_ID;
-    } catch {
-      // optional
-    }
+  const baseConfig = {
+    apiKey: '',
+    wsApiUrl,
+    apiUrl,
+    authApiUrl,
+    appId,
+    authMethod,
+    chain,
+    skipBackendInit: true,
+    mockAuth,
+    ...(rpcUrl ? { rpcUrl } : {}),
+  };
 
-    const baseConfig = {
-      apiKey: '',
-      wsApiUrl,
-      apiUrl,
-      authApiUrl,
-      appId,
-      authMethod,
-      chain,
-      skipBackendInit: true,
-      mockAuth,
-      ...(rpcUrl ? { rpcUrl } : {}),
-    };
+  let config: Partial<ClientConfig> = { ...baseConfig };
 
-    let config: Partial<ClientConfig> = { ...baseConfig };
-
-    if (privyCustomAppId) {
-      config = {
-        ...config,
-        privyConfig: {
-          appId: privyCustomAppId,
-          ...(privyApiUrl ? { apiUrl: privyApiUrl } : {}),
-          config: {
-            appearance: {
-              walletChainType: 'solana-only',
-            },
+  if (privyCustomAppId) {
+    config = {
+      ...config,
+      privyConfig: {
+        appId: privyCustomAppId,
+        ...(privyApiUrl ? { apiUrl: privyApiUrl } : {}),
+        config: {
+          appearance: {
+            walletChainType: 'solana-only',
           },
         },
-      };
-    }
-
-    if (phantomAppId) {
-      config = {
-        ...config,
-        phantomConfig: {
-          appId: phantomAppId,
-        },
-      };
-    }
-
-    await init(config);
-  } catch (err) {
-    console.error('Failed to init app', err);
-    throw err;
+      },
+    };
   }
-})();
+
+  if (phantomAppId) {
+    config = {
+      ...config,
+      phantomConfig: {
+        appId: phantomAppId,
+      },
+    };
+  }
+
+  await init(config);
+}
 
 interface AuthContextType {
   user: { address: string; provider: any } | null;
@@ -208,15 +203,77 @@ const PhantomWalletWarning = () => {
   );
 };
 
+function AppBootstrapper(): JSX.Element {
+  const [initDone, setInitDone] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    runInit()
+      .then(() => {
+        if (!cancelled) setInitDone(true);
+      })
+      .catch((err) => {
+        if (!cancelled) setInitError(err instanceof Error ? err.message : String(err));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (initError) {
+    return (
+      <div
+        style={{
+          padding: 24,
+          fontFamily: 'system-ui, sans-serif',
+          maxWidth: 480,
+          margin: '40px auto',
+          background: '#fef2f2',
+          border: '1px solid #fecaca',
+          borderRadius: 12,
+        }}
+      >
+        <h2 style={{ color: '#b91c1c', marginTop: 0 }}>Failed to load app</h2>
+        <p style={{ color: '#991b1b' }}>{initError}</p>
+        <p style={{ fontSize: 14, color: '#7f1d1d' }}>
+          Check the browser console for details. If connecting wallet fails, ensure this domain is allowlisted in your Privy dashboard (dashboard.privy.io).
+        </p>
+      </div>
+    );
+  }
+
+  if (!initDone) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: 'system-ui, sans-serif',
+          color: '#6b7280',
+        }}
+      >
+        Loading…
+      </div>
+    );
+  }
+
+  return (
+    <BrowserRouter>
+      <div className="min-h-screen">
+        {TAROBASE_CONFIG.chain === 'solana_devnet' && <PhantomWalletWarning />}
+        <App />
+      </div>
+    </BrowserRouter>
+  );
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <BrowserRouter>
-        <div className="min-h-screen">
-          {TAROBASE_CONFIG.chain === 'solana_devnet' && <PhantomWalletWarning />}
-          <App />
-        </div>
-      </BrowserRouter>
+      <AppBootstrapper />
     </ErrorBoundary>
   </StrictMode>,
 );

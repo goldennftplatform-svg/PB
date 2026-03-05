@@ -83,6 +83,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
   const [balance, setBalance] = useState<number | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [justCopied, setJustCopied] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const lastFetchTime = useRef<number>(0);
   const popupRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -163,10 +164,19 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
   }, [isOpen]);
 
   const handleLogin = async () => {
+    setConnecting(true);
     try {
       await login();
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error('Failed to login', error);
+      toast.error(`Wallet connect failed: ${message}`);
+      // Hint for common Privy issue
+      if (typeof message === 'string' && (message.includes('domain') || message.includes('allowlist') || message.includes('allowed'))) {
+        toast.info('Add this site to allowed domains in dashboard.privy.io');
+      }
+    } finally {
+      setConnecting(false);
     }
   };
 
@@ -238,6 +248,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
       {!user ? (
         <motion.button
           onClick={handleLogin}
+          disabled={connecting}
           style={{
             ...getIsolatedButtonBase(),
             padding: '8px 16px',
@@ -247,12 +258,14 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
             gap: '8px',
             transition: 'all 0.2s ease',
             ...styles.button,
+            opacity: connecting ? 0.8 : 1,
+            cursor: connecting ? 'wait' : 'pointer',
           }}
-          whileHover={styles.buttonHover}
-          whileTap={{ scale: 0.98 }}
+          whileHover={connecting ? undefined : styles.buttonHover}
+          whileTap={connecting ? undefined : { scale: 0.98 }}
         >
           <Wallet style={{ height: '16px', width: '16px' }} />
-          Connect Wallet
+          {connecting ? 'Connecting…' : 'Connect Wallet'}
         </motion.button>
       ) : (
         <div style={{ position: 'relative' }}>
