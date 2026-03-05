@@ -63,11 +63,12 @@ export const HomePage: React.FC = () => {
     return formatCountdownShort(jackpot.nextDrawingAt);
   }, [jackpot?.nextDrawingAt, tick]);
 
-  // Terminal/retro theme matching live poof.new PEPEBALL
+  // OG terminal theme from app/index.html — anon green
   const terminal = {
-    bg: '#0a0e14',
-    panel: '#0d1117',
-    border: '#21262d',
+    bg: '#0d1117',
+    panel: '#161b22',
+    card: '#1c2128',
+    border: '#30363d',
     text: '#c9d1d9',
     dim: '#8b949e',
     accent: '#00ff41',
@@ -76,14 +77,37 @@ export const HomePage: React.FC = () => {
     red: '#f85149',
   };
 
+  const pepeBallSrc = '/pepe-ball.png';
+
   return (
-    <div className="min-h-screen" style={{ background: terminal.bg, color: terminal.text, fontFamily: 'ui-monospace, monospace' }}>
-      {/* Header */}
-      <header className="border-b sticky top-0 z-10" style={{ borderColor: terminal.border, background: terminal.panel }}>
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: terminal.accent }}>
-            PEPEBALL
-          </h1>
+    <div className="min-h-screen" style={{ background: terminal.bg, color: terminal.text, fontFamily: "'Courier New', Consolas, Monaco, monospace" }}>
+      {/* Header — OG style: centered, Pepe ball guy, green glow */}
+      <header
+        className="border-b-2 sticky top-0 z-10 text-center"
+        style={{
+          borderColor: terminal.accent,
+          background: terminal.panel,
+          padding: '24px 16px',
+          boxShadow: '0 0 20px rgba(0, 255, 65, 0.1)',
+        }}
+      >
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+          <img
+            src={pepeBallSrc}
+            alt="Pepe Ball"
+            className="w-20 h-20 sm:w-24 sm:h-24 object-contain flex-shrink-0"
+          />
+          <div>
+            <h1
+              className="text-2xl sm:text-3xl font-bold tracking-wide"
+              style={{ color: terminal.accent, textShadow: '0 0 10px rgba(0, 255, 65, 0.5)', letterSpacing: '2px' }}
+            >
+              PEPEBALL
+            </h1>
+            <p className="text-sm mt-1" style={{ color: terminal.dim }}>Solana Powerball Lottery</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center gap-4 mt-3">
           <WalletButton variant="dark" />
         </div>
       </header>
@@ -119,8 +143,8 @@ export const HomePage: React.FC = () => {
 
         {/* Fortune spin section */}
         <section
-          className="rounded-lg border-2 p-6 mb-8"
-          style={{ borderColor: terminal.border, background: terminal.panel }}
+          className="rounded-xl border p-6 mb-8"
+          style={{ borderColor: terminal.border, background: terminal.card }}
         >
           <h2 className="text-lg font-bold uppercase tracking-wider mb-2" style={{ color: terminal.accent }}>
             FORTUNE_SPIN 🐸
@@ -140,10 +164,10 @@ export const HomePage: React.FC = () => {
               </div>
             ))}
             <div
-              className="w-14 h-14 rounded-full border-2 flex items-center justify-center text-2xl"
+              className="w-14 h-14 rounded-full border-2 flex items-center justify-center overflow-hidden flex-shrink-0"
               style={{ borderColor: terminal.accent, background: terminal.bg }}
             >
-              🐸
+              <img src={pepeBallSrc} alt="PEPE" className="w-full h-full object-cover" />
             </div>
             <span className="text-sm ml-1" style={{ color: terminal.dim }}>PEPE</span>
           </div>
@@ -163,8 +187,8 @@ export const HomePage: React.FC = () => {
 
         {/* Entry registry */}
         <section
-          className="rounded-lg border p-4 mb-8"
-          style={{ borderColor: terminal.border, background: terminal.panel }}
+          className="rounded-xl border p-4 mb-8"
+          style={{ borderColor: terminal.border, background: terminal.card }}
         >
           <div className="text-xs uppercase tracking-wider" style={{ color: terminal.dim }}>ENTRY_REGISTRY</div>
           <div className="text-xs mt-1" style={{ color: terminal.dim }}>ENTRY_LOG.SYS[0 REGISTERED]</div>
@@ -173,8 +197,8 @@ export const HomePage: React.FC = () => {
 
         {/* Payout structure */}
         <section
-          className="rounded-lg border p-6 mb-8"
-          style={{ borderColor: terminal.border, background: terminal.panel }}
+          className="rounded-xl border p-6 mb-8"
+          style={{ borderColor: terminal.border, background: terminal.card }}
         >
           <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: terminal.accent }}>
             PAYOUT_STRUCTURE
@@ -211,8 +235,8 @@ export const HomePage: React.FC = () => {
 
         {/* Current round info */}
         <section
-          className="rounded-lg border p-6 mb-8"
-          style={{ borderColor: terminal.border, background: terminal.panel }}
+          className="rounded-xl border p-6 mb-8"
+          style={{ borderColor: terminal.border, background: terminal.card }}
         >
           <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: terminal.accent }}>
             CURRENT_ROUND_INFO
@@ -244,8 +268,8 @@ export const HomePage: React.FC = () => {
 
         {/* Winners history */}
         <section
-          className="rounded-lg border p-6 mb-8"
-          style={{ borderColor: terminal.border, background: terminal.panel }}
+          className="rounded-xl border p-6 mb-8"
+          style={{ borderColor: terminal.border, background: terminal.card }}
         >
           <h3 className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: terminal.accent }}>
             WINNERS_HISTORY
