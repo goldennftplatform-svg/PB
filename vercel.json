@@ -1,8 +1,8 @@
 {
   "framework": null,
-  "buildCommand": "cd v2turbo && bun run vercel-build",
+  "buildCommand": "cd v2turbo && npm run vercel-build-vite",
   "outputDirectory": "v2turbo/dist",
-  "installCommand": "cd v2turbo && bun install --frozen-lockfile",
+  "installCommand": "cd v2turbo && npm install",
   "headers": [
     {
       "source": "/(.*)",
