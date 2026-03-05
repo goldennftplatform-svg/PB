@@ -1,4 +1,5 @@
 import { AuthContextType } from '@/components/types';
+import { usePhantomFallback } from '@/contexts/PhantomFallbackContext';
 import { TAROBASE_CONFIG } from '@/lib/config';
 import { useAuth } from '@pooflabs/web';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -78,7 +79,10 @@ const getVariantStyles = (variant: WalletButtonVariant) => {
 
 export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' }) => {
   const styles = getVariantStyles(variant);
-  const { user, loading, login, logout } = useAuth() as AuthContextType;
+  const auth = useAuth() as AuthContextType;
+  const phantom = usePhantomFallback();
+  const user = auth.user ?? (phantom.address ? { address: phantom.address, provider: null } : null);
+  const loading = auth.loading;
   const [isOpen, setIsOpen] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
@@ -164,18 +168,28 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
 
   const handleLogin = async () => {
     try {
-      await login();
+      // Use Phantom first when available so the wallet popup actually opens (Privy often fails on Vercel/domain)
+      if (phantom.isAvailable) {
+        await phantom.connectPhantom();
+        toast.success('Wallet connected');
+        return;
+      }
+      await auth.login();
     } catch (error) {
       console.error('Failed to login', error);
+      toast.error(error instanceof Error ? error.message : 'Wallet connect failed');
     }
   };
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await auth.logout?.();
+      phantom.disconnectPhantom();
       setIsOpen(false);
     } catch (error) {
       console.error('Failed to logout', error);
+      phantom.disconnectPhantom();
+      setIsOpen(false);
     }
   };
 

@@ -13,6 +13,7 @@ import {
   DEV_PERCENT,
   SECONDARY_WINNER_PERCENT,
 } from '@/lib/constants';
+import { usePhantomFallback } from '@/contexts/PhantomFallbackContext';
 import { useTokenPrice } from '@/contexts/TokenPriceContext';
 import { useAuth } from '@pooflabs/web';
 import React, { useMemo, useState, useEffect } from 'react';
@@ -51,7 +52,8 @@ export const HomePage: React.FC = () => {
   const [ballValues, setBallValues] = useState<number[]>([0, 0, 0, 0, 0]);
   const [drawResult, setDrawResult] = useState<{ sum: number; isEven: boolean; winnerIndex: number } | null>(null);
   const auth = useAuth() as AuthContextType;
-  const user = auth.user;
+  const phantom = usePhantomFallback();
+  const user = auth.user ?? (phantom.address ? { address: phantom.address, provider: null } : null);
   const isAdmin = user?.address?.toLowerCase() === ADMIN_ADDRESS.toLowerCase();
   const tokenPrice = useTokenPrice();
   const [overrideInput, setOverrideInput] = useState('');

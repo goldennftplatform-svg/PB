@@ -4,9 +4,11 @@
 
 /**
  * Check if we're running in production (LIVE environment)
- * Mock/test features are disabled in production for security
+ * Mock/test features are disabled in production for security.
+ * Vercel production build uses MODE=production even when VITE_ENV is PREVIEW.
  */
-const isLiveEnvironment = import.meta.env.VITE_ENV === 'LIVE';
+const isLiveEnvironment =
+  import.meta.env.VITE_ENV === 'LIVE' || import.meta.env.MODE === 'production';
 
 /**
  * Get URL search params
