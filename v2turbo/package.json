@@ -4,7 +4,6 @@
   "version": "2.0.0",
   "type": "module",
   "workspaces": [
-    ".",
     "partyserver"
   ],
   "overrides": {
@@ -31,7 +30,8 @@
     "clean": "rm -rf node_modules dist && find src -type f -name '*.js' ! -name '*.config.js' ! -name 'vite-env.d.ts' -delete",
     "build:full": "cd partyserver && bun run generate-sdk && cd .. && bunx concurrently \"bun run build\" \"bun run build:api\"",
     "build:full:prod": "cd partyserver && bun run generate-sdk && cd .. && bunx concurrently \"bun run build:prod\" \"bun run build:api\"",
-    "vercel-build": "bun run check && bun run build.ts"
+    "vercel-build": "bun run check && bun run build.ts",
+    "vercel-build-vite": "vite build"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
