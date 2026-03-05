@@ -20,7 +20,7 @@ import './styles/base.css';
 const { appId, chain, rpcUrl, authMethod, wsApiUrl, apiUrl, authApiUrl, mockAuth, mockAddress } =
   TAROBASE_CONFIG;
 
-const SHOW_FLOATING_POOF_BUTTON = true;
+const SHOW_FLOATING_POOF_BUTTON = import.meta.env.VITE_STANDALONE !== 'true';
 
 (async () => {
   try {
