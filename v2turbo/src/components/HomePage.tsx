@@ -1,15 +1,20 @@
+import { AuthContextType } from '@/components/types';
 import { useRealtimeData } from '@/hooks/use-realtime-data';
 import { subscribeJackpot } from '@/lib/collections/jackpot';
 import type { JackpotResponse } from '@/lib/collections/jackpot';
 import {
+  ADMIN_ADDRESS,
   JACKPOT_ID,
+  LOTTERY_PDA,
+  LOTTERY_PROGRAM_ID,
   MAIN_WINNER_PERCENT,
+  PEPEBALL_MINT,
   ROLLOVER_PERCENT,
   DEV_PERCENT,
   SECONDARY_WINNER_PERCENT,
-  LOTTERY_PROGRAM_ID,
-  LOTTERY_PDA,
 } from '@/lib/constants';
+import { useTokenPrice } from '@/contexts/TokenPriceContext';
+import { useAuth } from '@pooflabs/web';
 import React, { useMemo, useState, useEffect } from 'react';
 import WalletButton from './WalletButton';
 
@@ -45,6 +50,12 @@ export const HomePage: React.FC = () => {
   const [drawPhase, setDrawPhase] = useState<'idle' | 'spinning' | 'revealed'>('idle');
   const [ballValues, setBallValues] = useState<number[]>([0, 0, 0, 0, 0]);
   const [drawResult, setDrawResult] = useState<{ sum: number; isEven: boolean; winnerIndex: number } | null>(null);
+  const { user } = useAuth() as AuthContextType;
+  const isAdmin = user?.address?.toLowerCase() === ADMIN_ADDRESS.toLowerCase();
+  const tokenPrice = useTokenPrice();
+  const [overrideInput, setOverrideInput] = useState('');
+  const [rawUnitsInput, setRawUnitsInput] = useState('1000000');
+  const [usdInput, setUsdInput] = useState('5');
   const { data: jackpot, loading, error } = useRealtimeData<JackpotResponse | null>(
     subscribeJackpot,
     true,
@@ -369,9 +380,12 @@ export const HomePage: React.FC = () => {
           </div>
           <div className="mt-4 pt-4 border-t" style={{ borderColor: terminal.border }}>
             <div className="text-xs uppercase mb-1" style={{ color: terminal.dim }}>TO_BE_ELIGIBLE</div>
-            <p style={{ color: terminal.text }}>Hold 0.1+ $PBALL</p>
+            <p style={{ color: terminal.text }}>Hold $20 worth of $PBALL at draw time</p>
+            <p className="text-xs mt-1" style={{ color: terminal.dim }}>
+              At current price: $20 ≈ {(20 / tokenPrice.effectiveUsdPerToken).toFixed(2)} tokens (1 token = ${tokenPrice.effectiveUsdPerToken.toFixed(6)})
+            </p>
             <p className="text-xs mt-2" style={{ color: terminal.dim }}>
-              How it works: Hold at least 0.1 $PBALL tokens, register for the spin, and let fate decide. VRF-powered randomness, winners paid automatically on-chain. Your fortune awaits, fren.
+              How it works: Hold at least $20 worth of $PBALL at snapshot, register for the spin, and let fate decide. VRF-powered randomness, winners paid automatically on-chain.
             </p>
           </div>
         </section>
@@ -428,6 +442,141 @@ export const HomePage: React.FC = () => {
             PDA: {LOTTERY_PDA}
           </p>
         </section>
+
+        {/* Admin: token price sniffer + manual override */}
+        {isAdmin && (
+          <section
+            className="rounded-xl border-2 p-6 mb-8"
+            style={{ borderColor: terminal.gold, background: terminal.card }}
+          >
+            <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: terminal.gold }}>
+              ADMIN — Token price (5 min updates)
+            </h3>
+            <p className="text-xs font-mono break-all mb-4" style={{ color: terminal.dim }}>
+              Mint: {PEPEBALL_MINT}
+            </p>
+            <div className="grid gap-4 text-sm mb-6">
+              <div className="flex flex-wrap items-center gap-4">
+                <span className="text-xs uppercase" style={{ color: terminal.dim }}>Effective (used):</span>
+                <span className="font-mono font-bold" style={{ color: terminal.accent }}>
+                  ${tokenPrice.effectiveUsdPerToken.toFixed(6)} per token
+                </span>
+                {tokenPrice.overrideUsdPerToken != null && (
+                  <span className="text-xs px-2 py-0.5 rounded" style={{ background: terminal.gold, color: terminal.bg }}>
+                    Override active
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-4">
+                <span className="text-xs uppercase" style={{ color: terminal.dim }}>Live (Jupiter):</span>
+                <span className="font-mono" style={{ color: terminal.text }}>
+                  {tokenPrice.loading ? '…' : tokenPrice.liveUsdPerToken != null
+                    ? `$${tokenPrice.liveUsdPerToken.toFixed(6)}`
+                    : tokenPrice.error ?? '—'}
+                </span>
+                {tokenPrice.lastFetchedAt && (
+                  <span className="text-xs" style={{ color: terminal.dim }}>
+                    Updated {new Date(tokenPrice.lastFetchedAt).toLocaleTimeString()}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => tokenPrice.refetch()}
+                  className="px-3 py-1 rounded border text-xs"
+                  style={{ borderColor: terminal.border, color: terminal.text }}
+                >
+                  Refetch now
+                </button>
+              </div>
+            </div>
+            <div className="border-t pt-4 space-y-4" style={{ borderColor: terminal.border }}>
+              <div>
+                <label className="text-xs uppercase block mb-2" style={{ color: terminal.dim }}>
+                  Manual override ($ per token) — e.g. 5 = 1 token = $5
+                </label>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <input
+                    type="number"
+                    step="any"
+                    min="0"
+                    placeholder={tokenPrice.overrideUsdPerToken?.toString() ?? 'e.g. 0.000005'}
+                    value={overrideInput}
+                    onChange={(e) => setOverrideInput(e.target.value)}
+                    className="font-mono px-3 py-2 rounded border w-40"
+                    style={{ borderColor: terminal.border, background: terminal.bg, color: terminal.text }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const n = parseFloat(overrideInput);
+                      if (Number.isFinite(n) && n > 0) {
+                        tokenPrice.setOverride(n);
+                        setOverrideInput('');
+                      }
+                    }}
+                    className="px-3 py-2 rounded border font-medium"
+                    style={{ borderColor: terminal.accent, color: terminal.accent }}
+                  >
+                    Set override
+                  </button>
+                  {tokenPrice.overrideUsdPerToken != null && (
+                    <button
+                      type="button"
+                      onClick={() => { tokenPrice.setOverride(null); setOverrideInput(''); }}
+                      className="px-3 py-2 rounded border"
+                      style={{ borderColor: terminal.red, color: terminal.red }}
+                    >
+                      Clear override
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs uppercase block mb-2" style={{ color: terminal.dim }}>
+                  Or set from: [raw units] = $ [USD] — e.g. 1,000,000 raw = $5
+                </label>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="1000000"
+                    value={rawUnitsInput}
+                    onChange={(e) => setRawUnitsInput(e.target.value)}
+                    className="font-mono px-3 py-2 rounded border w-32"
+                    style={{ borderColor: terminal.border, background: terminal.bg, color: terminal.text }}
+                  />
+                  <span style={{ color: terminal.dim }}>= $</span>
+                  <input
+                    type="number"
+                    step="any"
+                    min="0"
+                    placeholder="5"
+                    value={usdInput}
+                    onChange={(e) => setUsdInput(e.target.value)}
+                    className="font-mono px-3 py-2 rounded border w-24"
+                    style={{ borderColor: terminal.border, background: terminal.bg, color: terminal.text }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const raw = parseInt(rawUnitsInput.replace(/,/g, ''), 10);
+                      const usd = parseFloat(usdInput);
+                      if (Number.isFinite(raw) && raw > 0 && Number.isFinite(usd)) {
+                        tokenPrice.setOverrideFromRawAndUsd(raw, usd);
+                      }
+                    }}
+                    className="px-3 py-2 rounded border font-medium"
+                    style={{ borderColor: terminal.accent, color: terminal.accent }}
+                  >
+                    Apply
+                  </button>
+                </div>
+                <p className="text-xs mt-1" style={{ color: terminal.dim }}>
+                  At 6 decimals, 1,000,000 raw = 1 token. So 1M raw = $5 → $5 per token.
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
 
         <footer className="text-center text-xs py-6" style={{ color: terminal.dim }}>
           WE_HAVE_NOTHING_TO_HIDE // All transactions are public and verifiable on Solana blockchain
