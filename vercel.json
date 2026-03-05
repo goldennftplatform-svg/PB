@@ -1,8 +1,9 @@
 {
   "framework": null,
-  "buildCommand": "echo Built",
-  "outputDirectory": "app",
-  "installCommand": "echo No install",
+  "buildCommand": "cd v2turbo && bun run vercel-build-vite",
+  "outputDirectory": "v2turbo/dist",
+  "installCommand": "cd v2turbo && bun install",
+  "bunVersion": "1.x",
   "headers": [
     {
       "source": "/(.*)",
