@@ -8,10 +8,9 @@
  * Usage: node scripts/harmonized-drip-settlement.js [--dry-run]
  */
 
-const { Connection, PublicKey, Keypair } = require('@solana/web3.js');
+const { PublicKey } = require('@solana/web3.js');
 const { getAssociatedTokenAddress, getAccount } = require('@solana/spl-token');
-const fs = require('fs');
-const path = require('path');
+const { getRpcConnection } = require('./lib/get-rpc-connection');
 
 // Same as v2turbo constants: tax from 3X36... goes here; SOL from here → JACKPOT_SOL_DESTINATION_MAINNET
 const TAX_RECIPIENT_ADDRESS = 'FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje';
@@ -24,7 +23,6 @@ const DRIP_MAX_CHUNK_RAW = Number(process.env.DRIP_MAX_CHUNK_RAW || '100000000')
 const DRIP_RANDOM_MIN = Number(process.env.DRIP_RANDOM_MIN || '80');                  // 0.8x
 const DRIP_RANDOM_MAX = Number(process.env.DRIP_RANDOM_MAX || '120');                 // 1.2x
 
-const RPC_URL = process.env.RPC_URL || process.env.HELIUS_RPC_URL || 'https://api.mainnet.solana.com';
 const DRY_RUN = process.argv.includes('--dry-run');
 
 function randomFactor() {
@@ -34,7 +32,7 @@ function randomFactor() {
 }
 
 async function main() {
-  const connection = new Connection(RPC_URL, 'confirmed');
+  const connection = await getRpcConnection();
   const mint = new PublicKey(TOKEN_MINT_ADDRESS);
   const taxRecipient = new PublicKey(TAX_RECIPIENT_ADDRESS);
 

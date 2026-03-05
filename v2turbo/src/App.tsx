@@ -1,5 +1,6 @@
 import HomePage from '@/components/HomePage';
 import { Toaster } from '@/components/ui/sonner';
+import { PhantomFallbackProvider } from '@/contexts/PhantomFallbackContext';
 import { TokenPriceProvider } from '@/contexts/TokenPriceContext';
 // import { OAuthProvider } from '@/contexts/OAuthContext';
 import { AnimatePresence } from 'framer-motion';
@@ -14,8 +15,9 @@ function App(): JSX.Element {
       {/* NOTE: UI Generator - Uncomment OAuthProvider wrapper below if OAuth functionality is needed.
           See .claude/skills/oauth/docs/implementation-guide.md for OAuth implementation guide. */}
       {/* <OAuthProvider> */}
-      <TokenPriceProvider>
-        <div
+      <PhantomFallbackProvider>
+        <TokenPriceProvider>
+          <div
           id='app-container'
           className='relative min-h-screen flex flex-col bg-background bg-grid-pattern'
         >
@@ -28,8 +30,9 @@ function App(): JSX.Element {
           </main>
 
           <Toaster />
-        </div>
-      </TokenPriceProvider>
+          </div>
+        </TokenPriceProvider>
+      </PhantomFallbackProvider>
       {/* </OAuthProvider> */}
     </>
   );
