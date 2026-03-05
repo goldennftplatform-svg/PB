@@ -12,10 +12,10 @@
   animation: bounce-gentle 2s ease-in-out infinite;
 }
 
-/* PEPEBALL – OG-style animations */
+/* PEPEBALL – visible animations */
 @keyframes pepe-float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-12px); }
 }
 
 @keyframes pepe-spin-slow {
@@ -24,8 +24,13 @@
 }
 
 @keyframes jackpot-glow {
-  0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 65, 0.4); }
-  50% { text-shadow: 0 0 20px rgba(0, 255, 65, 0.8); }
+  0%, 100% { text-shadow: 0 0 12px rgba(0, 255, 65, 0.6), 0 0 24px rgba(0, 255, 65, 0.3); }
+  50% { text-shadow: 0 0 24px rgba(0, 255, 65, 1), 0 0 48px rgba(0, 255, 65, 0.5); }
+}
+
+@keyframes countdown-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
 }
 
 .pepe-float {
@@ -37,7 +42,11 @@
 }
 
 .jackpot-glow {
-  animation: jackpot-glow 2s ease-in-out infinite;
+  animation: jackpot-glow 1.5s ease-in-out infinite;
+}
+
+.countdown-pulse {
+  animation: countdown-pulse 1s ease-in-out infinite;
 }
 
 .ball-hover {

@@ -14,11 +14,23 @@ export const SECONDARY_WINNER_PERCENT = "4";
 export const ROLLOVER_PERCENT = "6";
 export const DEV_PERCENT = "2";
 export const LOTTERY_HOUSE_ID = "lottery_house";
+
+/** Lottery program ID (devnet) — for Solscan / verification */
+export const LOTTERY_PROGRAM_ID = "8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7";
+/** Lottery state PDA (devnet) — snapshot / game account */
+export const LOTTERY_PDA = "ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb";
 export const TOKEN_MINT_ADDRESS = "3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump";
 export const TOKEN_TAX_BPS = "250";
 export const TAX_RECIPIENT_ADDRESS = "FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje";
 export const TOKEN_TAX_MAX_FEE = "1000000";
 export const HARVEST_BOT_ENABLED = "false";
+
+// Harmonized drip: tax token → SOL jackpot in small random chunks to help the chart
+export const DRIP_MIN_BALANCE_RAW = "10000000"; // min token balance (raw) to run a drip (~10 tokens @ 6 decimals)
+export const DRIP_PERCENT_BPS = "1000"; // 10% of balance per drip (1000 = 10%)
+export const DRIP_MAX_CHUNK_RAW = "100000000"; // max tokens per drip in raw units (~100 @ 6 decimals)
+export const DRIP_RANDOM_MIN = "80"; // min % of chunk (80 = 0.8x)
+export const DRIP_RANDOM_MAX = "120"; // max % of chunk (120 = 1.2x)
 export const TAROBASE_ENV = "devnet";
 /** Min tokens to enter (raw units). Live test: 1 token at 6 decimals = 1_000_000. */
 export const MIN_HOLDING_TOKENS = "1000000";

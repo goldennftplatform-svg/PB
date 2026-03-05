@@ -7,6 +7,8 @@ import {
   ROLLOVER_PERCENT,
   DEV_PERCENT,
   SECONDARY_WINNER_PERCENT,
+  LOTTERY_PROGRAM_ID,
+  LOTTERY_PDA,
 } from '@/lib/constants';
 import React, { useMemo, useState, useEffect } from 'react';
 import WalletButton from './WalletButton';
@@ -132,7 +134,7 @@ export const HomePage: React.FC = () => {
               <span className="text-xs uppercase" style={{ color: terminal.dim }}>NEXT_DRAW_IN</span>
             </div>
             {countdown != null ? (
-              <span className="tabular-nums font-mono" style={{ color: terminal.gold }}>
+              <span className="tabular-nums font-mono countdown-pulse" style={{ color: terminal.gold }}>
                 {String(countdown.hours).padStart(2, '0')}HRS : {String(countdown.mins).padStart(2, '0')}MIN : {String(countdown.secs).padStart(2, '0')}SEC
               </span>
             ) : (
@@ -295,6 +297,42 @@ export const HomePage: React.FC = () => {
           </div>
           <p className="text-xs text-center" style={{ color: terminal.dim }}>
             Be the first winner, fren!
+          </p>
+        </section>
+
+        {/* Game snapshot / test addresses — verify on Solscan */}
+        <section
+          className="rounded-xl border p-4 mb-6"
+          style={{ borderColor: terminal.border, background: terminal.card }}
+        >
+          <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: terminal.accent }}>
+            VERIFY_ON_CHAIN (DEVNET)
+          </h3>
+          <div className="flex flex-wrap gap-4 text-sm">
+            <a
+              href={`https://solscan.io/account/${LOTTERY_PROGRAM_ID}?cluster=devnet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono truncate max-w-full"
+              style={{ color: terminal.accentAlt }}
+            >
+              🔗 Lottery Program
+            </a>
+            <a
+              href={`https://solscan.io/account/${LOTTERY_PDA}?cluster=devnet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono truncate max-w-full"
+              style={{ color: terminal.accentAlt }}
+            >
+              🔗 Game Snapshot (PDA)
+            </a>
+          </div>
+          <p className="text-xs mt-2 font-mono break-all" style={{ color: terminal.dim }}>
+            Program: {LOTTERY_PROGRAM_ID}
+          </p>
+          <p className="text-xs font-mono break-all" style={{ color: terminal.dim }}>
+            PDA: {LOTTERY_PDA}
           </p>
         </section>
 
