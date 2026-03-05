@@ -1,4 +1,4 @@
-# Poof V2.1 Template
+# Token Powerball (v2turbo)
 
 React 19 + Vite 6 + TypeScript frontend (src/), Hono + PartyServer backend (partyserver/).
 Frontend and backend communicate via auto-generated TypeScript SDK. All API responses use 5 status codes: 200, 400, 401, 404, 500.
@@ -15,7 +15,7 @@ Frontend and backend communicate via auto-generated TypeScript SDK. All API resp
 
 1. src/globals.css - Theme colors, editable
 2. src/styles/base.css - Base styles
-3. src/poof-styling.css - **NEVER EDIT** (Poof platform owned)
+3. src/app-chrome.css - App chrome / layout (minimal)
 
 ## CODE STYLE
 

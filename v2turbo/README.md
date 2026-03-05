@@ -1,6 +1,6 @@
-# App made with poof.new
+# Token Powerball Dashboard
 
-This is a React application built with Vite, TypeScript, and Tailwind CSS. It includes a modern development setup with ESLint, Prettier, and various UI components.
+React 19 + Vite 6 + TypeScript frontend with Tailwind CSS. It includes a modern development setup with ESLint, Prettier, and various UI components.
 
 ## Getting Started
 

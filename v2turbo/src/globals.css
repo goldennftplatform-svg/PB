@@ -148,8 +148,8 @@ body {
 }
 
 /* Bars are truly fixed - GPU accelerated for scroll performance */
-.poof-preview-bar,
-.poof-integration-warning-bar {
+.preview-bar,
+.integration-warning-bar {
   position: fixed;
   left: 0;
   right: 0;
@@ -158,18 +158,16 @@ body {
   will-change: transform;
 }
 
-/* Preview bar at top */
-.poof-preview-bar {
+.preview-bar {
   top: 0;
   height: var(--preview-h);
 }
 
-/* Warning bar sits below preview if present, else at top */
-.poof-integration-warning-bar {
+.integration-warning-bar {
   top: 0;
   height: var(--warn-h);
 }
-#app-shell.with-preview .poof-integration-warning-bar {
+#app-shell.with-preview .integration-warning-bar {
   top: var(--preview-h);
 }
 

@@ -111,8 +111,8 @@ body.has-preview-bar.has-integration-warning-bar {
   margin-top: calc(var(--preview-bar-height) + var(--integration-warning-bar-height)) !important;
 }
 
-/* Preview bar styles */
-.poof-preview-bar {
+/* Preview / warning bar styles (optional chrome) */
+.preview-bar {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -123,7 +123,7 @@ body.has-preview-bar.has-integration-warning-bar {
   font-family: 'Montserrat Variable', system-ui, sans-serif;
 }
 
-.poof-integration-warning-bar {
+.integration-warning-bar {
   position: fixed !important;
   left: 0 !important;
   width: 100% !important;

@@ -1,4 +1,4 @@
-import { getPartyServerHttpUrl, POOF_OAUTH_URL } from '@/lib/config';
+import { getPartyServerHttpUrl, OAUTH_URL } from '@/lib/config';
 import { getIdToken, useAuth } from '@pooflabs/web';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,7 +12,7 @@ export type OAuthProvider = 'twitter' | 'google' | 'discord' | 'github' | 'farca
  * This is secure because:
  * 1. The OAuth popup redirects back to the same origin as the opener
  * 2. Both popup and parent window are on the user's app domain
- * 3. This works for both *.poof.new and custom user domains
+ * 3. Works with custom domains and configured API origin
  */
 function isAllowedOrigin(origin: string): boolean {
   return origin === window.location.origin;
@@ -232,9 +232,13 @@ export function OAuthProvider({ children }: { children: ReactNode }) {
         callback: `${callbackUrl}?redirect=${encodeURIComponent(frontendUrl)}`,
       });
 
-      const oauthUrl = `${POOF_OAUTH_URL}/${provider}?${params}`;
+      const oauthUrl = OAUTH_URL ? `${OAUTH_URL}/${provider}?${params}` : '';
+      if (!oauthUrl) {
+        toast.error('OAuth not configured');
+        return;
+      }
 
-      // If we're in an iframe (e.g., Poof preview), use a popup window for OAuth.
+      // If embedded in an iframe, use a popup window for OAuth.
       // OAuth providers like Twitter/X set X-Frame-Options: deny, so they can't load in iframes.
       if (isInIframe()) {
         // Close any existing popup

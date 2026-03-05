@@ -185,9 +185,9 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
     const isMainnet = chain === 'solana_mainnet';
     const isSurfnet = chain === 'surfnet';
     return {
-      name: isInMockMode ? 'Poofnet' : isMainnet ? 'Mainnet' : isSurfnet ? 'Surfnet' : 'Devnet',
+      name: isInMockMode ? 'Offchain' : isMainnet ? 'Mainnet' : isSurfnet ? 'Surfnet' : 'Devnet',
       dotColor: isInMockMode
-        ? '#3b82f6' // blue for poofnet
+        ? '#3b82f6' // blue for offchain
         : isMainnet
           ? '#22c55e' // green for mainnet
           : isSurfnet

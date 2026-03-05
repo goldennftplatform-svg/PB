@@ -69,7 +69,7 @@ const getMockAuth = (): boolean => {
 /**
  * Get optional mock wallet address for mock auth session
  * When provided, the mock auth will use this address instead of the default.
- * Default address if not provided: HKbZbRR7jWWR5VRN8KFjvTCHEzJQgameYxKQxh2gPoof
+ * Default address if not provided: (none)
  *
  * Security: Mock address is disabled in LIVE environment
  */
@@ -135,7 +135,7 @@ const getRpcUrl = (): string | undefined => {
  *
  * Priority:
  * 1. VITE_PARTYSERVER_URL (if explicitly set)
- * 2. <appId>.wish.poof.new (default for deployed apps)
+ * 2. When appId is set: <appId>-api.poof.new (Tarobase backend)
  * 3. localhost:1999 (fallback for local development)
  */
 export const PARTYSERVER_URL =
@@ -162,7 +162,7 @@ export const TAROBASE_CONFIG = {
   /**
    * Optional wallet address to use for mock auth session.
    * Set via ?mockAddress=<address> query param.
-   * If not provided, defaults to: HKbZbRR7jWWR5VRN8KFjvTCHEzJQgameYxKQxh2gPoof
+   * If not provided, no default (mock auth uses session/default)
    * Disabled in LIVE environment for security.
    */
   mockAddress,
@@ -189,10 +189,9 @@ export function getPartyServerHeaders(): Record<string, string> {
 // ═════════════════════════════════════════════════════════════
 
 /**
- * Poof OAuth service URL
- * Used for social login (Twitter, Google, Discord, GitHub, Farcaster)
+ * OAuth service URL for social login (Twitter, Google, Discord, etc.)
  */
-export const POOF_OAUTH_URL = import.meta.env.VITE_POOF_OAUTH_URL || 'https://oauth.poof.new';
+export const OAUTH_URL = import.meta.env.VITE_OAUTH_URL || import.meta.env.VITE_POOF_OAUTH_URL || '';
 
 // ═════════════════════════════════════════════════════════════
 // UI CONFIGURATION
@@ -250,8 +249,8 @@ export function getPartyServerHttpUrl(path?: string): string {
  * @param path - API path (optional)
  * @example
  * ```typescript
- * const baseUrl = getApiUrl(); // https://{appId}-api.poof.new
- * const healthUrl = getApiUrl('/health'); // https://{appId}-api.poof.new/health
+ * const baseUrl = getApiUrl();
+ * const healthUrl = getApiUrl('/health');
  * ```
  */
 export const getApiUrl = getPartyServerHttpUrl;

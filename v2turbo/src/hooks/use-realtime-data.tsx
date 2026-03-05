@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 /**
- * Universal hook for subscribing to Poof real-time data.
+ * Universal hook for subscribing to real-time data.
  *
  * @param subscribeFn - The subscribe function from the generated SDK: must start with subscribe or subscribeMany
  * @param enabled - Whether to enable the subscription

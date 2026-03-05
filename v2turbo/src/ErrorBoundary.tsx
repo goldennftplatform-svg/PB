@@ -51,7 +51,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
             <p className='text-gray-600 mb-6'>
               We apologize for the inconvenience.
               <br />
-              Check your Poof chat for more details.
+              Check the browser console for details.
             </p>
             <button
               onClick={() => window.location.reload()}

@@ -37,7 +37,7 @@ console.log("Building CSS...");
 await Promise.all([
   $`bunx tailwindcss -i ./src/globals.css -o ./dist/globals.css ${isProduction ? "--minify" : ""}`.quiet(),
   $`bunx tailwindcss -i ./src/styles/base.css -o ./dist/base.css ${isProduction ? "--minify" : ""}`.quiet(),
-  $`bunx tailwindcss -i ./src/poof-styling.css -o ./dist/poof-styling.css ${isProduction ? "--minify" : ""}`.quiet(),
+  $`bunx tailwindcss -i ./src/app-chrome.css -o ./dist/app-chrome.css ${isProduction ? "--minify" : ""}`.quiet(),
 ]);
 
 // Step 4: Bundle JS with Bun
@@ -125,8 +125,8 @@ for (const jsOutput of jsFiles) {
 const entryFile = result.outputs.find((o: { kind: string }) => o.kind === "entry-point")?.path.split("/").pop();
 
 // Use production config if provided, otherwise use defaults
-const faviconUrl = PROD_FAVICON || "https://assets.poof.new/preview.ico";
-const pageTitle = PROD_TITLE || "Poof Preview App";
+const faviconUrl = PROD_FAVICON || "/favicon.ico";
+const pageTitle = PROD_TITLE || "Token Powerball";
 
 const html = `<!doctype html>
 <html lang="en">
@@ -137,7 +137,7 @@ const html = `<!doctype html>
   <title>${pageTitle}</title>
   <link rel="stylesheet" href="/globals.css" />
   <link rel="stylesheet" href="/base.css" />
-  <link rel="stylesheet" href="/poof-styling.css" />
+  <link rel="stylesheet" href="/app-chrome.css" />
   <script>window.__VITE_ENV__ = '${VITE_ENV}';</script>
   <script src="/console-shim.js"></script>
   <script src="/component-inspector.js"></script>
