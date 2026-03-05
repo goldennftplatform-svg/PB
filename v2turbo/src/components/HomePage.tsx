@@ -81,8 +81,30 @@ export const HomePage: React.FC = () => {
 
   const pepeBallSrc = '/pepe-ball.png';
 
+  // Inline animation CSS so it cannot be stripped by build — guaranteed to run
+  const animationStyles = `
+    @keyframes pepball-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-14px); }
+    }
+    @keyframes pepball-glow {
+      0%, 100% { text-shadow: 0 0 14px rgba(0,255,65,0.7), 0 0 28px rgba(0,255,65,0.4); }
+      50% { text-shadow: 0 0 28px rgba(0,255,65,1), 0 0 56px rgba(0,255,65,0.6); }
+    }
+    @keyframes pepball-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.75; }
+    }
+    .pepball-float { animation: pepball-float 2.2s ease-in-out infinite; }
+    .pepball-glow { animation: pepball-glow 1.4s ease-in-out infinite; }
+    .pepball-pulse { animation: pepball-pulse 0.9s ease-in-out infinite; }
+    .pepball-ball-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+    .pepball-ball-hover:hover { transform: scale(1.12); box-shadow: 0 0 24px rgba(0,255,65,0.6); }
+  `;
+
   return (
     <div className="min-h-screen" style={{ background: terminal.bg, color: terminal.text, fontFamily: "'Courier New', Consolas, Monaco, monospace" }}>
+      <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
       {/* Header — OG style: centered, Pepe ball guy, green glow */}
       <header
         className="border-b-2 sticky top-0 z-10 text-center"
@@ -94,7 +116,7 @@ export const HomePage: React.FC = () => {
         }}
       >
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-          <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center pepe-float">
+          <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center pepball-float">
             <img
               src={pepeBallSrc}
               alt="Pepe Ball"
@@ -125,7 +147,7 @@ export const HomePage: React.FC = () => {
         {/* Jackpot + countdown row */}
         <section className="mb-8">
           <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>JACKPOT_BALANCE</div>
-          <div className="text-4xl font-bold tabular-nums mb-6 jackpot-glow" style={{ color: terminal.accent }}>
+          <div className="text-4xl font-bold tabular-nums mb-6 pepball-glow" style={{ color: terminal.accent }}>
             {loading ? '...' : error ? '—' : jackpotSol != null ? `${jackpotSol} SOL` : '—'}
           </div>
           <div className="flex flex-wrap items-center gap-6">
@@ -134,7 +156,7 @@ export const HomePage: React.FC = () => {
               <span className="text-xs uppercase" style={{ color: terminal.dim }}>NEXT_DRAW_IN</span>
             </div>
             {countdown != null ? (
-              <span className="tabular-nums font-mono countdown-pulse" style={{ color: terminal.gold }}>
+              <span className="tabular-nums font-mono pepball-pulse" style={{ color: terminal.gold }}>
                 {String(countdown.hours).padStart(2, '0')}HRS : {String(countdown.mins).padStart(2, '0')}MIN : {String(countdown.secs).padStart(2, '0')}SEC
               </span>
             ) : (
@@ -161,7 +183,7 @@ export const HomePage: React.FC = () => {
             {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
-                className="ball-hover w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 flex items-center justify-center text-xl font-bold"
+                className="pepball-ball-hover w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 flex items-center justify-center text-xl font-bold"
                 style={{
                   borderColor: terminal.accent,
                   background: terminal.bg,
@@ -173,7 +195,7 @@ export const HomePage: React.FC = () => {
               </div>
             ))}
             <div
-              className="pepe-ball-ball w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 flex items-center justify-center flex-shrink-0 p-0.5"
+              className="pepball-ball-hover w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 flex items-center justify-center flex-shrink-0 p-0.5"
               style={{
                 borderColor: terminal.accent,
                 background: terminal.bg,
