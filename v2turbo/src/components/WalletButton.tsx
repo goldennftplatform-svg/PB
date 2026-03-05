@@ -1,5 +1,4 @@
 import { AuthContextType } from '@/components/types';
-import { usePhantomFallback } from '@/contexts/PhantomFallbackContext';
 import { TAROBASE_CONFIG } from '@/lib/config';
 import { useAuth } from '@pooflabs/web';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -79,16 +78,11 @@ const getVariantStyles = (variant: WalletButtonVariant) => {
 
 export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' }) => {
   const styles = getVariantStyles(variant);
-  const auth = useAuth() as AuthContextType;
-  const phantom = usePhantomFallback();
-  const user = auth.user ?? (phantom.address ? { address: phantom.address, provider: null } : null);
-  const loading = auth.loading;
+  const { user, loading, login, logout } = useAuth() as AuthContextType;
   const [isOpen, setIsOpen] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [justCopied, setJustCopied] = useState(false);
-  const [connecting, setConnecting] = useState(false);
-  const [showPhantomFallback, setShowPhantomFallback] = useState(false);
   const lastFetchTime = useRef<number>(0);
   const popupRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -169,52 +163,19 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
   }, [isOpen]);
 
   const handleLogin = async () => {
-    if (showPhantomFallback && phantom.isAvailable) {
-      setConnecting(true);
-      try {
-        await phantom.connectPhantom();
-        setShowPhantomFallback(false);
-        toast.success('Connected with Phantom');
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        toast.error(msg);
-      } finally {
-        setConnecting(false);
-      }
-      return;
-    }
-    setConnecting(true);
-    setShowPhantomFallback(false);
     try {
-      await auth.login();
-    } catch (error: unknown) {
-      const err = error as Error & { cause?: unknown; code?: string };
-      const message = err?.message ?? String(error);
-      console.error('Wallet login failed:', error);
-      console.error('Detail:', { message, code: err?.code, cause: err?.cause });
-      toast.error(`Wallet connect failed: ${message}`);
-      if (phantom.isAvailable) {
-        setShowPhantomFallback(true);
-        toast.info('You can connect with Phantom instead.', { duration: 6000 });
-      } else if (typeof message === 'string' && (message.includes('Could not log in') || message.includes('try connecting again'))) {
-        toast.info('Check: 1) Add this site to Privy Dashboard → Allowed domains. 2) Install Phantom and try again.', { duration: 8000 });
-      } else if (typeof message === 'string' && (message.includes('domain') || message.includes('allowlist') || message.includes('allowed'))) {
-        toast.info('Add this site to allowed domains in dashboard.privy.io');
-      }
-    } finally {
-      setConnecting(false);
+      await login();
+    } catch (error) {
+      console.error('Failed to login', error);
     }
   };
 
   const handleLogout = async () => {
     try {
-      await auth.logout?.();
-      phantom.disconnectPhantom();
+      await logout();
       setIsOpen(false);
     } catch (error) {
       console.error('Failed to logout', error);
-      phantom.disconnectPhantom();
-      setIsOpen(false);
     }
   };
 
@@ -277,7 +238,6 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
       {!user ? (
         <motion.button
           onClick={handleLogin}
-          disabled={connecting}
           style={{
             ...getIsolatedButtonBase(),
             padding: '8px 16px',
@@ -287,14 +247,12 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
             gap: '8px',
             transition: 'all 0.2s ease',
             ...styles.button,
-            opacity: connecting ? 0.8 : 1,
-            cursor: connecting ? 'wait' : 'pointer',
           }}
-          whileHover={connecting ? undefined : styles.buttonHover}
-          whileTap={connecting ? undefined : { scale: 0.98 }}
+          whileHover={styles.buttonHover}
+          whileTap={{ scale: 0.98 }}
         >
           <Wallet style={{ height: '16px', width: '16px' }} />
-          {connecting ? 'Connecting…' : showPhantomFallback ? 'Connect with Phantom' : 'Connect Wallet'}
+          Connect Wallet
         </motion.button>
       ) : (
         <div style={{ position: 'relative' }}>

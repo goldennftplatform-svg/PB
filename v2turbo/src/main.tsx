@@ -18,74 +18,69 @@ import './styles/base.css';
 const { appId, chain, rpcUrl, authMethod, wsApiUrl, apiUrl, authApiUrl, mockAuth, mockAddress } =
   TAROBASE_CONFIG;
 
-async function runInit(): Promise<void> {
-  if (mockAuth && mockAddress) {
-    sessionStorage.setItem('test-user-address', mockAddress);
-  }
-
-  let privyCustomAppId: string | undefined;
-  let privyApiUrl: string | undefined;
-  let phantomAppId: string | undefined;
+(async () => {
   try {
-    const constantsModule = await import('./lib/constants');
-    privyCustomAppId = (constantsModule as any).PRIVY_CUSTOM_APP_ID;
-    privyApiUrl = (constantsModule as any).PRIVY_API_URL;
-    phantomAppId = (constantsModule as any).PHANTOM_APP_ID;
-  } catch {
-    // optional
-  }
-
-  const baseConfig = {
-    apiKey: '',
-    wsApiUrl,
-    apiUrl,
-    authApiUrl,
-    appId,
-    authMethod,
-    chain,
-    skipBackendInit: true,
-    mockAuth,
-    ...(rpcUrl ? { rpcUrl } : {}),
-  };
-
-  let config: Partial<ClientConfig> = { ...baseConfig };
-
-  if (privyCustomAppId) {
-    let solanaConnectors: unknown[] | undefined;
-    try {
-      const solanaModule = await import('@privy-io/react-auth/solana');
-      solanaConnectors = (solanaModule.toSolanaWalletConnectors?.() ?? []) as unknown[];
-    } catch {
-      solanaConnectors = undefined;
+    if (mockAuth && mockAddress) {
+      sessionStorage.setItem('test-user-address', mockAddress);
     }
-    config = {
-      ...config,
-      privyConfig: {
-        appId: privyCustomAppId,
-        ...(privyApiUrl ? { apiUrl: privyApiUrl } : {}),
-        config: {
-          appearance: {
-            walletChainType: 'solana-only',
+
+    let privyCustomAppId: string | undefined;
+    let privyApiUrl: string | undefined;
+    let phantomAppId: string | undefined;
+    try {
+      const constantsModule = await import('./lib/constants');
+      privyCustomAppId = (constantsModule as any).PRIVY_CUSTOM_APP_ID;
+      privyApiUrl = (constantsModule as any).PRIVY_API_URL;
+      phantomAppId = (constantsModule as any).PHANTOM_APP_ID;
+    } catch {
+      // optional
+    }
+
+    const baseConfig = {
+      apiKey: '',
+      wsApiUrl,
+      apiUrl,
+      authApiUrl,
+      appId,
+      authMethod,
+      chain,
+      skipBackendInit: true,
+      mockAuth,
+      ...(rpcUrl ? { rpcUrl } : {}),
+    };
+
+    let config: Partial<ClientConfig> = { ...baseConfig };
+
+    if (privyCustomAppId) {
+      config = {
+        ...config,
+        privyConfig: {
+          appId: privyCustomAppId,
+          ...(privyApiUrl ? { apiUrl: privyApiUrl } : {}),
+          config: {
+            appearance: {
+              walletChainType: 'solana-only',
+            },
           },
-          ...(solanaConnectors?.length
-            ? { externalWallets: { solana: { connectors: solanaConnectors } } }
-            : {}),
         },
-      },
-    };
-  }
+      };
+    }
 
-  if (phantomAppId) {
-    config = {
-      ...config,
-      phantomConfig: {
-        appId: phantomAppId,
-      },
-    };
-  }
+    if (phantomAppId) {
+      config = {
+        ...config,
+        phantomConfig: {
+          appId: phantomAppId,
+        },
+      };
+    }
 
-  await init(config);
-}
+    await init(config);
+  } catch (err) {
+    console.error('Failed to init app', err);
+    throw err;
+  }
+})();
 
 interface AuthContextType {
   user: { address: string; provider: any } | null;
@@ -197,12 +192,12 @@ const PhantomWalletWarning = () => {
               <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
                 <h3 className="font-semibold text-blue-900 mb-2">Getting Devnet SOL</h3>
                 <p className="text-sm text-blue-800">
-                  Use a public Solana devnet faucet or your wallet provider’s faucet to get test SOL.
+                  Use a public Solana devnet faucet or your wallet provider's faucet to get test SOL.
                 </p>
               </div>
               <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
                 <p className="text-sm text-yellow-800">
-                  Devnet uses <strong>test assets only</strong>. Switch back to Mainnet when you’re done.
+                  Devnet uses <strong>test assets only</strong>. Switch back to Mainnet when you're done.
                 </p>
               </div>
             </div>
@@ -213,77 +208,15 @@ const PhantomWalletWarning = () => {
   );
 };
 
-function AppBootstrapper(): JSX.Element {
-  const [initDone, setInitDone] = useState(false);
-  const [initError, setInitError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    runInit()
-      .then(() => {
-        if (!cancelled) setInitDone(true);
-      })
-      .catch((err) => {
-        if (!cancelled) setInitError(err instanceof Error ? err.message : String(err));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (initError) {
-    return (
-      <div
-        style={{
-          padding: 24,
-          fontFamily: 'system-ui, sans-serif',
-          maxWidth: 480,
-          margin: '40px auto',
-          background: '#fef2f2',
-          border: '1px solid #fecaca',
-          borderRadius: 12,
-        }}
-      >
-        <h2 style={{ color: '#b91c1c', marginTop: 0 }}>Failed to load app</h2>
-        <p style={{ color: '#991b1b' }}>{initError}</p>
-        <p style={{ fontSize: 14, color: '#7f1d1d' }}>
-          Check the browser console for details. If connecting wallet fails, ensure this domain is allowlisted in your Privy dashboard (dashboard.privy.io).
-        </p>
-      </div>
-    );
-  }
-
-  if (!initDone) {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: 'system-ui, sans-serif',
-          color: '#6b7280',
-        }}
-      >
-        Loading…
-      </div>
-    );
-  }
-
-  return (
-    <BrowserRouter>
-      <div className="min-h-screen">
-        {TAROBASE_CONFIG.chain === 'solana_devnet' && <PhantomWalletWarning />}
-        <App />
-      </div>
-    </BrowserRouter>
-  );
-}
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <AppBootstrapper />
+      <BrowserRouter>
+        <div className="min-h-screen">
+          {TAROBASE_CONFIG.chain === 'solana_devnet' && <PhantomWalletWarning />}
+          <App />
+        </div>
+      </BrowserRouter>
     </ErrorBoundary>
   </StrictMode>,
 );
