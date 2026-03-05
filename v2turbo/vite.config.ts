@@ -69,7 +69,7 @@ export default defineConfig(() => {
         '@pooflabs/web',
         // Its internal dependencies that it tries to `require`
         '@privy-io/react-auth',
-        '@privy-io/react-auth/solana',
+        // Do not include '@privy-io/react-auth/solana' — subpath fails to resolve on Vercel build
         // Solana optional peer dependencies - must be explicitly included
         // to prevent Vite from creating stubs for optional peer deps
         '@solana-program/system',

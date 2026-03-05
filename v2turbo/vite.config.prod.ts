@@ -64,7 +64,7 @@ export default defineConfig(
           '@tarobase/js-sdk',
           // Its internal dependencies that it tries to `require`
           '@privy-io/react-auth',
-          '@privy-io/react-auth/solana',
+          // Do not include '@privy-io/react-auth/solana' — subpath fails to resolve on Vercel
         ],
       },
       build: {
