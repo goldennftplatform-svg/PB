@@ -9,6 +9,7 @@ import {
   LOTTERY_PROGRAM_ID,
   MAIN_WINNER_PERCENT,
   PEPEBALL_MINT,
+  PROOF_MINT,
   ROLLOVER_PERCENT,
   DEV_PERCENT,
   SECONDARY_WINNER_PERCENT,
@@ -467,9 +468,23 @@ export const HomePage: React.FC = () => {
             <h3 className="text-base font-bold tracking-tight mb-4" style={{ color: terminal.gold, fontFamily: terminal.fontDisplay }}>
               Admin — Token price
             </h3>
-            <p className="text-xs font-mono break-all mb-4" style={{ color: terminal.dim }}>
-              Mint: {PEPEBALL_MINT}
-            </p>
+            <div className="mb-4">
+              <p className="text-xs font-mono break-all" style={{ color: terminal.dim }}>
+                Mint: {PEPEBALL_MINT}
+              </p>
+              <p className="text-xs mt-1" style={{ color: terminal.dim }}>
+                Phase: {PEPEBALL_MINT === PROOF_MINT ? 'Proof (low stakes)' : 'Production (locked)'}
+              </p>
+            </div>
+            <div className="border-t pt-4 mb-4" style={{ borderColor: terminal.border }}>
+              <div className="text-xs uppercase tracking-wider mb-2" style={{ color: terminal.gold }}>Lock production token (one-way)</div>
+              <p className="text-xs mb-2" style={{ color: terminal.dim }}>
+                Once locked, the app uses only your final/production mint — no going back (provably). No second test coin: proof = 3X36…, production = your new mint. See <a href="https://github.com/goldennftplatform-svg/PB/blob/main/docs/PROOF_THEN_PRODUCTION.md" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: terminal.accentAlt }}>docs/PROOF_THEN_PRODUCTION.md</a>.
+              </p>
+              <p className="text-xs" style={{ color: terminal.dim }}>
+                To lock on-chain: deploy a mint-lock program and wire the button here. Until then: set VITE_PEPEBALL_MINT to your production mint and redeploy (one-way by discipline).
+              </p>
+            </div>
             <div className="grid gap-4 text-sm mb-6">
               <div className="flex flex-wrap items-center gap-4">
                 <span className="text-xs uppercase" style={{ color: terminal.dim }}>Effective (used):</span>

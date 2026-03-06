@@ -9,8 +9,10 @@ export const PHANTOM_APP_ID = import.meta.env?.VITE_PHANTOM_APP_ID ?? undefined;
 export const PROJECT_VAULT_ADDRESS = "FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje";
 export const SOL = "solana";
 export const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-/** Lottery token mint — set VITE_PEPEBALL_MINT to pivot to new token (no program redeploy). */
-export const PEPEBALL_MINT = import.meta.env?.VITE_PEPEBALL_MINT ?? "3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump";
+/** Proof-phase token (low stakes $0.50/$1/$5) — existing contract. */
+export const PROOF_MINT = "3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump";
+/** Lottery token mint — proof by default; after one-way lock, set to production mint (env or on-chain). */
+export const PEPEBALL_MINT = import.meta.env?.VITE_PEPEBALL_MINT ?? PROOF_MINT;
 export const MIN_HOLDING_USD = "20";
 export const DRAWING_INTERVAL_NORMAL = "172800";
 export const DRAWING_INTERVAL_HIGH_JACKPOT = "259200";
