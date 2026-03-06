@@ -12,7 +12,7 @@ The Ultimate Powerball Lottery Token on Solana!
 ✅ Win SOL directly (no selling!)
 ✅ Dynamic snapshots (72h/48h)
 ✅ Anti-rug mechanics
-✅ Creator fund to Matt Furie
+
 
 🚀 Pump.Fun: [LINK]
 📊 Dashboard: [LINK]

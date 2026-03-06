@@ -57,9 +57,7 @@ Anchor.toml.local
 bots/wallets/*.json
 bots/registry.json
 bots/funding-status.json
-bots/results/*.json
-
-# Secrets and private keys (NEVER commit!)
+bots/results/*.json# Secrets and private keys (NEVER commit!)
 SECRETS.md
 **/secrets/**
 **/*.key
@@ -67,14 +65,9 @@ SECRETS.md
 **/*.p12
 **/*.pfx
 *.keypair
-*.secret
-
-# Test wallets (keep private!)
+*.secret# Test wallets (keep private!)
 test-wallets/**/*.json
-wallet-backups/**/*.json
-
-# Testnet keys (NEVER commit!)
+wallet-backups/**/*.json# Testnet keys (NEVER commit!)
 testnet-key.json
 **/testnet-key.json
 **/*-key.json
-

@@ -62,3 +62,9 @@ console.log('   ✅ Snapshot: Script ready (50/50 rollover logic)');
 console.log('   ✅ Winners: Indexer ready');
 console.log('   ✅ Payout: Tool ready (50/40/10 split)\n');
 
+
+
+
+
+
+

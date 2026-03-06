@@ -61,3 +61,9 @@ console.log(typeof loadWinnersHistory);
 console.log(document.querySelectorAll('script[src]'));
 ```
 
+
+
+
+
+
+

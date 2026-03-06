@@ -13,12 +13,7 @@ If the app was created for Ethereum, create a new app for Solana or change this 
 
 ## 2. This codebase
 
-We already send:
-
-- `walletChainType: 'solana-only'`
-- `externalWallets.solana.connectors` from `@privy-io/react-auth/solana` when available
-
-So the **client** is Solana-only. If the **dashboard** is still Ethereum-only, Privy will still show ETH behavior and wallets can fail to connect.
+We send `walletChainType: 'solana-only'` in Privy config. We do not pass `externalWallets.solana.connectors` here because importing `@privy-io/react-auth/solana` breaks the Vite build on Vercel (module resolve failure). So the **client** is set to Solana-only; the **dashboard** must have Solana (SIWS) enabled. If wallet connect still fails, use **Connect with Phantom** on the site (Phantom-only fallback).
 
 ## 3. Quick check
 

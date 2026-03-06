@@ -550,29 +550,45 @@ class LotteryDataFetcher {
                         if (filteredRecipients.length > 0) {
                             // Main winner is the one who received the most
                             mainWinner = filteredRecipients[0].address;
-                            console.log(`   Main winner: ${mainWinner.substring(0, 16)}... (${(filteredRecipients[0].amount / 1e9).toFixed(4)} SOL)`);
+                            const mainPayoutAmount = filteredRecipients[0].amount;
+                            console.log(`   Main winner: ${mainWinner.substring(0, 16)}... (${(mainPayoutAmount / 1e9).toFixed(4)} SOL)`);
                             
                             // Next 8 are minor winners (or all remaining if less than 8)
+                            // Store both address AND payout amount for each minor winner
                             const minors = filteredRecipients.slice(1, 9).map(w => {
                                 console.log(`   Minor winner: ${w.address.substring(0, 16)}... (${(w.amount / 1e9).toFixed(4)} SOL)`);
-                                return w.address;
+                                return {
+                                    address: w.address,
+                                    payout: w.amount
+                                };
                             });
-                            minorWinners.push(...minors);
+                            
+                            // Extract addresses for minorWinners array (for compatibility)
+                            minorWinners.push(...minors.map(m => m.address));
 
                             payoutTx = sig.signature;
                             payoutTime = sig.blockTime;
                             
-                            // Calculate payouts
-                            const mainPayout = filteredRecipients[0].amount;
-                            const minorPayout = filteredRecipients.length > 1 ? filteredRecipients[1].amount : 0;
+                            // Calculate payouts - store individual payouts
+                            const mainPayout = mainPayoutAmount;
+                            const minorPayout = minors.length > 0 ? minors[0].payout : 0;
+                            
+                            // Store individual payouts per wallet
+                            const individualPayouts = {};
+                            individualPayouts[mainWinner] = mainPayout;
+                            minors.forEach(m => {
+                                individualPayouts[m.address] = m.payout;
+                            });
                             
                             payouts = {
                                 mainPayout: mainPayout,
                                 minorPayout: minorPayout,
-                                totalRecipients: filteredRecipients.length
+                                totalRecipients: filteredRecipients.length,
+                                individualPayouts: individualPayouts // NEW: Store per-wallet payouts
                             };
 
                             console.log(`✅ Payout transaction found! Main: ${(mainPayout / 1e9).toFixed(4)} SOL, Minors: ${minors.length}`);
+                            console.log(`   Individual payouts:`, individualPayouts);
 
                             // Found the most recent payout, break
                             break;
@@ -1000,6 +1016,9 @@ function updateLotteryDisplayWithData(state) {
         console.warn('⚠️  updatePayoutTransaction function not found');
     }
     
+    // Update "What's Next" section
+    updateWhatsNext(state);
+    
     // Clear any error messages if we got data
     const errorEl = document.getElementById('blockchain-error');
     if (errorEl && !state.error) {
@@ -1008,6 +1027,84 @@ function updateLotteryDisplayWithData(state) {
     }
     
     console.log('✅ Display update complete!');
+}
+
+/**
+ * Update "What's Next" section with exciting info
+ */
+function updateWhatsNext(state) {
+    const whatsNextEl = document.getElementById('whats-next-content');
+    if (!whatsNextEl) return;
+    
+    const hasWinners = state.winners?.mainWinner;
+    const hasSnapshot = state.snapshotTx;
+    const participantCount = state.participantCount || 0;
+    const jackpotSOL = state.jackpot ? (state.jackpot / 1e9).toFixed(4) : '0.0000';
+    
+    let content = '';
+    
+    if (hasWinners && state.payoutTx) {
+        // Just had a payout - show next draw info
+        content = `
+            <div style="text-align: center; padding: 25px; background: var(--bg-card); border-radius: 12px; border: 2px solid var(--accent-green); animation: pulse 2s infinite;">
+                <div style="font-size: 2.5em; margin-bottom: 15px;">🎰</div>
+                <div style="font-size: 1.3em; color: var(--accent-green); font-weight: bold; margin-bottom: 10px;">Next Draw Coming!</div>
+                <div style="font-size: 1em; color: var(--text-primary); margin-bottom: 15px;">Get your entries in now!</div>
+                <div style="font-size: 0.9em; color: var(--text-secondary);">Current Jackpot: <span style="color: var(--accent-green); font-weight: bold;">${jackpotSOL} SOL</span></div>
+            </div>
+            <div style="text-align: center; padding: 25px; background: var(--bg-card); border-radius: 12px; border: 2px solid var(--accent-cyan);">
+                <div style="font-size: 2em; margin-bottom: 15px;">📊</div>
+                <div style="font-size: 1.2em; color: var(--accent-cyan); font-weight: bold; margin-bottom: 10px;">${participantCount} Participants</div>
+                <div style="font-size: 0.9em; color: var(--text-secondary);">Ready for next snapshot</div>
+            </div>
+            <div style="text-align: center; padding: 25px; background: var(--bg-card); border-radius: 12px; border: 2px solid var(--accent-green);">
+                <div style="font-size: 2em; margin-bottom: 15px;">💰</div>
+                <div style="font-size: 1.2em; color: var(--accent-green); font-weight: bold; margin-bottom: 10px;">50/50 Rollover</div>
+                <div style="font-size: 0.9em; color: var(--text-secondary);">ODD = Payout • EVEN = Rollover</div>
+            </div>
+        `;
+    } else if (hasSnapshot && !state.payoutTx) {
+        // Snapshot taken, waiting for payout
+        content = `
+            <div style="text-align: center; padding: 25px; background: var(--bg-card); border-radius: 12px; border: 2px solid #ffc107; animation: pulse 2s infinite;">
+                <div style="font-size: 2.5em; margin-bottom: 15px;">⏳</div>
+                <div style="font-size: 1.3em; color: #ffc107; font-weight: bold; margin-bottom: 10px;">Waiting for Payout</div>
+                <div style="font-size: 1em; color: var(--text-primary); margin-bottom: 15px;">Snapshot taken with ${participantCount} participants</div>
+                <div style="font-size: 0.9em; color: var(--text-secondary);">If ODD, payout will be triggered</div>
+            </div>
+            <div style="text-align: center; padding: 25px; background: var(--bg-card); border-radius: 12px; border: 2px solid var(--accent-green);">
+                <div style="font-size: 2em; margin-bottom: 15px;">🎯</div>
+                <div style="font-size: 1.2em; color: var(--accent-green); font-weight: bold; margin-bottom: 10px;">Next Steps</div>
+                <div style="font-size: 0.9em; color: var(--text-secondary); text-align: left; margin-top: 10px;">
+                    <div style="margin-bottom: 8px;">1. Winners calculated from seed</div>
+                    <div style="margin-bottom: 8px;">2. Winners set on-chain</div>
+                    <div>3. Payout executed</div>
+                </div>
+            </div>
+        `;
+    } else {
+        // No snapshot yet - encourage entries
+        content = `
+            <div style="text-align: center; padding: 25px; background: var(--bg-card); border-radius: 12px; border: 2px solid var(--accent-green); animation: pulse 2s infinite;">
+                <div style="font-size: 2.5em; margin-bottom: 15px;">🎲</div>
+                <div style="font-size: 1.3em; color: var(--accent-green); font-weight: bold; margin-bottom: 10px;">Get Your Entry In!</div>
+                <div style="font-size: 1em; color: var(--text-primary); margin-bottom: 15px;">Hold $20+ worth of PEPEBALL tokens</div>
+                <div style="font-size: 0.9em; color: var(--text-secondary);">Current Jackpot: <span style="color: var(--accent-green); font-weight: bold;">${jackpotSOL} SOL</span></div>
+            </div>
+            <div style="text-align: center; padding: 25px; background: var(--bg-card); border-radius: 12px; border: 2px solid var(--accent-cyan);">
+                <div style="font-size: 2em; margin-bottom: 15px;">📈</div>
+                <div style="font-size: 1.2em; color: var(--accent-cyan); font-weight: bold; margin-bottom: 10px;">${participantCount} Participants</div>
+                <div style="font-size: 0.9em; color: var(--text-secondary);">Need 9+ for snapshot</div>
+            </div>
+            <div style="text-align: center; padding: 25px; background: var(--bg-card); border-radius: 12px; border: 2px solid var(--accent-green);">
+                <div style="font-size: 2em; margin-bottom: 15px;">⏰</div>
+                <div style="font-size: 1.2em; color: var(--accent-green); font-weight: bold; margin-bottom: 10px;">Next Draw</div>
+                <div style="font-size: 0.9em; color: var(--text-secondary);">When conditions are met</div>
+            </div>
+        `;
+    }
+    
+    whatsNextEl.innerHTML = content;
 }
 
 // Initialize on page load
@@ -1202,7 +1299,7 @@ async function copyAddressToClipboard(address) {
 }
 
 /**
- * Update winners display with copy buttons
+ * Update winners display with copy buttons - EXCITING VERSION!
  */
 function updateWinnersDisplay(state) {
     console.log('🏆 updateWinnersDisplay() called');
@@ -1212,6 +1309,7 @@ function updateWinnersDisplay(state) {
     console.log('   Main winner element found:', !!mainWinnerEl);
     console.log('   Minor winners element found:', !!minorWinnersEl);
     console.log('   State.winners:', state.winners);
+    console.log('   State.payouts:', state.payouts);
     
     if (!state.winners) {
         console.log('   No winners object, showing "No winners yet"');
@@ -1224,7 +1322,7 @@ function updateWinnersDisplay(state) {
         return;
     }
 
-    // Main winner - BIG AND VISIBLE
+    // Main winner - BIG, EXCITING, ANIMATED!
     if (mainWinnerEl) {
         if (state.winners?.mainWinner) {
             const mainWinnerAddress = typeof state.winners.mainWinner === 'string' 
@@ -1234,110 +1332,171 @@ function updateWinnersDisplay(state) {
                 mainWinnerEl.innerHTML = '<div style="color: var(--text-secondary); font-size: 1.2em;">Invalid winner address</div>';
                 return;
             }
+            // Get actual payout amount from transaction data if available
             const mainPayout = state.payouts?.mainPayout || (Number(state.jackpot) * 0.5);
+            const mainPayoutSOL = lotteryFetcher.formatSOL(mainPayout);
+            
+            console.log(`   Main winner payout: ${mainPayoutSOL} SOL (${mainPayout} lamports)`);
+            
+            // Trigger confetti animation
+            setTimeout(() => {
+                if (window.createConfetti) {
+                    window.createConfetti();
+                }
+            }, 100);
+            
             mainWinnerEl.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                    <span style="font-family: 'Courier New', monospace; color: var(--accent-green); font-size: 1.1em; font-weight: bold;">
-                        ${lotteryFetcher.formatAddress(mainWinnerAddress)}
-                    </span>
-                    <button class="copy-btn" onclick="copyAddressToClipboard('${mainWinnerAddress}').then(() => { this.textContent='✅ COPIED!'; this.style.background='#28a745'; setTimeout(() => { this.textContent='📋 Copy'; this.style.background=''; }, 2000); })" style="padding: 8px 20px; font-size: 1em; font-weight: bold; background: var(--accent-green); color: var(--bg-primary); border: 2px solid var(--accent-green);">📋 Copy</button>
-                    <span style="color: var(--accent-green); font-weight: bold; font-size: 1.3em; background: var(--bg-secondary); padding: 10px 20px; border-radius: 4px; border: 2px solid var(--accent-green);">
-                        ${lotteryFetcher.formatSOL(mainPayout)} SOL
-                    </span>
-                    <a href="${EXPLORER_BASE}/address/${mainWinnerAddress}${EXPLORER_CLUSTER}" 
-                       target="_blank" style="color: var(--accent-green); text-decoration: none; font-size: 1.2em; font-weight: bold; background: var(--bg-secondary); padding: 10px 20px; border-radius: 4px; border: 2px solid var(--accent-green);">🔗 View</a>
+                <div class="winner-celebration" style="animation: pulse 2s infinite; padding: 30px; background: linear-gradient(135deg, rgba(0,255,65,0.1) 0%, rgba(0,255,65,0.05) 100%); border: 3px solid var(--accent-green); border-radius: 16px; box-shadow: 0 0 30px rgba(0,255,65,0.4);">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 3em; margin-bottom: 10px;">🎉🏆🎉</div>
+                        <div style="font-size: 1.5em; color: var(--accent-green); font-weight: bold; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">GRAND PRIZE WINNER!</div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                        <div style="font-size: 4em; font-weight: bold; color: var(--accent-green); text-shadow: 0 0 20px rgba(0,255,65,0.8); font-family: 'Courier New', monospace;">
+                            ${mainPayoutSOL} SOL
+                        </div>
+                        <div style="font-size: 1.3em; color: var(--text-primary); margin-bottom: 10px;">50% of Jackpot</div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; background: var(--bg-secondary); padding: 20px; border-radius: 12px; border: 2px solid var(--accent-green);">
+                            <span style="font-family: 'Courier New', monospace; color: var(--accent-green); font-size: 1.2em; font-weight: bold;">
+                                ${lotteryFetcher.formatAddress(mainWinnerAddress)}
+                            </span>
+                            <button class="copy-btn" onclick="copyAddressToClipboard('${mainWinnerAddress}').then(() => { this.textContent='✅ COPIED!'; this.style.background='#28a745'; setTimeout(() => { this.textContent='📋 Copy'; this.style.background=''; }, 2000); })" style="padding: 10px 20px; font-size: 1em; font-weight: bold; background: var(--accent-green); color: var(--bg-primary); border: 2px solid var(--accent-green); cursor: pointer; border-radius: 8px;">📋 Copy</button>
+                            <a href="${EXPLORER_BASE}/address/${mainWinnerAddress}${EXPLORER_CLUSTER}" 
+                               target="_blank" style="color: var(--accent-green); text-decoration: none; font-size: 1.1em; font-weight: bold; background: var(--bg-secondary); padding: 10px 20px; border-radius: 8px; border: 2px solid var(--accent-green);">🔗 View Wallet</a>
+                        </div>
+                        ${state.payoutTx ? `
+                            <div style="margin-top: 15px; font-size: 0.9em; color: var(--text-secondary);">
+                                <a href="${EXPLORER_BASE}/tx/${state.payoutTx}${EXPLORER_CLUSTER}" target="_blank" style="color: var(--accent-green); text-decoration: none;">📋 View Payout Transaction</a>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
             `;
         } else if (state.snapshotTx) {
-            // Show snapshot info if no payout yet
-            // Check if we can determine if it was ODD (payout time) or EVEN (rollover)
             const isRollover = !state.payoutTx && state.snapshotTx;
             mainWinnerEl.innerHTML = `
-                <div style="text-align: center; color: var(--accent-green); font-family: 'Courier New', monospace;">
-                    <div style="font-size: 1.2em; margin-bottom: 10px;">📸 Snapshot Taken</div>
-                    <div style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 10px;">
+                <div style="text-align: center; padding: 30px; background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 16px;">
+                    <div style="font-size: 2.5em; margin-bottom: 15px;">📸</div>
+                    <div style="font-size: 1.5em; color: var(--accent-green); font-weight: bold; margin-bottom: 15px; text-transform: uppercase;">Snapshot Taken!</div>
+                    <div style="font-size: 1.1em; color: var(--text-primary); margin-bottom: 10px;">
                         ${state.participantCount || '?'} Participants
                     </div>
                     ${isRollover ? 
-                        '<div style="font-size: 0.85em; color: var(--accent-cyan); margin-bottom: 10px;">🚀 Rollover - No payout yet</div>' :
-                        '<div style="font-size: 0.85em; color: var(--text-secondary); margin-bottom: 10px;">⏳ Waiting for payout...</div>'
+                        '<div style="font-size: 1em; color: var(--accent-cyan); margin-bottom: 15px; padding: 15px; background: rgba(0,255,255,0.1); border-radius: 8px; border: 2px solid var(--accent-cyan);">🚀 ROLLOVER - Jackpot Growing!</div>' :
+                        '<div style="font-size: 1em; color: var(--text-secondary); margin-bottom: 15px; padding: 15px; background: rgba(255,193,7,0.1); border-radius: 8px; border: 2px solid #ffc107;">⏳ Waiting for payout...</div>'
                     }
                     <a href="${EXPLORER_BASE}/tx/${state.snapshotTx}${EXPLORER_CLUSTER}" 
-                       target="_blank" style="color: var(--accent-green); text-decoration: none; font-size: 0.9em;">View Snapshot TX</a>
+                       target="_blank" style="color: var(--accent-green); text-decoration: none; font-size: 1em; font-weight: bold; padding: 10px 20px; background: var(--bg-secondary); border-radius: 8px; border: 2px solid var(--accent-green); display: inline-block; margin-top: 10px;">🔗 View Snapshot TX</a>
                 </div>
             `;
         } else {
-            mainWinnerEl.innerHTML = '<div style="color: var(--text-secondary); font-size: 1.2em; font-family: monospace;">No main winner yet</div>';
+            mainWinnerEl.innerHTML = '<div style="color: var(--text-secondary); font-size: 1.2em; font-family: monospace; text-align: center; padding: 30px;">Be the first to win! Make an entry and wait for the next draw.</div>';
         }
     }
 
-    // Minor winners - Show all 8 minor winners
+    // Minor winners - Show ALL with individual payouts
     if (minorWinnersEl) {
         if (state.winners.minorWinners && state.winners.minorWinners.length > 0) {
             const validWinners = state.winners.minorWinners
                 .filter(w => w && w !== '11111111111111111111111111111111');
             
             if (validWinners.length > 0) {
-                const minorWinners = validWinners
+                // Get individual payouts if available, otherwise calculate
+                const individualPayouts = state.payouts?.individualPayouts || {};
+                const defaultMinorPayout = state.payouts?.minorPayout || (Number(state.jackpot) * 0.05); // 5% each
+                
+                const minorWinnersHTML = validWinners
                     .map((w, idx) => {
                         const address = typeof w === 'string' ? w : (w?.toString() || '');
                         if (!address || address === '11111111111111111111111111111111') return null;
-                        const payout = state.payouts?.minorPayout || (Number(state.jackpot) * 0.05); // 5% each
+                        
+                        // Use individual payout if available, otherwise use default
+                        const walletPayout = individualPayouts[address] || defaultMinorPayout;
+                        const payoutSOL = lotteryFetcher.formatSOL(walletPayout);
+                        
                         return `
-                            <div style="margin: 12px 0; padding: 15px; background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%); border-radius: 10px; border: 2px solid #003087; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
-                                <span style="font-weight: bold; color: #DC143C; font-size: 1.3em; background: #fff3cd; padding: 8px 15px; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 3px solid #DC143C;">#${idx + 1}</span>
-                                <span style="font-family: 'Courier New', monospace; color: #003087; font-size: 1.1em; font-weight: bold; flex: 1;">
-                                    ${lotteryFetcher.formatAddress(address)}
-                                </span>
-                                <button class="copy-btn" onclick="copyAddressToClipboard('${address}').then(() => { this.textContent='✅'; this.style.background='#28a745'; setTimeout(() => { this.textContent='📋 Copy'; this.style.background=''; }, 2000); })" style="padding: 8px 15px; font-size: 0.9em; font-weight: bold; background: #003087; color: white;">📋 Copy</button>
-                                <span style="color: #DC143C; font-weight: bold; font-size: 1.2em; background: white; padding: 8px 15px; border-radius: 8px; border: 2px solid #DC143C;">
-                                    ${lotteryFetcher.formatSOL(payout)} SOL
-                                </span>
+                            <div class="minor-winner-card" style="margin: 15px 0; padding: 20px; background: linear-gradient(135deg, rgba(0,255,65,0.1) 0%, rgba(0,255,65,0.05) 100%); border-radius: 12px; border: 2px solid var(--accent-green); display: flex; align-items: center; gap: 15px; flex-wrap: wrap; box-shadow: 0 4px 15px rgba(0,255,65,0.2); transition: transform 0.3s; animation: slideIn 0.5s ease-out ${idx * 0.1}s both;">
+                                <div style="font-weight: bold; color: var(--accent-green); font-size: 1.5em; background: var(--bg-secondary); padding: 12px 18px; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border: 3px solid var(--accent-green); box-shadow: 0 0 15px rgba(0,255,65,0.4);">#${idx + 1}</div>
+                                <div style="flex: 1; min-width: 200px;">
+                                    <div style="font-family: 'Courier New', monospace; color: var(--accent-green); font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">
+                                        ${lotteryFetcher.formatAddress(address)}
+                                    </div>
+                                    <div style="font-size: 0.85em; color: var(--text-secondary);">5% of Jackpot</div>
+                                </div>
+                                <div style="font-size: 1.8em; font-weight: bold; color: var(--accent-green); text-shadow: 0 0 10px rgba(0,255,65,0.5); font-family: 'Courier New', monospace; margin: 0 10px;">
+                                    ${payoutSOL} SOL
+                                </div>
+                                <button class="copy-btn" onclick="copyAddressToClipboard('${address}').then(() => { this.textContent='✅'; this.style.background='#28a745'; setTimeout(() => { this.textContent='📋'; this.style.background=''; }, 2000); })" style="padding: 10px 15px; font-size: 0.9em; font-weight: bold; background: var(--accent-green); color: var(--bg-primary); border: 2px solid var(--accent-green); cursor: pointer; border-radius: 8px;">📋</button>
                                 <a href="${EXPLORER_BASE}/address/${address}${EXPLORER_CLUSTER}" 
-                                   target="_blank" style="color: #003087; text-decoration: none; font-weight: bold; background: white; padding: 8px 15px; border-radius: 8px; border: 2px solid #003087;">🔗 View</a>
+                                   target="_blank" style="color: var(--accent-green); text-decoration: none; font-weight: bold; background: var(--bg-secondary); padding: 10px 15px; border-radius: 8px; border: 2px solid var(--accent-green);">🔗</a>
                             </div>
                         `;
                     })
                     .filter(w => w !== null)
                     .join('');
                 
-                minorWinnersEl.innerHTML = minorWinners;
+                minorWinnersEl.innerHTML = `
+                    <div style="margin-bottom: 20px; text-align: center;">
+                        <div style="font-size: 1.8em; color: var(--accent-green); font-weight: bold; margin-bottom: 10px;">🎯 ${validWinners.length} Minor Winners</div>
+                        <div style="font-size: 1em; color: var(--text-secondary);">Each receives 5% of the jackpot (40% total)</div>
+                    </div>
+                    ${minorWinnersHTML}
+                `;
             } else {
-                // Show helpful message if snapshot exists but no winners
                 if (state.snapshotTx && !state.payoutTx) {
                     minorWinnersEl.innerHTML = `
-                        <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
-                            <div style="font-size: 1.1em; margin-bottom: 10px;">⏳ Waiting for payout</div>
-                            <div style="font-size: 0.9em; color: var(--text-secondary);">
+                        <div style="text-align: center; padding: 30px; color: var(--text-secondary);">
+                            <div style="font-size: 1.3em; margin-bottom: 15px;">⏳ Waiting for payout</div>
+                            <div style="font-size: 1em; color: var(--text-primary); margin-bottom: 10px;">
                                 Snapshot taken with ${state.participantCount || '?'} participants
                             </div>
-                            <div style="font-size: 0.85em; color: var(--accent-cyan); margin-top: 10px;">
+                            <div style="font-size: 0.9em; color: var(--accent-cyan); margin-top: 15px; padding: 15px; background: rgba(0,255,255,0.1); border-radius: 8px;">
                                 If snapshot was ODD, payout needs to be triggered
                             </div>
                         </div>
                     `;
                 } else {
-                    minorWinnersEl.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">No minor winners yet</div>';
+                    minorWinnersEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--text-secondary); font-size: 1.1em;">No minor winners yet</div>';
                 }
             }
         } else {
-            // Show helpful message if snapshot exists but no winners
             if (state.snapshotTx && !state.payoutTx) {
                 minorWinnersEl.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
-                        <div style="font-size: 1.1em; margin-bottom: 10px;">⏳ Waiting for payout</div>
-                        <div style="font-size: 0.9em; color: var(--text-secondary);">
+                    <div style="text-align: center; padding: 30px; color: var(--text-secondary);">
+                        <div style="font-size: 1.3em; margin-bottom: 15px;">⏳ Waiting for payout</div>
+                        <div style="font-size: 1em; color: var(--text-primary); margin-bottom: 10px;">
                             Snapshot taken with ${state.participantCount || '?'} participants
                         </div>
-                        <div style="font-size: 0.85em; color: var(--accent-cyan); margin-top: 10px;">
+                        <div style="font-size: 0.9em; color: var(--accent-cyan); margin-top: 15px; padding: 15px; background: rgba(0,255,255,0.1); border-radius: 8px;">
                             If snapshot was ODD, payout needs to be triggered
                         </div>
                     </div>
                 `;
             } else {
-                minorWinnersEl.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">No minor winners yet</div>';
+                minorWinnersEl.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--text-secondary); font-size: 1.1em;">No minor winners yet</div>';
             }
         }
+    }
+    
+    // Add CSS animations if not already added
+    if (!document.getElementById('winner-animations')) {
+        const style = document.createElement('style');
+        style.id = 'winner-animations';
+        style.textContent = `
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(0,255,65,0.4); }
+                50% { transform: scale(1.02); box-shadow: 0 0 50px rgba(0,255,65,0.6); }
+            }
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateX(-20px); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+            .minor-winner-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 6px 25px rgba(0,255,65,0.4);
+            }
+        `;
+        document.head.appendChild(style);
     }
 }
 

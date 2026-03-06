@@ -47,3 +47,9 @@ Paste the **exact error message** from WSL when you run `anchor build`, and I'll
 2. ⚠️ Build error = Separate Rust issue (not related)
 3. ✅ Program works = Can test without building
 
+
+
+
+
+
+

@@ -167,3 +167,9 @@ cp target/idl/lottery.json /mnt/c/Users/PreSafu/Desktop/POWERsol/target/idl/
 
 This will help diagnose the specific issue!
 
+
+
+
+
+
+

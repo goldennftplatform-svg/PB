@@ -46,3 +46,9 @@ The build error is **NOT related to secrets**. It's a Rust/Anchor build issue.
 2. ⏭️ Fix build error (separate issue)
 3. ⏭️ Test program (works without IDL)
 
+
+
+
+
+
+

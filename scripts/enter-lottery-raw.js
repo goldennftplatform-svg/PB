@@ -11,9 +11,9 @@ const RPC_URL = 'https://api.devnet.solana.com';
 const LOTTERY_PROGRAM_ID = new PublicKey('8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7');
 
 // Instruction discriminator for enter_lottery_with_usd_value
-// First 8 bytes of sha256("global:enter_lottery_with_usd_value")
+// Anchor format: sha256("global:enter_lottery_with_usd_value")[0:8]
 const ENTER_LOTTERY_DISCRIMINATOR = Buffer.from([
-    0x8a, 0x7c, 0x3e, 0x2d, 0x1f, 0x0a, 0x9b, 0x4c
+    228, 9, 234, 34, 108, 132, 27, 195
 ]);
 
 async function enterLotteryRaw(walletKeypair, usdValueCents) {
@@ -71,13 +71,14 @@ async function enterLotteryRaw(walletKeypair, usdValueCents) {
         },
     ];
 
-    const instruction = new Transaction().add({
+    const instruction = {
         programId: LOTTERY_PROGRAM_ID,
         keys,
         data: ixData,
-    });
+    };
 
-    const tx = new Transaction().add(instruction);
+    const tx = new Transaction();
+    tx.add(instruction);
     tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
     tx.feePayer = walletKeypair.publicKey;
 

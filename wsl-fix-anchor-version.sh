@@ -55,3 +55,9 @@ echo "   cd /mnt/c/Users/PreSafu/Desktop/POWERsol"
 echo "   anchor clean"
 echo "   anchor build"
 
+
+
+
+
+
+

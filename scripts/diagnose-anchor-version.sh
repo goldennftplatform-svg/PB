@@ -35,3 +35,9 @@ echo "7. Anchor.toml expected version:"
 grep "anchor_version" Anchor.toml 2>/dev/null || echo "Not found"
 echo ""
 
+
+
+
+
+
+

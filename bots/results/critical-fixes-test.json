@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-11-04T02:40:18.548Z",
+  "totalPassed": 11,
+  "totalFailed": 0,
+  "totalTests": 11,
+  "results": [
+    {
+      "test": "Minimum Transfer",
+      "passed": 5,
+      "failed": 0,
+      "total": 5
+    },
+    {
+      "test": "Pause Check",
+      "passed": 2,
+      "failed": 0,
+      "total": 2
+    },
+    {
+      "test": "Tax Validation",
+      "passed": 3,
+      "failed": 0,
+      "total": 3
+    },
+    {
+      "test": "Random Winner Selection",
+      "passed": 1,
+      "failed": 0,
+      "total": 1,
+      "note": "Uses weighted selection based on ticket count"
+    }
+  ]
+}
