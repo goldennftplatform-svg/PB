@@ -189,8 +189,8 @@ body[data-scroll-locked] {
 
 /* ========== Matrix / PEPEBALL theme (transparent glass, mobile-first) ========== */
 .matrix-page {
-  --matrix-bg: #050809;
-  --matrix-grid: rgba(0, 255, 65, 0.03);
+  --matrix-bg: #030706;
+  --matrix-grid: rgba(0, 255, 65, 0.045);
   --matrix-glass: rgba(5, 15, 12, 0.4);
   --matrix-glass-border: rgba(0, 255, 65, 0.12);
   --matrix-accent: #00ff41;
@@ -221,6 +221,42 @@ body[data-scroll-locked] {
   background: radial-gradient(ellipse 90% 60% at 50% -30%, rgba(0, 255, 65, 0.06), transparent 50%);
   pointer-events: none;
   z-index: 0;
+}
+
+/* Scanline overlay (after rain in DOM so rain shows through) */
+.matrix-scanline {
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.04) 2px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Data-panel: tighter, ticker-style cards */
+.matrix-data-panel {
+  background: rgba(2, 8, 6, 0.5);
+  border: 1px solid rgba(0, 255, 65, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 0 0 1px rgba(0, 255, 65, 0.06), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.matrix-data-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(0, 255, 65, 0.5);
+}
+
+.matrix-hero-value {
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 24px rgba(0, 255, 65, 0.4), 0 0 48px rgba(0, 255, 65, 0.2);
 }
 
 .matrix-glass {
