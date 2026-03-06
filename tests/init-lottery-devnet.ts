@@ -59,15 +59,16 @@ describe("Initialize Lottery on Devnet", () => {
 
     // Initialize lottery
     const initialJackpot = new anchor.BN(20 * 1e9); // 20 SOL
+    const entryMinCents = new anchor.BN(2000);
+    const tier2MinCents = new anchor.BN(10000);
+    const tier3MinCents = new anchor.BN(50000);
 
     console.log(`🚀 Initializing lottery with ${initialJackpot.toNumber() / 1e9} SOL initial jackpot...\n`);
 
     try {
       // Anchor automatically derives PDA from seeds specified in Rust constraint
-      // The Rust code has: seeds = [b"lottery"], bump
-      // So Anchor will derive the PDA and sign with it automatically
       const tx = await lotteryProgram.methods
-        .initializeLottery(initialJackpot)
+        .initializeLottery(initialJackpot, entryMinCents, tier2MinCents, tier3MinCents)
         .accounts({
           lottery: lotteryPDA,
           admin: admin.publicKey,

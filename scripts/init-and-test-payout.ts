@@ -36,9 +36,12 @@ async function main() {
         console.log('🚀 Initializing lottery...\n');
         
         const initialJackpot = new anchor.BN(20 * 1e9); // 20 SOL
+        const entryMinCents = new anchor.BN(2000);
+        const tier2MinCents = new anchor.BN(10000);
+        const tier3MinCents = new anchor.BN(50000);
         
         const tx = await lotteryProgram.methods
-            .initializeLottery(initialJackpot)
+            .initializeLottery(initialJackpot, entryMinCents, tier2MinCents, tier3MinCents)
             .accounts({
                 lottery: lotteryPDA,
                 admin: admin.publicKey,

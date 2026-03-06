@@ -65,12 +65,15 @@ async function main() {
 
   // Initialize lottery
   const initialJackpot = new anchor.BN(20 * 1e9); // 20 SOL
-  
+  const entryMinCents = new anchor.BN(2000);   // $20 → 1 ticket (use 50 for test: 0.50 USDC)
+  const tier2MinCents = new anchor.BN(10000); // $100 → 4 tickets (use 100 for test: 1 USDC)
+  const tier3MinCents = new anchor.BN(50000); // $500 → 10 tickets (use 500 for test: 5 USDC)
+
   console.log("🚀 Initializing lottery with", initialJackpot.toNumber() / 1e9, "SOL initial jackpot...");
 
   try {
     const tx = await program.methods
-      .initializeLottery(initialJackpot)
+      .initializeLottery(initialJackpot, entryMinCents, tier2MinCents, tier3MinCents)
       .accounts({
         lottery: lotteryPDA,
         admin: wallet.publicKey,

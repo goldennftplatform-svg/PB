@@ -10,13 +10,20 @@ pub mod lottery {
     pub fn initialize_lottery(
         ctx: Context<InitializeLottery>,
         jackpot_amount: u64,
+        entry_min_cents: u64,
+        tier2_min_cents: u64,
+        tier3_min_cents: u64,
     ) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
         
         require!(jackpot_amount > 0, ErrorCode::InvalidConfig);
         require!(jackpot_amount <= 1_000_000 * 1_000_000_000, ErrorCode::InvalidConfig);
+        require!(entry_min_cents > 0 && entry_min_cents < tier2_min_cents && tier2_min_cents < tier3_min_cents, ErrorCode::InvalidConfig);
         
         lottery.jackpot_amount = jackpot_amount;
+        lottery.entry_min_cents = entry_min_cents;
+        lottery.tier2_min_cents = tier2_min_cents;
+        lottery.tier3_min_cents = tier3_min_cents;
         lottery.carry_over_amount = 0;
         lottery.last_snapshot = Clock::get()?.unix_timestamp;
         lottery.base_snapshot_interval = 72 * 60 * 60;
@@ -35,6 +42,21 @@ pub mod lottery {
         Ok(())
     }
 
+    /// Admin: set tier thresholds (e.g. test mode: 50, 100, 500 cents for 0.50/1/5 USDC → 1/4/10 tickets)
+    pub fn set_tier_thresholds(
+        ctx: Context<UpdateTierThresholds>,
+        entry_min_cents: u64,
+        tier2_min_cents: u64,
+        tier3_min_cents: u64,
+    ) -> Result<()> {
+        require!(entry_min_cents > 0 && entry_min_cents < tier2_min_cents && tier2_min_cents < tier3_min_cents, ErrorCode::InvalidConfig);
+        let lottery = &mut ctx.accounts.lottery;
+        lottery.entry_min_cents = entry_min_cents;
+        lottery.tier2_min_cents = tier2_min_cents;
+        lottery.tier3_min_cents = tier3_min_cents;
+        Ok(())
+    }
+
     pub fn enter_lottery_with_usd_value(
         ctx: Context<EnterLottery>,
         usd_value: u64,
@@ -42,7 +64,7 @@ pub mod lottery {
         let lottery = &mut ctx.accounts.lottery;
         require!(lottery.is_active, ErrorCode::LotteryInactive);
         
-        let ticket_count = calculate_tickets_from_usd_value(usd_value);
+        let ticket_count = calculate_tickets_from_usd_value(usd_value, lottery.entry_min_cents, lottery.tier2_min_cents, lottery.tier3_min_cents);
         require!(ticket_count > 0, ErrorCode::InsufficientValue);
         
         let participant_wallet = ctx.accounts.participant.key();
@@ -364,6 +386,13 @@ pub struct UpdateJackpotAmount<'info> {
 }
 
 #[derive(Accounts)]
+pub struct UpdateTierThresholds<'info> {
+    #[account(mut, has_one = admin)]
+    pub lottery: Account<'info, Lottery>,
+    pub admin: Signer<'info>,
+}
+
+#[derive(Accounts)]
 pub struct EmergencyPauseLottery<'info> {
     #[account(mut)]
     pub lottery: Account<'info, Lottery>,
@@ -387,25 +416,31 @@ pub struct CloseLottery<'info> {
 
 #[account]
 #[derive(InitSpace)]
-        pub struct Lottery {
-        pub jackpot_amount: u64,
+pub struct Lottery {
+    pub jackpot_amount: u64,
+    /// Min USD cents for 1 ticket (prod: 2000 = $20, test: 50 = $0.50 USDC)
+    pub entry_min_cents: u64,
+    /// Min USD cents for 4 tickets (prod: 10000 = $100, test: 100 = $1 USDC)
+    pub tier2_min_cents: u64,
+    /// Min USD cents for 10 tickets (prod: 50000 = $500, test: 500 = $5 USDC)
+    pub tier3_min_cents: u64,
     pub carry_over_amount: u64,
-        pub last_snapshot: i64,
+    pub last_snapshot: i64,
     pub base_snapshot_interval: u64,
     pub fast_snapshot_interval: u64,
     pub fast_mode_threshold: u64,
     pub fees_collected: u64,
-        pub is_fast_mode: bool,
-        pub is_active: bool,
-        pub admin: Pubkey,
-        pub total_participants: u64,
+    pub is_fast_mode: bool,
+    pub is_active: bool,
+    pub admin: Pubkey,
+    pub total_participants: u64,
     pub total_tickets: u64,
-        pub total_snapshots: u64,
-    pub snapshot_seed: u64,  // Seed for winner selection
+    pub total_snapshots: u64,
+    pub snapshot_seed: u64,
     pub winners: Winners,
-    pub rollover_count: u8,  // Track consecutive rollovers
-    pub pepe_ball_count: u8,  // Last draw's Pepe ball count (1-30)
-        }
+    pub rollover_count: u8,
+    pub pepe_ball_count: u8,
+}
 
 #[account]
 #[derive(InitSpace)]
@@ -424,13 +459,24 @@ pub struct Winners {
     pub minor_winners: Vec<Pubkey>,
 }
 
-fn calculate_tickets_from_usd_value(usd_value: u64) -> u32 {
-    match usd_value {
-        2000..=9999 => 1,
-        10000..=49999 => 4,
-        50000..=u64::MAX => 10,
-        _ => 0,
+/// Same ratio as prod: entry_min→1, tier2_min→4, tier3_min→10 tickets.
+/// Prod: 2000, 10000, 50000 ($20/$100/$500). Test: 50, 100, 500 (0.50/1/5 USDC).
+fn calculate_tickets_from_usd_value(
+    usd_value: u64,
+    entry_min_cents: u64,
+    tier2_min_cents: u64,
+    tier3_min_cents: u64,
+) -> u32 {
+    if usd_value < entry_min_cents {
+        return 0;
     }
+    if usd_value < tier2_min_cents {
+        return 1;
+    }
+    if usd_value < tier3_min_cents {
+        return 4;
+    }
+    10
 }
 
 #[error_code]

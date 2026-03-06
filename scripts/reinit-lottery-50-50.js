@@ -96,10 +96,19 @@ async function reinitLottery() {
         // Step 4: Initialize new lottery
         console.log('🎰 Step 4: Initializing New Lottery\n');
         const initialJackpot = 20 * LAMPORTS_PER_SOL; // 20 SOL
+        // Tier thresholds in USD cents: $20→1 ticket, $100→4, $500→10. For test coin use 50, 100, 500.
+        const ENTRY_MIN_CENTS = 2000;
+        const TIER2_MIN_CENTS = 10000;
+        const TIER3_MIN_CENTS = 50000;
 
         try {
             const initTx = await program.methods
-                .initializeLottery(new anchor.BN(initialJackpot))
+                .initializeLottery(
+                    new anchor.BN(initialJackpot),
+                    new anchor.BN(ENTRY_MIN_CENTS),
+                    new anchor.BN(TIER2_MIN_CENTS),
+                    new anchor.BN(TIER3_MIN_CENTS)
+                )
                 .accounts({
                     lottery: lotteryPDA,
                     admin: adminKeypair.publicKey,

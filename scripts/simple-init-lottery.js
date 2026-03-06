@@ -79,13 +79,16 @@ async function simpleInit() {
 
     // Initialize
     const initialJackpot = new anchor.BN(20 * 1e9); // 20 SOL
+    const entryMinCents = new anchor.BN(2000);   // $20 → 1 ticket (test: 50 for 0.50 USDC)
+    const tier2MinCents = new anchor.BN(10000);  // $100 → 4 tickets (test: 100 for 1 USDC)
+    const tier3MinCents = new anchor.BN(50000);  // $500 → 10 tickets (test: 500 for 5 USDC)
 
     console.log('🚀 Initializing lottery with ' + (initialJackpot.toNumber() / 1e9) + ' SOL initial jackpot...\n');
 
     try {
         // Anchor automatically handles PDA seeds when using .accounts()
         const tx = await lotteryProgram.methods
-            .initializeLottery(initialJackpot)
+            .initializeLottery(initialJackpot, entryMinCents, tier2MinCents, tier3MinCents)
             .accounts({
                 lottery: lotteryPDA,
                 admin: admin.publicKey,
