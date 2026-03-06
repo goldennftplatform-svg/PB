@@ -11,12 +11,8 @@
 const { PublicKey } = require('@solana/web3.js');
 const { getAssociatedTokenAddress, getAccount } = require('@solana/spl-token');
 const { getRpcConnection } = require('./lib/get-rpc-connection');
-
-// Same as v2turbo constants: tax from 3X36... goes here; SOL from here → JACKPOT_SOL_DESTINATION_MAINNET
-const TAX_RECIPIENT_ADDRESS = 'FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje';
-const JACKPOT_SOL_DESTINATION_MAINNET = process.env.JACKPOT_SOL_DESTINATION_MAINNET || 'FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje';
-const TOKEN_MINT_ADDRESS = '3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump';
-const TOKEN_DECIMALS = 6;
+const { TOKEN_MINT_ADDRESS, TAX_RECIPIENT_ADDRESS, JACKPOT_SOL_DESTINATION_MAINNET } = require('./lib/token-config');
+const TOKEN_DECIMALS = require('./lib/token-config').TOKEN_DECIMALS;
 const DRIP_MIN_BALANCE_RAW = Number(process.env.DRIP_MIN_BALANCE_RAW || '10000000');   // ~10 tokens
 const DRIP_PERCENT_BPS = Number(process.env.DRIP_PERCENT_BPS || '1000');              // 10%
 const DRIP_MAX_CHUNK_RAW = Number(process.env.DRIP_MAX_CHUNK_RAW || '100000000');     // ~100 tokens

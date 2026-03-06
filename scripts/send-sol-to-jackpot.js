@@ -14,9 +14,7 @@ const { getRpcConnection } = require('./lib/get-rpc-connection');
 const fs = require('fs');
 const path = require('path');
 
-const TAX_RECIPIENT_ADDRESS = 'FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje';
-const JACKPOT_SOL_DESTINATION_MAINNET = process.env.JACKPOT_SOL_DESTINATION_MAINNET || 'FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje';
-const TOKEN_MINT_ADDRESS = '3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump';
+const { TAX_RECIPIENT_ADDRESS, JACKPOT_SOL_DESTINATION_MAINNET, TOKEN_MINT_ADDRESS } = require('./lib/token-config');
 
 const LAMPORTS_PER_SOL = 1e9;
 const RENT_RESERVE_LAMPORTS = 5000; // leave a bit so account stays rent-exempt

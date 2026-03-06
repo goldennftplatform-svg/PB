@@ -13,6 +13,7 @@ import {
   DEV_PERCENT,
   SECONDARY_WINNER_PERCENT,
 } from '@/lib/constants';
+import { TAROBASE_CONFIG } from '@/lib/config';
 import { usePhantomFallback } from '@/contexts/PhantomFallbackContext';
 import { useTokenPrice } from '@/contexts/TokenPriceContext';
 import { useAuth } from '@pooflabs/web';
@@ -120,18 +121,23 @@ export const HomePage: React.FC = () => {
     return formatCountdownShort(jackpot.nextDrawingAt);
   }, [jackpot?.nextDrawingAt, tick]);
 
-  // OG terminal theme from app/index.html — anon green
+  // Premium terminal: matrix vibe, Fortune 500 polish
   const terminal = {
-    bg: '#0d1117',
-    panel: '#161b22',
-    card: '#1c2128',
-    border: '#30363d',
-    text: '#c9d1d9',
-    dim: '#8b949e',
+    bg: '#0a0e12',
+    bgGradient: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 255, 65, 0.06), transparent), #0a0e12',
+    panel: '#111820',
+    card: 'rgba(22, 28, 36, 0.85)',
+    cardBorder: 'rgba(0, 255, 65, 0.12)',
+    border: '#1e2836',
+    text: '#e6edf3',
+    dim: '#7d8a99',
     accent: '#00ff41',
+    accentDim: 'rgba(0, 255, 65, 0.7)',
     accentAlt: '#58a6ff',
-    gold: '#d4a520',
+    gold: '#e5b84a',
     red: '#f85149',
+    fontDisplay: "'Syne', system-ui, sans-serif",
+    fontMono: "'JetBrains Mono', 'Courier New', Consolas, monospace",
   };
 
   const pepeBallSrc = '/pepe-ball.png';
@@ -158,93 +164,108 @@ export const HomePage: React.FC = () => {
   `;
 
   return (
-    <div className="min-h-screen" style={{ background: terminal.bg, color: terminal.text, fontFamily: "'Courier New', Consolas, Monaco, monospace" }}>
+    <div className="min-h-screen" style={{ background: terminal.bgGradient, color: terminal.text, fontFamily: terminal.fontMono }}>
       <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
-      {/* Header — OG style: centered, Pepe ball guy, green glow */}
+      {/* Header — circular logo, premium typography */}
       <header
-        className="border-b-2 sticky top-0 z-10 text-center"
+        className="sticky top-0 z-10 text-center border-b"
         style={{
-          borderColor: terminal.accent,
-          background: terminal.panel,
-          padding: '24px 16px',
-          boxShadow: '0 0 20px rgba(0, 255, 65, 0.1)',
+          borderColor: terminal.cardBorder,
+          background: 'linear-gradient(180deg, rgba(17, 24, 32, 0.98) 0%, rgba(17, 24, 32, 0.95) 100%)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          padding: '28px 20px',
+          boxShadow: '0 1px 0 rgba(0, 255, 65, 0.06), 0 20px 40px -20px rgba(0, 0, 0, 0.5)',
         }}
       >
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-          <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center pepball-float">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-8">
+          {/* Circular logo crop — premium ring + shadow */}
+          <div
+            className="flex-shrink-0 pepball-float rounded-full overflow-hidden ring-2"
+            style={{
+              width: 'clamp(88px, 20vw, 120px)',
+              height: 'clamp(88px, 20vw, 120px)',
+              boxShadow: '0 0 0 1px rgba(0, 255, 65, 0.2), 0 0 40px rgba(0, 255, 65, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.3)',
+              border: '2px solid rgba(0, 255, 65, 0.35)',
+            }}
+          >
             <img
               src={pepeBallSrc}
-              alt="Pepe Ball"
-              className="w-full h-full object-contain"
+              alt="PEPEBALL"
+              className="w-full h-full object-cover scale-110"
             />
           </div>
           <div>
             <h1
-              className="text-2xl sm:text-3xl font-bold tracking-wide"
-              style={{ color: terminal.accent, textShadow: '0 0 10px rgba(0, 255, 65, 0.5)', letterSpacing: '2px' }}
+              className="text-3xl sm:text-4xl font-extrabold tracking-tight"
+              style={{
+                fontFamily: terminal.fontDisplay,
+                color: terminal.accent,
+                textShadow: '0 0 20px rgba(0, 255, 65, 0.4), 0 2px 4px rgba(0, 0, 0, 0.4)',
+                letterSpacing: '-0.02em',
+              }}
             >
               PEPEBALL
             </h1>
-            <p className="text-sm mt-1" style={{ color: terminal.dim }}>Solana Powerball Lottery</p>
+            <p className="text-sm mt-1.5 tracking-wide" style={{ color: terminal.dim, fontFamily: terminal.fontMono }}>
+              Solana Powerball Lottery
+            </p>
           </div>
         </div>
-        <div className="flex items-center justify-center gap-4 mt-3">
+        <div className="flex items-center justify-center mt-5">
           <WalletButton variant="dark" />
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 max-w-4xl">
+      <main className="container mx-auto px-4 py-8 sm:py-10 max-w-4xl">
         {/* Tagline */}
-        <p className="text-center text-sm uppercase tracking-widest mb-8" style={{ color: terminal.dim }}>
-          SPIN_YOUR_DESTINY // PROVABLY_FAIR
+        <p className="text-center text-xs uppercase tracking-[0.2em] mb-10" style={{ color: terminal.dim, fontFamily: terminal.fontMono }}>
+          Spin your destiny · Provably fair
         </p>
 
-        {/* Jackpot + countdown row */}
-        <section className="mb-8">
-          <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>JACKPOT_BALANCE</div>
-          <div className="text-4xl font-bold tabular-nums mb-6 pepball-glow" style={{ color: terminal.accent }}>
+        {/* Jackpot + countdown — hero block */}
+        <section className="mb-10 rounded-2xl border p-6 sm:p-8" style={{ background: terminal.card, borderColor: terminal.cardBorder, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}>
+          <div className="text-xs uppercase tracking-wider mb-2" style={{ color: terminal.dim }}>Jackpot</div>
+          <div className="text-4xl sm:text-5xl font-bold tabular-nums mb-6 pepball-glow" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
             {loading ? '...' : error ? '—' : jackpotSol != null ? `${jackpotSol} SOL` : '—'}
           </div>
-          <div className="flex flex-wrap items-center gap-6">
-            <div>
-              <span className="text-xs uppercase mr-2" style={{ color: terminal.dim }}>DRAW_{jackpot?.drawingNumber ?? '?'}</span>
-              <span className="text-xs uppercase" style={{ color: terminal.dim }}>NEXT_DRAW_IN</span>
-            </div>
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm">
+            <span className="text-xs uppercase" style={{ color: terminal.dim }}>Draw {jackpot?.drawingNumber ?? '?'}</span>
+            <span className="text-xs uppercase" style={{ color: terminal.dim }}>Next draw</span>
             {countdown != null ? (
-              <span className="tabular-nums font-mono pepball-pulse" style={{ color: terminal.gold }}>
-                {String(countdown.hours).padStart(2, '0')}HRS : {String(countdown.mins).padStart(2, '0')}MIN : {String(countdown.secs).padStart(2, '0')}SEC
+              <span className="tabular-nums pepball-pulse font-medium" style={{ color: terminal.gold, fontFamily: terminal.fontMono }}>
+                {String(countdown.hours).padStart(2, '0')} : {String(countdown.mins).padStart(2, '0')} : {String(countdown.secs).padStart(2, '0')}
               </span>
             ) : (
               <span style={{ color: terminal.dim }}>{nextDrawLabel}</span>
             )}
-            <span className="text-xs" style={{ color: terminal.dim }}>0 ENTRIES</span>
-            <span className="text-xs uppercase" style={{ color: terminal.dim }}>CONNECT_WALLET_TO_ENTER</span>
+            <span style={{ color: terminal.dim }}>· 0 entries</span>
+            <span className="text-xs uppercase" style={{ color: terminal.accentDim }}>Connect wallet to enter</span>
           </div>
         </section>
 
         {/* Fortune spin section */}
         <section
-          className="rounded-xl border p-6 mb-8"
-          style={{ borderColor: terminal.border, background: terminal.card }}
+          className="rounded-2xl border p-6 sm:p-8 mb-8"
+          style={{ borderColor: terminal.cardBorder, background: terminal.card, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}
         >
-          <h2 className="text-lg font-bold uppercase tracking-wider mb-2" style={{ color: terminal.accent }}>
-            FORTUNE_SPIN 🐸
+          <h2 className="text-xl font-bold tracking-tight mb-2" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+            Fortune Spin
           </h2>
           <p className="text-sm mb-6" style={{ color: terminal.dim }}>
-            5 BALLS + PEPE // SUM EVEN = PAYOUT // SUM ODD = ROLLOVER
+            5 balls + Pepe · Even = payout · Odd = rollover
           </p>
-          <div className="text-xs uppercase mb-4" style={{ color: terminal.dim }}>FORTUNE_REVEALED</div>
+          <div className="text-xs uppercase tracking-wider mb-4" style={{ color: terminal.dim }}>Balls</div>
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-4">
             {[0, 1, 2, 3, 4].map((i) => (
               <div key={i} className="flex flex-col items-center">
                 <div
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 flex items-center justify-center text-lg sm:text-xl font-bold tabular-nums"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 flex items-center justify-center text-lg sm:text-xl font-bold tabular-nums transition-colors"
                   style={{
-                    borderColor: terminal.accent,
+                    borderColor: terminal.accentDim,
                     background: drawPhase === 'spinning' ? terminal.panel : terminal.bg,
                     color: terminal.accent,
-                    boxShadow: '0 0 10px rgba(0, 255, 65, 0.3)',
-                    transition: 'background 0.2s',
+                    boxShadow: '0 0 12px rgba(0, 255, 65, 0.2)',
                   }}
                 >
                   {drawPhase === 'idle' ? '?' : String(ballValues[i] ?? 0).padStart(2, '0')}
@@ -254,135 +275,134 @@ export const HomePage: React.FC = () => {
             ))}
             <div className="flex flex-col items-center">
               <div
-                className="pepball-ball-hover w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 flex items-center justify-center flex-shrink-0 p-0.5"
+                className="pepball-ball-hover w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden flex-shrink-0 ring-2"
                 style={{
-                  borderColor: terminal.accent,
-                  background: terminal.bg,
-                  boxShadow: '0 0 15px rgba(0, 255, 65, 0.5)',
+                  boxShadow: '0 0 20px rgba(0, 255, 65, 0.25), inset 0 0 10px rgba(0, 0, 0, 0.2)',
+                  border: `2px solid ${terminal.accentDim}`,
                 }}
               >
-                <img src={pepeBallSrc} alt="PEPE" className="w-full h-full object-contain" />
+                <img src={pepeBallSrc} alt="PEPE" className="w-full h-full object-cover scale-110" />
               </div>
-              <span className="text-xs mt-1" style={{ color: terminal.dim }}>PEPE</span>
+              <span className="text-xs mt-1" style={{ color: terminal.dim }}>Pepe</span>
             </div>
           </div>
           {drawPhase === 'revealed' && drawResult && (
-            <div className="mb-6 p-4 rounded-lg border-2 text-center" style={{ borderColor: terminal.accent, background: terminal.bg }}>
-              <div className="text-xs uppercase mb-2" style={{ color: terminal.dim }}>FINAL_SUM</div>
-              <div className="text-3xl font-bold tabular-nums pepball-glow mb-2" style={{ color: terminal.accent }}>{drawResult.sum}</div>
+            <div className="mb-6 p-6 rounded-xl border text-center" style={{ borderColor: terminal.cardBorder, background: 'rgba(0, 255, 65, 0.04)' }}>
+              <div className="text-xs uppercase tracking-wider mb-2" style={{ color: terminal.dim }}>Final sum</div>
+              <div className="text-3xl font-bold tabular-nums pepball-glow mb-2" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>{drawResult.sum}</div>
               <div className="text-sm font-semibold mb-2" style={{ color: terminal.accent }}>
-                {drawResult.isEven ? 'EVEN = PAYOUT' : 'ODD = ROLLOVER'}
+                {drawResult.isEven ? 'Even — Payout' : 'Odd — Rollover'}
               </div>
-              <div className="text-base font-bold py-2 px-4 rounded inline-block mb-2" style={{ color: terminal.accent, border: `2px solid ${terminal.accent}` }}>
-                SUM: {drawResult.sum} — {drawResult.isEven ? 'EVEN PAYOUT!' : 'ODD ROLLOVER!'}
+              <div className="text-base font-semibold py-2.5 px-5 rounded-xl inline-block mb-2" style={{ color: terminal.accent, border: `2px solid ${terminal.accentDim}` }}>
+                {drawResult.sum} · {drawResult.isEven ? 'Even payout' : 'Odd rollover'}
               </div>
-              {drawResult.isEven && <p className="text-sm" style={{ color: terminal.gold }}>PEPE CELEBRATES! WINNERS PAID OUT!</p>}
-              <div className="mt-3 py-2 px-4 rounded font-bold" style={{ background: 'rgba(212,165,32,0.2)', color: terminal.gold, border: `1px solid ${terminal.gold}` }}>
-                WINNER INDEX: #{drawResult.winnerIndex}
+              {drawResult.isEven && <p className="text-sm" style={{ color: terminal.gold }}>Winners paid out on-chain.</p>}
+              <div className="mt-3 py-2.5 px-4 rounded-xl font-semibold" style={{ background: 'rgba(229, 184, 74, 0.12)', color: terminal.gold, border: `1px solid ${terminal.gold}` }}>
+                Winner index #{drawResult.winnerIndex}
               </div>
             </div>
           )}
-          <p className="text-xs uppercase text-center mb-4" style={{ color: terminal.dim }}>
-            {drawPhase === 'spinning' ? 'SPINNING...' : 'FORTUNE_SPINS_WHEN_COUNTDOWN_ENDS'}
+          <p className="text-xs text-center mb-4" style={{ color: terminal.dim }}>
+            {drawPhase === 'spinning' ? 'Spinning…' : 'Fortune spins when countdown ends'}
           </p>
           <div className="flex flex-wrap gap-4 justify-center items-center">
             <button
               type="button"
               onClick={runDrawingAnimation}
-              className="px-6 py-2 rounded border-2 font-semibold uppercase text-sm transition-all duration-300 hover:shadow-[0_0_15px_rgba(0,255,65,0.4)]"
+              className="px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-[1.02]"
               style={{
-                borderColor: terminal.accent,
-                color: terminal.accent,
-                background: 'transparent',
+                border: 'none',
+                color: terminal.bg,
+                background: terminal.accent,
+                boxShadow: '0 0 20px rgba(0, 255, 65, 0.3), 0 4px 14px rgba(0, 0, 0, 0.2)',
               }}
             >
-              {drawPhase === 'revealed' ? 'PLAY DRAWING AGAIN' : 'PLAY DRAWING'}
+              {drawPhase === 'revealed' ? 'Play again' : 'Play drawing'}
             </button>
             <button
               type="button"
-              className="px-6 py-2 rounded border-2 font-semibold uppercase text-sm opacity-80"
-              style={{ borderColor: terminal.border, color: terminal.dim, background: 'transparent' }}
+              className="px-6 py-3 rounded-xl border font-semibold text-sm transition-all duration-200"
+              style={{ borderColor: terminal.cardBorder, color: terminal.text, background: 'transparent' }}
             >
-              ENTER_DRAWING
+              Enter drawing
             </button>
-            <span className="text-xs uppercase" style={{ color: terminal.dim }}>CONNECT_WALLET_TO_ENTER</span>
+            <span className="text-xs" style={{ color: terminal.dim }}>Connect wallet to enter</span>
           </div>
         </section>
 
         {/* Entry registry */}
         <section
-          className="rounded-xl border p-4 mb-8"
-          style={{ borderColor: terminal.border, background: terminal.card }}
+          className="rounded-2xl border p-5 sm:p-6 mb-8"
+          style={{ borderColor: terminal.cardBorder, background: terminal.card, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}
         >
-          <div className="text-xs uppercase tracking-wider" style={{ color: terminal.dim }}>ENTRY_REGISTRY</div>
-          <div className="text-xs mt-1" style={{ color: terminal.dim }}>ENTRY_LOG.SYS[0 REGISTERED]</div>
-          <div className="text-sm mt-2" style={{ color: terminal.dim }}>$ NO_ENTRIES_YET_</div>
+          <div className="text-xs uppercase tracking-wider" style={{ color: terminal.dim }}>Entry registry</div>
+          <div className="text-sm mt-2" style={{ color: terminal.text }}>0 registered · Connect wallet to enter</div>
         </section>
 
         {/* Payout structure */}
         <section
-          className="rounded-xl border p-6 mb-8"
-          style={{ borderColor: terminal.border, background: terminal.card }}
+          className="rounded-2xl border p-6 sm:p-8 mb-8"
+          style={{ borderColor: terminal.cardBorder, background: terminal.card, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}
         >
-          <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: terminal.accent }}>
-            PAYOUT_STRUCTURE
+          <h3 className="text-base font-bold tracking-tight mb-4" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+            Payout structure
           </h3>
-          <ul className="space-y-2 text-sm">
+          <ul className="space-y-3 text-sm">
             <li className="flex justify-between">
-              <span style={{ color: terminal.text }}>MAIN_WINNER</span>
+              <span style={{ color: terminal.text }}>Main winner</span>
               <span style={{ color: terminal.gold }}>{MAIN_WINNER_PERCENT}%</span>
             </li>
             <li className="flex justify-between">
-              <span style={{ color: terminal.text }}>SECONDARY_x8</span>
+              <span style={{ color: terminal.text }}>Secondary (×8)</span>
               <span style={{ color: terminal.dim }}>{SECONDARY_WINNER_PERCENT}% each</span>
             </li>
             <li className="flex justify-between">
-              <span style={{ color: terminal.text }}>ROLLOVER</span>
+              <span style={{ color: terminal.text }}>Rollover</span>
               <span style={{ color: terminal.accent }}>{ROLLOVER_PERCENT}%</span>
             </li>
             <li className="flex justify-between">
-              <span style={{ color: terminal.text }}>DEV_FEE</span>
+              <span style={{ color: terminal.text }}>Dev fee</span>
               <span style={{ color: terminal.dim }}>{DEV_PERCENT}%</span>
             </li>
           </ul>
         </section>
 
         {/* Fortune guarantee */}
-        <section className="mb-8 text-sm" style={{ color: terminal.dim }}>
-          <h3 className="text-xs uppercase tracking-wider mb-2" style={{ color: terminal.accent }}>FORTUNE_GUARANTEE:</h3>
-          <ul className="list-disc list-inside space-y-1">
-            <li>No way to predict or manipulate winner</li>
-            <li>Result verified onchain before payout</li>
-            <li>Your fortune is sealed by VRF on Solana</li>
+        <section className="mb-8 text-sm rounded-2xl border p-6" style={{ borderColor: terminal.cardBorder, background: terminal.card, color: terminal.dim }}>
+          <h3 className="text-base font-bold tracking-tight mb-3" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>Provably fair</h3>
+          <ul className="space-y-2">
+            <li>· No way to predict or manipulate the winner</li>
+            <li>· Result verified on-chain before payout</li>
+            <li>· Sealed by VRF on Solana</li>
           </ul>
         </section>
 
         {/* Current round info */}
         <section
-          className="rounded-xl border p-6 mb-8"
-          style={{ borderColor: terminal.border, background: terminal.card }}
+          className="rounded-2xl border p-6 sm:p-8 mb-8"
+          style={{ borderColor: terminal.cardBorder, background: terminal.card, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}
         >
-          <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: terminal.accent }}>
-            CURRENT_ROUND_INFO
+          <h3 className="text-base font-bold tracking-tight mb-4" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+            Current round
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
             <div>
-              <div className="text-xs uppercase mb-1" style={{ color: terminal.dim }}>CURRENT_JACKPOT</div>
-              <div className="font-mono tabular-nums" style={{ color: terminal.gold }}>
+              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Current jackpot</div>
+              <div className="font-mono tabular-nums font-medium" style={{ color: terminal.gold }}>
                 {loading ? '...' : jackpotSol != null ? `${jackpotSol} SOL` : '0.00 SOL'}
               </div>
             </div>
             <div>
-              <div className="text-xs uppercase mb-1" style={{ color: terminal.dim }}>ENTRIES_REGISTERED</div>
+              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Entries</div>
               <div className="font-mono">0</div>
             </div>
             <div>
-              <div className="text-xs uppercase mb-1" style={{ color: terminal.dim }}>NEXT_DRAWING</div>
+              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Next drawing</div>
               <div className="font-mono">{nextDrawLabel || 'TBD'}</div>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t" style={{ borderColor: terminal.border }}>
-            <div className="text-xs uppercase mb-1" style={{ color: terminal.dim }}>TO_BE_ELIGIBLE</div>
+          <div className="mt-4 pt-4 border-t" style={{ borderColor: terminal.cardBorder }}>
+            <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Eligibility</div>
             <p style={{ color: terminal.text }}>Hold $20 worth of $PBALL at draw time</p>
             <p className="text-xs mt-1" style={{ color: terminal.dim }}>
               At current price: $20 ≈ {(20 / tokenPrice.effectiveUsdPerToken).toFixed(2)} tokens (1 token = ${tokenPrice.effectiveUsdPerToken.toFixed(6)})
@@ -395,55 +415,64 @@ export const HomePage: React.FC = () => {
 
         {/* Winners history */}
         <section
-          className="rounded-xl border p-6 mb-8"
-          style={{ borderColor: terminal.border, background: terminal.card }}
+          className="rounded-2xl border p-6 sm:p-8 mb-8"
+          style={{ borderColor: terminal.cardBorder, background: terminal.card, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}
         >
-          <h3 className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: terminal.accent }}>
-            WINNERS_HISTORY
+          <h3 className="text-base font-bold tracking-tight mb-2" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+            Winners
           </h3>
-          <p className="text-xs mb-4" style={{ color: terminal.dim }}>ALL_TX_VERIFIABLE_ON_SOLSCAN</p>
-          <div className="text-center py-8" style={{ color: terminal.dim }}>
-            NO_DRAWINGS_YET
+          <p className="text-xs mb-4" style={{ color: terminal.dim }}>All transactions verifiable on Solscan</p>
+          <div className="text-center py-10" style={{ color: terminal.dim }}>
+            No drawings yet
           </div>
-          <p className="text-xs text-center" style={{ color: terminal.dim }}>
-            Be the first winner, fren!
+          <p className="text-sm text-center" style={{ color: terminal.accentDim }}>
+            Be the first winner.
           </p>
         </section>
 
-        {/* Game snapshot / test addresses — verify on Solscan */}
+        {/* Game snapshot — verify on Solscan (mainnet or devnet by chain) */}
         <section
-          className="rounded-xl border p-4 mb-6"
-          style={{ borderColor: terminal.border, background: terminal.card }}
+          className="rounded-2xl border p-5 mb-8"
+          style={{ borderColor: terminal.cardBorder, background: terminal.card }}
         >
-          <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: terminal.accent }}>
-            VERIFY_ON_CHAIN (DEVNET)
-          </h3>
-          <div className="flex flex-wrap gap-4 text-sm">
-            <a
-              href={`https://solscan.io/account/${LOTTERY_PROGRAM_ID}?cluster=devnet`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono truncate max-w-full"
-              style={{ color: terminal.accentAlt }}
-            >
-              🔗 Lottery Program
-            </a>
-            <a
-              href={`https://solscan.io/account/${LOTTERY_PDA}?cluster=devnet`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono truncate max-w-full"
-              style={{ color: terminal.accentAlt }}
-            >
-              🔗 Game Snapshot (PDA)
-            </a>
-          </div>
-          <p className="text-xs mt-2 font-mono break-all" style={{ color: terminal.dim }}>
-            Program: {LOTTERY_PROGRAM_ID}
-          </p>
-          <p className="text-xs font-mono break-all" style={{ color: terminal.dim }}>
-            PDA: {LOTTERY_PDA}
-          </p>
+          {(() => {
+            const isMainnet = TAROBASE_CONFIG.chain === 'solana_mainnet';
+            const cluster = isMainnet ? '' : '?cluster=devnet';
+            const label = isMainnet ? 'Verify on-chain (Mainnet)' : 'Verify on-chain (Devnet)';
+            return (
+              <>
+                <h3 className="text-sm font-bold tracking-tight mb-3" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+                  {label}
+                </h3>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <a
+                    href={`https://solscan.io/account/${LOTTERY_PROGRAM_ID}${cluster}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono truncate max-w-full"
+                    style={{ color: terminal.accentAlt }}
+                  >
+                    🔗 Lottery Program
+                  </a>
+                  <a
+                    href={`https://solscan.io/account/${LOTTERY_PDA}${cluster}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono truncate max-w-full"
+                    style={{ color: terminal.accentAlt }}
+                  >
+                    🔗 Game Snapshot (PDA)
+                  </a>
+                </div>
+                <p className="text-xs mt-2 font-mono break-all" style={{ color: terminal.dim }}>
+                  Program: {LOTTERY_PROGRAM_ID}
+                </p>
+                <p className="text-xs font-mono break-all" style={{ color: terminal.dim }}>
+                  PDA: {LOTTERY_PDA}
+                </p>
+              </>
+            );
+          })()}
         </section>
 
         {/* Admin: token price sniffer + manual override */}
@@ -452,8 +481,8 @@ export const HomePage: React.FC = () => {
             className="rounded-xl border-2 p-6 mb-8"
             style={{ borderColor: terminal.gold, background: terminal.card }}
           >
-            <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: terminal.gold }}>
-              ADMIN — Token price (5 min updates)
+            <h3 className="text-base font-bold tracking-tight mb-4" style={{ color: terminal.gold, fontFamily: terminal.fontDisplay }}>
+              Admin — Token price
             </h3>
             <p className="text-xs font-mono break-all mb-4" style={{ color: terminal.dim }}>
               Mint: {PEPEBALL_MINT}
@@ -581,8 +610,8 @@ export const HomePage: React.FC = () => {
           </section>
         )}
 
-        <footer className="text-center text-xs py-6" style={{ color: terminal.dim }}>
-          WE_HAVE_NOTHING_TO_HIDE // All transactions are public and verifiable on Solana blockchain
+        <footer className="text-center text-xs py-10 sm:py-12" style={{ color: terminal.dim }}>
+          All transactions are public and verifiable on Solana
         </footer>
       </main>
     </div>

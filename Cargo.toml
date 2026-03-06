@@ -2,7 +2,8 @@
 members = [
     "programs/pepball-token",
     "programs/lottery",
-    "programs/lp-manager"
+    "programs/lp-manager",
+    "programs/tax-harvest"
 ]
 resolver = "2"
 
@@ -10,9 +11,10 @@ resolver = "2"
 overflow-checks = true
 lto = "fat"
 codegen-units = 1
+opt-level = "z"   # optimize for size (lower deploy cost)
 
 [profile.release.build-override]
-opt-level = 3
+opt-level = "z"
 incremental = false
 codegen-units = 1
 

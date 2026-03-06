@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount};
 use anchor_lang::solana_program::clock::Clock;
 
 declare_id!("8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7");
@@ -32,14 +31,7 @@ pub mod lottery {
         lottery.total_snapshots = 0;
         lottery.rollover_count = 0;
         lottery.pepe_ball_count = 0;
-        
-        msg!("PEPEBALL Lottery initialized!");
-        msg!("Initial Jackpot: {} SOL", jackpot_amount / 1_000_000_000);
-        msg!("Admin: {}", ctx.accounts.admin.key());
-        msg!("Lottery PDA: {}", lottery.key());
-        msg!("Scalable architecture: Separate participant accounts");
-        msg!("50/50 Rollover mechanic: Odd Pepe balls = payout, Even = rollover");
-        
+
         Ok(())
     }
 
@@ -65,14 +57,7 @@ pub mod lottery {
         
         lottery.total_participants += 1;
         lottery.total_tickets += ticket_count as u64;
-        
-        msg!("New participant entered: {} tickets (${}.{})", 
-             ticket_count, 
-             usd_value / 100, 
-             usd_value % 100);
-        msg!("Total unique participants: {}", lottery.total_participants);
-        msg!("Total tickets in lottery: {}", lottery.total_tickets);
-        
+
         Ok(())
     }
 
@@ -95,9 +80,7 @@ pub mod lottery {
         
         lottery.total_participants += 1;
         lottery.total_tickets += ticket_count as u64;
-        
-        msg!("New participant entered: {} tickets", ticket_count);
-        
+
         Ok(())
     }
 
@@ -116,13 +99,7 @@ pub mod lottery {
         ctx.accounts.participant_account.ticket_count += ticket_count;
         ctx.accounts.participant_account.usd_value += usd_value;
         lottery.total_tickets += ticket_count as u64;
-        
-        msg!("Participant added {} more tickets (total: {}, ${}.{} total)", 
-             ticket_count,
-             ctx.accounts.participant_account.ticket_count,
-             ctx.accounts.participant_account.usd_value / 100,
-             ctx.accounts.participant_account.usd_value % 100);
-        
+
         Ok(())
     }
 
@@ -164,39 +141,18 @@ pub mod lottery {
         lottery.last_snapshot = clock.unix_timestamp;
         lottery.total_snapshots += 1;
         lottery.is_fast_mode = lottery.fees_collected >= lottery.fast_mode_threshold;
-        
-        msg!("📸 SNAPSHOT TAKEN! 📸");
-        msg!("Total Participants: {}", lottery.total_participants);
-        msg!("Total Tickets: {}", lottery.total_tickets);
-        msg!("Snapshot Seed: {}", seed);
-        msg!("🐸 Pepe Ball Count: {} ({} balls)", pepe_count, if is_odd { "ODD" } else { "EVEN" });
-        
+
         if is_odd {
-            // ODD = PAYOUT: Proceed with winner selection
-            msg!("🎉 ODD COUNT - PAYOUT TIME! 🎉");
-            msg!("Use off-chain indexer to find winners based on this seed");
-            // Don't reset yet - wait for payout to complete
+            // ODD = PAYOUT: wait for set_winners + payout_winners
         } else {
-            // EVEN = ROLLOVER: Grow jackpot, extend timer, keep participants
-            msg!("🚀 EVEN COUNT - ROLLOVER! 🚀");
+            // EVEN = ROLLOVER: extend timer, keep participants
             lottery.rollover_count += 1;
-            
-            // Extend timer: 48h for odd rollovers, 72h for even rollovers
             let extension = if lottery.rollover_count % 2 == 0 {
-                72 * 3600  // 72 hours
+                72 * 3600
             } else {
-                48 * 3600  // 48 hours
+                48 * 3600
             };
-            
             lottery.last_snapshot = clock.unix_timestamp + extension as i64;
-            
-            // Jackpot grows (accumulates from entries, no payout)
-            // Participants remain for next draw
-            msg!("Rollover #{} - Jackpot grows, timer extended by {} hours", 
-                 lottery.rollover_count, extension / 3600);
-            msg!("Participants carry over to next draw");
-            
-            // Reset snapshot seed (no payout this round)
             lottery.snapshot_seed = 0;
         }
         
@@ -216,11 +172,7 @@ pub mod lottery {
         
         lottery.winners.main_winner = Some(main_winner);
         lottery.winners.minor_winners = minor_winners;
-        
-        msg!("✅ Winners set!");
-        msg!("Main Winner: {}", main_winner);
-        msg!("Minor Winners: {}", lottery.winners.minor_winners.len());
-        
+
         Ok(())
     }
 
@@ -229,23 +181,7 @@ pub mod lottery {
         require!(lottery.winners.main_winner.is_some(), ErrorCode::NoWinners);
         require!(lottery.pepe_ball_count % 2 == 1, ErrorCode::InvalidConfig); // Must be odd for payout
         
-        let total_jackpot = lottery.jackpot_amount + lottery.carry_over_amount;
-        
-        // 50/50 ROLLOVER PAYOUT STRUCTURE (when odd):
-        // 50% main winner, 40% split 8 minors (5% each), 10% house
-        let main_reward = total_jackpot / 2;  // 50%
-        let minor_pool = (total_jackpot * 2) / 5;  // 40%
-        let minor_each = minor_pool / 8;  // 5% each for 8 winners
-        let house_fee = total_jackpot / 10;  // 10%
-        
-        msg!("💰 50/50 ROLLOVER PAYOUT DISTRIBUTION 💰");
-        msg!("Total Jackpot: {} SOL", total_jackpot / 1_000_000_000);
-        msg!("Pepe Ball Count: {} (ODD - PAYOUT)", lottery.pepe_ball_count);
-        msg!("Main Winner: {} SOL (50%)", main_reward / 1_000_000_000);
-        msg!("Minor Winners Pool: {} SOL (40%)", minor_pool / 1_000_000_000);
-        msg!("Each Minor Winner: {} SOL (5%)", minor_each / 1_000_000_000);
-        msg!("House Fee: {} SOL (10%)", house_fee / 1_000_000_000);
-        
+        // 50/50 payout: 50% main, 40% 8 minors, 10% house (enforced off-chain)
         // Reset for next round
         lottery.carry_over_amount = 0;
         lottery.jackpot_amount = 0;  // All paid out (or set to house fee if keeping some)
@@ -269,13 +205,7 @@ pub mod lottery {
         let lottery = &mut ctx.accounts.lottery;
         lottery.fees_collected = new_fees;
         lottery.is_fast_mode = lottery.fees_collected >= lottery.fast_mode_threshold;
-        
-        if lottery.is_fast_mode {
-            msg!("🚀 Fast mode active: 48-hour snapshots");
-        } else {
-            msg!("📉 Standard mode: 72-hour snapshots");
-        }
-        
+
         Ok(())
     }
 
@@ -309,12 +239,6 @@ pub mod lottery {
         lottery.fast_snapshot_interval = fast_snapshot_interval;
         lottery.fast_mode_threshold = fast_mode_threshold;
 
-        msg!("⏱️ Timing configured: base={}s, fast={}s, threshold={} SOL",
-            base_snapshot_interval,
-            fast_snapshot_interval,
-            fast_mode_threshold / 1_000_000_000
-        );
-
         Ok(())
     }
 
@@ -326,18 +250,14 @@ pub mod lottery {
         require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
         
         lottery.jackpot_amount = new_amount;
-        
-        msg!("💰 Jackpot updated: {} SOL", new_amount / 1_000_000_000);
-        
+
         Ok(())
     }
 
     pub fn close_lottery(ctx: Context<CloseLottery>) -> Result<()> {
         let lottery = &ctx.accounts.lottery;
         require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
-        
-        msg!("Closing lottery account for upgrade...");
-        
+
         Ok(())
     }
 }
@@ -529,6 +449,4 @@ pub enum ErrorCode {
     InsufficientValue,
     #[msg("Invalid configuration values")]
     InvalidConfig,
-    #[msg("Payout only allowed when Pepe ball count is odd")]
-    PayoutNotAllowed,
 }
