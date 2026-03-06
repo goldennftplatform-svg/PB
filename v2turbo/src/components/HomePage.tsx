@@ -170,54 +170,50 @@ export const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen" style={{ background: terminal.bgGradient, color: terminal.text, fontFamily: terminal.fontMono }}>
       <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
-      {/* Header — circular logo, premium typography */}
+      {/* Header — one line: icon, name, connect */}
       <header
-        className="sticky top-0 z-10 text-center border-b"
+        className="sticky top-0 z-10 border-b"
         style={{
           borderColor: terminal.cardBorder,
           background: 'linear-gradient(180deg, rgba(17, 24, 32, 0.98) 0%, rgba(17, 24, 32, 0.95) 100%)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          padding: '28px 20px',
-          boxShadow: '0 1px 0 rgba(0, 255, 65, 0.06), 0 20px 40px -20px rgba(0, 0, 0, 0.5)',
+          padding: '10px 16px 12px',
+          boxShadow: '0 1px 0 rgba(0, 255, 65, 0.06), 0 8px 24px -12px rgba(0, 0, 0, 0.4)',
         }}
       >
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-8">
-          {/* Circular logo crop — premium ring + shadow */}
-          <div
-            className="flex-shrink-0 pepball-float rounded-full overflow-hidden ring-2"
-            style={{
-              width: 'clamp(88px, 20vw, 120px)',
-              height: 'clamp(88px, 20vw, 120px)',
-              boxShadow: '0 0 0 1px rgba(0, 255, 65, 0.2), 0 0 40px rgba(0, 255, 65, 0.15), inset 0 0 20px rgba(0, 0, 0, 0.3)',
-              border: '2px solid rgba(0, 255, 65, 0.35)',
-            }}
-          >
-            <img
-              src={pepeBallSrc}
-              alt="PEPEBALL"
-              className="w-full h-full object-cover scale-110"
-            />
-          </div>
-          <div>
+        <div className="container mx-auto max-w-4xl flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div
+              className="flex-shrink-0 rounded-full overflow-hidden ring-2"
+              style={{
+                width: 40,
+                height: 40,
+                boxShadow: '0 0 0 1px rgba(0, 255, 65, 0.2), 0 0 20px rgba(0, 255, 65, 0.12)',
+                border: '2px solid rgba(0, 255, 65, 0.35)',
+              }}
+            >
+              <img
+                src={pepeBallSrc}
+                alt=""
+                className="w-full h-full object-cover scale-110"
+              />
+            </div>
             <h1
-              className="text-3xl sm:text-4xl font-extrabold tracking-tight"
+              className="text-xl font-extrabold tracking-tight truncate"
               style={{
                 fontFamily: terminal.fontDisplay,
                 color: terminal.accent,
-                textShadow: '0 0 20px rgba(0, 255, 65, 0.4), 0 2px 4px rgba(0, 0, 0, 0.4)',
+                textShadow: '0 0 12px rgba(0, 255, 65, 0.3)',
                 letterSpacing: '-0.02em',
               }}
             >
               PEPEBALL
             </h1>
-            <p className="text-sm mt-1.5 tracking-wide" style={{ color: terminal.dim, fontFamily: terminal.fontMono }}>
-              Solana Powerball Lottery
-            </p>
           </div>
-        </div>
-        <div className="flex items-center justify-center mt-5">
-          <WalletButton variant="dark" />
+          <div className="flex-shrink-0">
+            <WalletButton variant="dark" />
+          </div>
         </div>
       </header>
 
