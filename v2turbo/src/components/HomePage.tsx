@@ -195,15 +195,14 @@ export const HomePage: React.FC = () => {
               />
             </div>
             <h1
-              className="text-xl font-extrabold tracking-tight truncate"
+              className="text-sm sm:text-xl font-extrabold tracking-tight whitespace-nowrap"
               style={{
                 fontFamily: terminal.fontDisplay,
-                color: terminal.accent,
-                textShadow: '0 0 12px rgba(0, 255, 65, 0.3)',
                 letterSpacing: '-0.02em',
               }}
             >
-              PEPEBALL
+              <span style={{ color: terminal.accent, textShadow: '0 0 12px rgba(0, 255, 65, 0.3)' }}>PEPE</span>
+              <span style={{ color: terminal.gold, textShadow: '0 0 10px rgba(229, 184, 74, 0.4)' }}>BALL</span>
             </h1>
           </div>
           <div className="flex-shrink-0">
