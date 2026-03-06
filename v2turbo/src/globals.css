@@ -186,6 +186,63 @@ body[data-scroll-locked] {
     opacity: 0.85;
   }
 }
+
+/* ========== Matrix / PEPEBALL theme (transparent glass, mobile-first) ========== */
+.matrix-page {
+  --matrix-bg: #050809;
+  --matrix-grid: rgba(0, 255, 65, 0.03);
+  --matrix-glass: rgba(5, 15, 12, 0.4);
+  --matrix-glass-border: rgba(0, 255, 65, 0.12);
+  --matrix-accent: #00ff41;
+}
+
+.matrix-page__bg {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--matrix-bg);
+  background-image:
+    linear-gradient(var(--matrix-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--matrix-grid) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: -1px -1px;
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .matrix-page__bg {
+    background-size: 24px 24px;
+  }
+}
+
+.matrix-page__bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 90% 60% at 50% -30%, rgba(0, 255, 65, 0.06), transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.matrix-glass {
+  background: var(--matrix-glass);
+  border: 1px solid var(--matrix-glass-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.matrix-glass-strong {
+  background: rgba(5, 18, 14, 0.55);
+  border: 1px solid rgba(0, 255, 65, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Mobile: safe area for notched devices */
+.safe-area-pad {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
 /*
  ---break---
  */

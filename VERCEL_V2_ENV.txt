@@ -2,10 +2,9 @@
 # Production: set VITE_ENV=LIVE. Preview: PREVIEW is ok.
 # Then redeploy.
 #
-# If the site asks you to "login to Vercel": that's Vercel Deployment Protection.
-# This repo sets "public": true in vercel.json so deployments are public. If you still see a login:
-# Turn it OFF in dashboard: Project → Settings → Deployment Protection → disable Vercel Authentication
-# and Password Protection for Production/Preview.
+# If the site asks you to "login to Vercel": that's Vercel Deployment Protection (dashboard-only).
+# Code cannot disable it. Fix: Vercel Dashboard → Project → Settings → Deployment Protection → set to None.
+# Full steps: docs/VERCEL_STOP_LOGIN_REQUIRED.md
 
 VITE_TAROBASE_APP_ID=697010c4c6f87869899205a3
 # Use LIVE for Production so app is not in dev/preview mode. PREVIEW ok for preview deployments.

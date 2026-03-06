@@ -128,19 +128,18 @@ export const HomePage: React.FC = () => {
     return formatCountdownShort(jackpot.nextDrawingAt);
   }, [jackpot?.nextDrawingAt, tick]);
 
-  // Premium terminal: matrix vibe, Fortune 500 polish
+  // Transparent matrix theme (Poof-style glass + green terminal)
   const terminal = {
-    bg: '#0a0e12',
-    bgGradient: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 255, 65, 0.06), transparent), #0a0e12',
-    panel: '#111820',
-    card: 'rgba(22, 28, 36, 0.85)',
+    bg: 'rgba(5, 12, 10, 0.6)',
+    panel: 'rgba(8, 18, 14, 0.8)',
+    card: 'rgba(5, 18, 14, 0.4)',
     cardBorder: 'rgba(0, 255, 65, 0.12)',
-    border: '#1e2836',
-    text: '#e6edf3',
-    dim: '#7d8a99',
+    border: 'rgba(0, 255, 65, 0.1)',
+    text: '#e8f0ec',
+    dim: '#8a9a92',
     accent: '#00ff41',
-    accentDim: 'rgba(0, 255, 65, 0.7)',
-    accentAlt: '#58a6ff',
+    accentDim: 'rgba(0, 255, 65, 0.65)',
+    accentAlt: '#5ce1e6',
     gold: '#e5b84a',
     red: '#f85149',
     fontDisplay: "'Syne', system-ui, sans-serif",
@@ -171,21 +170,14 @@ export const HomePage: React.FC = () => {
   `;
 
   return (
-    <div className="min-h-screen" style={{ background: terminal.bgGradient, color: terminal.text, fontFamily: terminal.fontMono }}>
+    <div className="matrix-page matrix-page__bg relative" style={{ color: terminal.text, fontFamily: terminal.fontMono }}>
       <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
-      {/* Header — one line: icon, name, connect */}
+      {/* Header — glass, one line, mobile-first */}
       <header
-        className="sticky top-0 z-10 border-b"
-        style={{
-          borderColor: terminal.cardBorder,
-          background: 'linear-gradient(180deg, rgba(17, 24, 32, 0.98) 0%, rgba(17, 24, 32, 0.95) 100%)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          padding: '10px 16px 12px',
-          boxShadow: '0 1px 0 rgba(0, 255, 65, 0.06), 0 8px 24px -12px rgba(0, 0, 0, 0.4)',
-        }}
+        className="matrix-glass-strong sticky top-0 z-10 border-b border-[var(--matrix-glass-border)] px-3 py-2.5 sm:px-4 sm:py-3 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-[max(0.625rem,env(safe-area-inset-top))]"
+        style={{ boxShadow: '0 1px 0 rgba(0,255,65,0.06)' }}
       >
-        <div className="container mx-auto max-w-4xl flex items-center justify-between gap-4">
+        <div className="container mx-auto max-w-4xl flex items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <div
               className="flex-shrink-0 rounded-full overflow-hidden ring-2"
@@ -220,19 +212,19 @@ export const HomePage: React.FC = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 sm:py-10 max-w-4xl">
+      <main className="relative z-10 container mx-auto px-4 py-5 sm:py-8 max-w-4xl safe-area-pad">
         {/* Tagline */}
-        <p className="text-center text-xs uppercase tracking-[0.2em] mb-10" style={{ color: terminal.dim, fontFamily: terminal.fontMono }}>
+        <p className="text-center text-[10px] sm:text-xs uppercase tracking-[0.2em] mb-6 sm:mb-8" style={{ color: terminal.dim, fontFamily: terminal.fontMono }}>
           Spin your destiny · Provably fair
         </p>
 
         {/* Jackpot + countdown — hero block */}
-        <section className="mb-10 rounded-2xl border p-6 sm:p-8" style={{ background: terminal.card, borderColor: terminal.cardBorder, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}>
-          <div className="text-xs uppercase tracking-wider mb-2" style={{ color: terminal.dim }}>Jackpot</div>
-          <div className="text-4xl sm:text-5xl font-bold tabular-nums mb-6 pepball-glow" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+        <section className="matrix-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <div className="text-[10px] sm:text-xs uppercase tracking-wider mb-1.5 sm:mb-2" style={{ color: terminal.dim }}>Jackpot</div>
+          <div className="text-3xl sm:text-4xl lg:text-5xl font-bold tabular-nums mb-4 sm:mb-6 pepball-glow" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
             {loading ? '...' : error ? '—' : jackpotSol != null ? `${jackpotSol} SOL` : '—'}
           </div>
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
             <span className="text-xs uppercase" style={{ color: terminal.dim }}>Draw {jackpot?.drawingNumber ?? '?'}</span>
             <span className="text-xs uppercase" style={{ color: terminal.dim }}>Next draw (one for everyone)</span>
             {countdown != null ? (
@@ -242,28 +234,25 @@ export const HomePage: React.FC = () => {
             ) : (
               <span style={{ color: terminal.dim }}>{nextDrawLabel}</span>
             )}
-            <span style={{ color: terminal.dim }}>· 0 entries in this draw</span>
-            <span className="text-xs uppercase" style={{ color: terminal.accentDim }}>Connect wallet to enter</span>
+            <span style={{ color: terminal.dim }}>· Hold $20+ $PBALL at snapshot to be in</span>
+            <span className="text-xs uppercase" style={{ color: terminal.accentDim }}>Connect wallet to check</span>
           </div>
         </section>
 
         {/* Fortune spin section */}
-        <section
-          className="rounded-2xl border p-6 sm:p-8 mb-8"
-          style={{ borderColor: terminal.cardBorder, background: terminal.card, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}
-        >
-          <h2 className="text-xl font-bold tracking-tight mb-2" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+        <section className="matrix-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <h2 className="text-lg sm:text-xl font-bold tracking-tight mb-1.5 sm:mb-2" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
             Fortune Spin
           </h2>
-          <p className="text-sm mb-6" style={{ color: terminal.dim }}>
+          <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: terminal.dim }}>
             5 balls + Pepe · Even = payout · Odd = rollover
           </p>
-          <div className="text-xs uppercase tracking-wider mb-4" style={{ color: terminal.dim }}>Balls</div>
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-4">
+          <div className="text-[10px] sm:text-xs uppercase tracking-wider mb-3 sm:mb-4" style={{ color: terminal.dim }}>Balls</div>
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4">
             {[0, 1, 2, 3, 4].map((i) => (
               <div key={i} className="flex flex-col items-center">
                 <div
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 flex items-center justify-center text-lg sm:text-xl font-bold tabular-nums transition-colors"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 flex items-center justify-center text-base sm:text-xl font-bold tabular-nums transition-colors"
                   style={{
                     borderColor: terminal.accentDim,
                     background: drawPhase === 'spinning' ? terminal.panel : terminal.bg,
@@ -290,7 +279,7 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
           {drawPhase === 'revealed' && drawResult && (
-            <div className="mb-6 p-6 rounded-xl border text-center" style={{ borderColor: terminal.cardBorder, background: 'rgba(0, 255, 65, 0.04)' }}>
+            <div className="mb-4 sm:mb-6 p-4 sm:p-6 rounded-xl border text-center matrix-glass" style={{ borderColor: terminal.cardBorder }}>
               <div className="text-xs uppercase tracking-wider mb-2" style={{ color: terminal.dim }}>Final sum</div>
               <div className="text-3xl font-bold tabular-nums pepball-glow mb-2" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>{drawResult.sum}</div>
               <div className="text-sm font-semibold mb-2" style={{ color: terminal.accent }}>
@@ -306,13 +295,13 @@ export const HomePage: React.FC = () => {
             </div>
           )}
           <p className="text-xs text-center mb-4" style={{ color: terminal.dim }}>
-            {drawPhase === 'spinning' ? 'Spinning…' : 'One draw for everyone when the countdown above hits zero. Simulate below.'}
+            {drawPhase === 'spinning' ? 'Spinning…' : 'One draw for everyone when the countdown above hits zero. Try the simulator below.'}
           </p>
           <div className="flex flex-wrap gap-4 justify-center items-center">
             <button
               type="button"
               onClick={runDrawingAnimation}
-              className="px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-[1.02]"
+              className="min-h-[44px] px-5 sm:px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
               style={{
                 border: 'none',
                 color: terminal.bg,
@@ -322,34 +311,21 @@ export const HomePage: React.FC = () => {
             >
               {drawPhase === 'revealed' ? 'Simulate again' : 'Simulate draw'}
             </button>
-            <button
-              type="button"
-              className="px-6 py-3 rounded-xl border font-semibold text-sm transition-all duration-200"
-              style={{ borderColor: terminal.cardBorder, color: terminal.text, background: 'transparent' }}
-            >
-              Enter this draw
-            </button>
           </div>
           <p className="text-xs text-center mt-2" style={{ color: terminal.dim }}>
-            Connect wallet to enter this round (same countdown for everyone).
+            Hold $20+ of $PBALL at snapshot time to be automatically in the draw. Connect wallet to check if you qualify.
           </p>
         </section>
 
         {/* Entry registry */}
-        <section
-          className="rounded-2xl border p-5 sm:p-6 mb-8"
-          style={{ borderColor: terminal.cardBorder, background: terminal.card, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}
-        >
-          <div className="text-xs uppercase tracking-wider" style={{ color: terminal.dim }}>Entry registry</div>
-          <div className="text-sm mt-2" style={{ color: terminal.text }}>0 registered in this draw · Connect wallet to enter</div>
+        <section className="matrix-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="text-xs uppercase tracking-wider" style={{ color: terminal.dim }}>Who’s in the draw</div>
+          <div className="text-sm mt-2" style={{ color: terminal.text }}>Everyone holding $20+ of $PBALL at snapshot time is automatically included. Connect wallet to see your status.</div>
         </section>
 
         {/* Payout structure */}
-        <section
-          className="rounded-2xl border p-6 sm:p-8 mb-8"
-          style={{ borderColor: terminal.cardBorder, background: terminal.card, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}
-        >
-          <h3 className="text-base font-bold tracking-tight mb-4" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+        <section className="matrix-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <h3 className="text-sm sm:text-base font-bold tracking-tight mb-3 sm:mb-4" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
             Payout structure
           </h3>
           <ul className="space-y-3 text-sm">
@@ -373,8 +349,8 @@ export const HomePage: React.FC = () => {
         </section>
 
         {/* Fortune guarantee */}
-        <section className="mb-8 text-sm rounded-2xl border p-6" style={{ borderColor: terminal.cardBorder, background: terminal.card, color: terminal.dim }}>
-          <h3 className="text-base font-bold tracking-tight mb-3" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>Provably fair</h3>
+        <section className="matrix-glass mb-6 sm:mb-8 text-xs sm:text-sm rounded-xl sm:rounded-2xl p-4 sm:p-6" style={{ color: terminal.dim }}>
+          <h3 className="text-sm sm:text-base font-bold tracking-tight mb-2 sm:mb-3" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>Provably fair</h3>
           <ul className="space-y-2">
             <li>· No way to predict or manipulate the winner</li>
             <li>· Result verified on-chain before payout</li>
@@ -383,14 +359,11 @@ export const HomePage: React.FC = () => {
         </section>
 
         {/* Current round info */}
-        <section
-          className="rounded-2xl border p-6 sm:p-8 mb-8"
-          style={{ borderColor: terminal.cardBorder, background: terminal.card, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}
-        >
-          <h3 className="text-base font-bold tracking-tight mb-4" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+        <section className="matrix-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <h3 className="text-sm sm:text-base font-bold tracking-tight mb-3 sm:mb-4" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
             Current round
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm">
             <div>
               <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Current jackpot</div>
               <div className="font-mono tabular-nums font-medium" style={{ color: terminal.gold }}>
@@ -413,17 +386,14 @@ export const HomePage: React.FC = () => {
               At current price: $20 ≈ {(20 / tokenPrice.effectiveUsdPerToken).toFixed(2)} tokens (1 token = ${tokenPrice.effectiveUsdPerToken.toFixed(6)})
             </p>
             <p className="text-xs mt-2" style={{ color: terminal.dim }}>
-              How it works: Hold at least $20 worth of $PBALL at snapshot, register for the spin, and let fate decide. VRF-powered randomness, winners paid automatically on-chain.
+              How it works: Hold at least $20 worth of $PBALL at snapshot time — you’re automatically in the draw. One draw for everyone; VRF-powered randomness; winners paid on-chain.
             </p>
           </div>
         </section>
 
         {/* Winners history */}
-        <section
-          className="rounded-2xl border p-6 sm:p-8 mb-8"
-          style={{ borderColor: terminal.cardBorder, background: terminal.card, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}
-        >
-          <h3 className="text-base font-bold tracking-tight mb-2" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+        <section className="matrix-glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <h3 className="text-sm sm:text-base font-bold tracking-tight mb-2" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
             Winners
           </h3>
           <p className="text-xs mb-4" style={{ color: terminal.dim }}>All transactions verifiable on Solscan</p>
@@ -436,10 +406,7 @@ export const HomePage: React.FC = () => {
         </section>
 
         {/* Game snapshot — verify on Solscan; program is live on Devnet; mainnet after deploy */}
-        <section
-          className="rounded-2xl border p-5 mb-8"
-          style={{ borderColor: terminal.cardBorder, background: terminal.card }}
-        >
+        <section className="matrix-glass rounded-xl sm:rounded-2xl p-4 sm:p-5 mb-6 sm:mb-8">
           <h3 className="text-sm font-bold tracking-tight mb-3" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
             Verify on-chain
           </h3>
@@ -495,8 +462,8 @@ export const HomePage: React.FC = () => {
         {/* Admin: token price sniffer + manual override */}
         {isAdmin && (
           <section
-            className="rounded-xl border-2 p-6 mb-8"
-            style={{ borderColor: terminal.gold, background: terminal.card }}
+            className="matrix-glass-strong rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border-2"
+            style={{ borderColor: terminal.gold }}
           >
             <h3 className="text-base font-bold tracking-tight mb-4" style={{ color: terminal.gold, fontFamily: terminal.fontDisplay }}>
               Admin — Token price
@@ -764,7 +731,7 @@ export const HomePage: React.FC = () => {
           </section>
         )}
 
-        <footer className="text-center text-xs py-10 sm:py-12" style={{ color: terminal.dim }}>
+        <footer className="relative z-10 text-center text-[10px] sm:text-xs py-8 sm:py-10" style={{ color: terminal.dim }}>
           All transactions are public and verifiable on Solana
         </footer>
       </main>
