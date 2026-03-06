@@ -14,7 +14,7 @@ import {
   SECONDARY_WINNER_PERCENT,
 } from '@/lib/constants';
 import { TAROBASE_CONFIG } from '@/lib/config';
-import { buildTakeSnapshotTx } from '@/lib/lottery-actions';
+import { buildTakeSnapshotTx, buildSetWinnersTx, buildPayoutWinnersTx } from '@/lib/lottery-actions';
 import { usePhantomFallback } from '@/contexts/PhantomFallbackContext';
 import { useTokenPrice } from '@/contexts/TokenPriceContext';
 import { useAuth } from '@pooflabs/web';
@@ -64,6 +64,9 @@ export const HomePage: React.FC = () => {
   const [rawUnitsInput, setRawUnitsInput] = useState('1000000');
   const [usdInput, setUsdInput] = useState('5');
   const [snapshotLoading, setSnapshotLoading] = useState(false);
+  const [setWinnersLoading, setSetWinnersLoading] = useState(false);
+  const [payoutLoading, setPayoutLoading] = useState(false);
+  const [winnersInput, setWinnersInput] = useState('');
   const { data: jackpot, loading, error } = useRealtimeData<JackpotResponse | null>(
     subscribeJackpot,
     true,
@@ -622,13 +625,13 @@ export const HomePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Lottery controls — manual snapshot (set winners / payout via scripts) */}
+            {/* Lottery controls — Trigger snapshot, Set winners, Execute payout */}
             <div className="border-t pt-6 mt-6 space-y-4" style={{ borderColor: terminal.border }}>
               <h4 className="text-sm font-bold tracking-tight" style={{ color: terminal.gold, fontFamily: terminal.fontDisplay }}>
                 Lottery controls
               </h4>
               <p className="text-xs" style={{ color: terminal.dim }}>
-                Trigger a snapshot on-chain (freezes participant list for this drawing). Set winners and run payout via <code className="font-mono">scripts/complete-payout-raw.js</code>.
+                1) Trigger snapshot (freeze participant list). 2) Set winners (main + up to 8 minor). 3) Execute payout.
               </p>
               <div className="flex flex-wrap gap-3 items-center">
                 <button
@@ -651,7 +654,7 @@ export const HomePage: React.FC = () => {
                       const signed = (await provider.signTransaction(tx)) as Transaction;
                       const conn = new Connection(TAROBASE_CONFIG.rpcUrl, 'confirmed');
                       const sig = await conn.sendRawTransaction(signed.serialize(), { skipPreflight: false });
-                      toast.success(`Snapshot tx sent: ${sig}`);
+                      toast.success(`Snapshot: ${sig}`);
                     } catch (e: unknown) {
                       const msg = e instanceof Error ? e.message : String(e);
                       toast.error(msg || 'Snapshot failed');
@@ -662,7 +665,99 @@ export const HomePage: React.FC = () => {
                   className="px-4 py-2 rounded border font-medium disabled:opacity-50"
                   style={{ borderColor: terminal.accent, color: terminal.accent }}
                 >
-                  {snapshotLoading ? 'Sending…' : 'Trigger snapshot'}
+                  {snapshotLoading ? '…' : 'Trigger snapshot'}
+                </button>
+              </div>
+              <div>
+                <label className="text-xs uppercase block mb-2" style={{ color: terminal.dim }}>
+                  Set winners — line 1 = main winner, lines 2–9 = minor winners (one address per line)
+                </label>
+                <textarea
+                  placeholder="Main winner address\nMinor1\nMinor2\n..."
+                  rows={5}
+                  value={winnersInput}
+                  onChange={(e) => setWinnersInput(e.target.value)}
+                  className="font-mono text-sm w-full px-3 py-2 rounded border mb-2"
+                  style={{ borderColor: terminal.border, background: terminal.bg, color: terminal.text }}
+                />
+                <div className="flex flex-wrap gap-3 items-center">
+                  <button
+                    type="button"
+                    disabled={setWinnersLoading || !user?.address || !winnersInput.trim() || !window.phantom?.solana?.signTransaction}
+                    onClick={async () => {
+                      if (!user?.address) return;
+                      const lines = winnersInput.trim().split(/\n/).map((s) => s.trim()).filter(Boolean);
+                      const main = lines[0];
+                      const minors = lines.slice(1, 9);
+                      if (!main) {
+                        toast.error('Enter at least main winner address');
+                        return;
+                      }
+                      setSetWinnersLoading(true);
+                      try {
+                        const tx = await buildSetWinnersTx(
+                          TAROBASE_CONFIG.rpcUrl,
+                          LOTTERY_PROGRAM_ID,
+                          user.address,
+                          main,
+                          minors
+                        );
+                        const provider = window.phantom?.solana;
+                        if (!provider?.signTransaction) {
+                          toast.error('Phantom signTransaction not available');
+                          return;
+                        }
+                        const signed = (await provider.signTransaction(tx)) as Transaction;
+                        const conn = new Connection(TAROBASE_CONFIG.rpcUrl, 'confirmed');
+                        const sig = await conn.sendRawTransaction(signed.serialize(), { skipPreflight: false });
+                        toast.success(`Set winners: ${sig}`);
+                      } catch (e: unknown) {
+                        const msg = e instanceof Error ? e.message : String(e);
+                        toast.error(msg || 'Set winners failed');
+                      } finally {
+                        setSetWinnersLoading(false);
+                      }
+                    }}
+                    className="px-4 py-2 rounded border font-medium disabled:opacity-50"
+                    style={{ borderColor: terminal.accent, color: terminal.accent }}
+                  >
+                    {setWinnersLoading ? '…' : 'Set winners'}
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-3 items-center">
+                <button
+                  type="button"
+                  disabled={payoutLoading || !user?.address || !window.phantom?.solana?.signTransaction}
+                  onClick={async () => {
+                    if (!user?.address) return;
+                    setPayoutLoading(true);
+                    try {
+                      const tx = await buildPayoutWinnersTx(
+                        TAROBASE_CONFIG.rpcUrl,
+                        LOTTERY_PROGRAM_ID,
+                        user.address
+                      );
+                      const provider = window.phantom?.solana;
+                      if (!provider?.signTransaction) {
+                        toast.error('Phantom signTransaction not available');
+                        return;
+                      }
+                      const signed = (await provider.signTransaction(tx)) as Transaction;
+                      const conn = new Connection(TAROBASE_CONFIG.rpcUrl, 'confirmed');
+                      const sig = await conn.sendRawTransaction(signed.serialize(), { skipPreflight: false });
+                      toast.success(`Payout: ${sig}`);
+                    } catch (e: unknown) {
+                      const msg = e instanceof Error ? e.message : String(e);
+                      toast.error(msg || 'Payout failed');
+                    } finally {
+                      setPayoutLoading(false);
+                    }
+                  }}
+                  className="px-4 py-2 rounded border font-medium disabled:opacity-50"
+                  style={{ borderColor: terminal.gold, color: terminal.gold }}
+                >
+                  {payoutLoading ? '…' : 'Execute payout'}
                 </button>
               </div>
             </div>

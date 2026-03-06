@@ -1,5 +1,6 @@
 {
   "framework": null,
+  "public": true,
   "buildCommand": "cd v2turbo && bun run vercel-build-vite",
   "outputDirectory": "v2turbo/dist",
   "installCommand": "cd v2turbo && bun install",
