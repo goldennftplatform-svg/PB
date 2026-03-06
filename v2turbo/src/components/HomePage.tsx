@@ -14,10 +14,13 @@ import {
   SECONDARY_WINNER_PERCENT,
 } from '@/lib/constants';
 import { TAROBASE_CONFIG } from '@/lib/config';
+import { buildTakeSnapshotTx } from '@/lib/lottery-actions';
 import { usePhantomFallback } from '@/contexts/PhantomFallbackContext';
 import { useTokenPrice } from '@/contexts/TokenPriceContext';
 import { useAuth } from '@pooflabs/web';
+import { Connection, Transaction } from '@solana/web3.js';
 import React, { useMemo, useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import WalletButton from './WalletButton';
 
 const LAMPORTS_PER_SOL = 1e9;
@@ -60,6 +63,7 @@ export const HomePage: React.FC = () => {
   const [overrideInput, setOverrideInput] = useState('');
   const [rawUnitsInput, setRawUnitsInput] = useState('1000000');
   const [usdInput, setUsdInput] = useState('5');
+  const [snapshotLoading, setSnapshotLoading] = useState(false);
   const { data: jackpot, loading, error } = useRealtimeData<JackpotResponse | null>(
     subscribeJackpot,
     true,
@@ -231,7 +235,7 @@ export const HomePage: React.FC = () => {
           </div>
           <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm">
             <span className="text-xs uppercase" style={{ color: terminal.dim }}>Draw {jackpot?.drawingNumber ?? '?'}</span>
-            <span className="text-xs uppercase" style={{ color: terminal.dim }}>Next draw</span>
+            <span className="text-xs uppercase" style={{ color: terminal.dim }}>Next draw (one for everyone)</span>
             {countdown != null ? (
               <span className="tabular-nums pepball-pulse font-medium" style={{ color: terminal.gold, fontFamily: terminal.fontMono }}>
                 {String(countdown.hours).padStart(2, '0')} : {String(countdown.mins).padStart(2, '0')} : {String(countdown.secs).padStart(2, '0')}
@@ -239,7 +243,7 @@ export const HomePage: React.FC = () => {
             ) : (
               <span style={{ color: terminal.dim }}>{nextDrawLabel}</span>
             )}
-            <span style={{ color: terminal.dim }}>· 0 entries</span>
+            <span style={{ color: terminal.dim }}>· 0 entries in this draw</span>
             <span className="text-xs uppercase" style={{ color: terminal.accentDim }}>Connect wallet to enter</span>
           </div>
         </section>
@@ -303,7 +307,7 @@ export const HomePage: React.FC = () => {
             </div>
           )}
           <p className="text-xs text-center mb-4" style={{ color: terminal.dim }}>
-            {drawPhase === 'spinning' ? 'Spinning…' : 'Fortune spins when countdown ends'}
+            {drawPhase === 'spinning' ? 'Spinning…' : 'One draw for everyone when the countdown above hits zero. Simulate below.'}
           </p>
           <div className="flex flex-wrap gap-4 justify-center items-center">
             <button
@@ -317,17 +321,19 @@ export const HomePage: React.FC = () => {
                 boxShadow: '0 0 20px rgba(0, 255, 65, 0.3), 0 4px 14px rgba(0, 0, 0, 0.2)',
               }}
             >
-              {drawPhase === 'revealed' ? 'Play again' : 'Play drawing'}
+              {drawPhase === 'revealed' ? 'Simulate again' : 'Simulate draw'}
             </button>
             <button
               type="button"
               className="px-6 py-3 rounded-xl border font-semibold text-sm transition-all duration-200"
               style={{ borderColor: terminal.cardBorder, color: terminal.text, background: 'transparent' }}
             >
-              Enter drawing
+              Enter this draw
             </button>
-            <span className="text-xs" style={{ color: terminal.dim }}>Connect wallet to enter</span>
           </div>
+          <p className="text-xs text-center mt-2" style={{ color: terminal.dim }}>
+            Connect wallet to enter this round (same countdown for everyone).
+          </p>
         </section>
 
         {/* Entry registry */}
@@ -336,7 +342,7 @@ export const HomePage: React.FC = () => {
           style={{ borderColor: terminal.cardBorder, background: terminal.card, boxShadow: '0 4px 24px rgba(0, 0, 0, 0.2)' }}
         >
           <div className="text-xs uppercase tracking-wider" style={{ color: terminal.dim }}>Entry registry</div>
-          <div className="text-sm mt-2" style={{ color: terminal.text }}>0 registered · Connect wallet to enter</div>
+          <div className="text-sm mt-2" style={{ color: terminal.text }}>0 registered in this draw · Connect wallet to enter</div>
         </section>
 
         {/* Payout structure */}
@@ -397,7 +403,7 @@ export const HomePage: React.FC = () => {
               <div className="font-mono">0</div>
             </div>
             <div>
-              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Next drawing</div>
+              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Next drawing (one for everyone)</div>
               <div className="font-mono">{nextDrawLabel || 'TBD'}</div>
             </div>
           </div>
@@ -430,49 +436,61 @@ export const HomePage: React.FC = () => {
           </p>
         </section>
 
-        {/* Game snapshot — verify on Solscan (mainnet or devnet by chain) */}
+        {/* Game snapshot — verify on Solscan; program is live on Devnet; mainnet after deploy */}
         <section
           className="rounded-2xl border p-5 mb-8"
           style={{ borderColor: terminal.cardBorder, background: terminal.card }}
         >
-          {(() => {
-            const isMainnet = TAROBASE_CONFIG.chain === 'solana_mainnet';
-            const cluster = isMainnet ? '' : '?cluster=devnet';
-            const label = isMainnet ? 'Verify on-chain (Mainnet)' : 'Verify on-chain (Devnet)';
-            return (
-              <>
-                <h3 className="text-sm font-bold tracking-tight mb-3" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
-                  {label}
-                </h3>
-                <div className="flex flex-wrap gap-4 text-sm">
-                  <a
-                    href={`https://solscan.io/account/${LOTTERY_PROGRAM_ID}${cluster}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono truncate max-w-full"
-                    style={{ color: terminal.accentAlt }}
-                  >
-                    🔗 Lottery Program
-                  </a>
-                  <a
-                    href={`https://solscan.io/account/${LOTTERY_PDA}${cluster}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono truncate max-w-full"
-                    style={{ color: terminal.accentAlt }}
-                  >
-                    🔗 Game Snapshot (PDA)
-                  </a>
-                </div>
-                <p className="text-xs mt-2 font-mono break-all" style={{ color: terminal.dim }}>
-                  Program: {LOTTERY_PROGRAM_ID}
-                </p>
-                <p className="text-xs font-mono break-all" style={{ color: terminal.dim }}>
-                  PDA: {LOTTERY_PDA}
-                </p>
-              </>
-            );
-          })()}
+          <h3 className="text-sm font-bold tracking-tight mb-3" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+            Verify on-chain
+          </h3>
+          <p className="text-xs mb-3" style={{ color: terminal.dim }}>
+            Program is deployed on <strong>Devnet</strong>. For mainnet, deploy the program first (see docs/MAINNET_DEPLOY_AND_SOL.md).
+          </p>
+          <div className="flex flex-wrap gap-4 text-sm mb-2">
+            <a
+              href={`https://solscan.io/account/${LOTTERY_PROGRAM_ID}?cluster=devnet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono truncate max-w-full"
+              style={{ color: terminal.accentAlt }}
+            >
+              🔗 Lottery Program (Devnet)
+            </a>
+            <a
+              href={`https://solscan.io/account/${LOTTERY_PDA}?cluster=devnet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono truncate max-w-full"
+              style={{ color: terminal.accentAlt }}
+            >
+              🔗 Game Snapshot PDA (Devnet)
+            </a>
+            <a
+              href={`https://solscan.io/account/${LOTTERY_PROGRAM_ID}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono truncate max-w-full opacity-70"
+              style={{ color: terminal.accentAlt }}
+            >
+              🔗 Lottery Program (Mainnet)
+            </a>
+            <a
+              href={`https://solscan.io/account/${LOTTERY_PDA}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono truncate max-w-full opacity-70"
+              style={{ color: terminal.accentAlt }}
+            >
+              🔗 Game Snapshot PDA (Mainnet)
+            </a>
+          </div>
+          <p className="text-xs mt-2 font-mono break-all" style={{ color: terminal.dim }}>
+            Program: {LOTTERY_PROGRAM_ID}
+          </p>
+          <p className="text-xs font-mono break-all" style={{ color: terminal.dim }}>
+            PDA: {LOTTERY_PDA}
+          </p>
         </section>
 
         {/* Admin: token price sniffer + manual override */}
@@ -605,6 +623,51 @@ export const HomePage: React.FC = () => {
                 <p className="text-xs mt-1" style={{ color: terminal.dim }}>
                   At 6 decimals, 1,000,000 raw = 1 token. So 1M raw = $5 → $5 per token.
                 </p>
+              </div>
+            </div>
+
+            {/* Lottery controls — manual snapshot (set winners / payout via scripts) */}
+            <div className="border-t pt-6 mt-6 space-y-4" style={{ borderColor: terminal.border }}>
+              <h4 className="text-sm font-bold tracking-tight" style={{ color: terminal.gold, fontFamily: terminal.fontDisplay }}>
+                Lottery controls
+              </h4>
+              <p className="text-xs" style={{ color: terminal.dim }}>
+                Trigger a snapshot on-chain (freezes participant list for this drawing). Set winners and run payout via <code className="font-mono">scripts/complete-payout-raw.js</code>.
+              </p>
+              <div className="flex flex-wrap gap-3 items-center">
+                <button
+                  type="button"
+                  disabled={snapshotLoading || !user?.address || !window.phantom?.solana?.signTransaction}
+                  onClick={async () => {
+                    if (!user?.address) return;
+                    setSnapshotLoading(true);
+                    try {
+                      const tx = await buildTakeSnapshotTx(
+                        TAROBASE_CONFIG.rpcUrl,
+                        LOTTERY_PROGRAM_ID,
+                        user.address
+                      );
+                      const provider = window.phantom?.solana;
+                      if (!provider?.signTransaction) {
+                        toast.error('Phantom signTransaction not available');
+                        return;
+                      }
+                      const signed = (await provider.signTransaction(tx)) as Transaction;
+                      const conn = new Connection(TAROBASE_CONFIG.rpcUrl, 'confirmed');
+                      const sig = await conn.sendRawTransaction(signed.serialize(), { skipPreflight: false });
+                      toast.success(`Snapshot tx sent: ${sig}`);
+                    } catch (e: unknown) {
+                      const msg = e instanceof Error ? e.message : String(e);
+                      toast.error(msg || 'Snapshot failed');
+                    } finally {
+                      setSnapshotLoading(false);
+                    }
+                  }}
+                  className="px-4 py-2 rounded border font-medium disabled:opacity-50"
+                  style={{ borderColor: terminal.accent, color: terminal.accent }}
+                >
+                  {snapshotLoading ? 'Sending…' : 'Trigger snapshot'}
+                </button>
               </div>
             </div>
           </section>
