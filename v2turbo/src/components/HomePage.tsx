@@ -471,7 +471,7 @@ export const HomePage: React.FC = () => {
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-4">
-                <span className="text-xs uppercase" style={{ color: terminal.dim }}>Live (Jupiter):</span>
+                <span className="text-xs uppercase" style={{ color: terminal.dim }}>Live:</span>
                 <span className="font-mono" style={{ color: terminal.text }}>
                   {tokenPrice.loading ? '…' : tokenPrice.liveUsdPerToken != null
                     ? `$${tokenPrice.liveUsdPerToken.toFixed(6)}`

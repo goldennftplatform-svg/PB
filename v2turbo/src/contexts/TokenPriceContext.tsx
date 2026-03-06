@@ -5,7 +5,9 @@ import {
 } from '@/lib/constants';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-const JUPITER_PRICE_URL = 'https://price.jup.ag/v4/price';
+// Jupiter v4 is deprecated/502; v3 requires API key. CoinGecko works without key.
+const COINGECKO_PRICE_URL = 'https://api.coingecko.com/api/v3/simple/token_price/solana';
+const JUPITER_V3_URL = 'https://api.jup.ag/price/v3';
 const FETCH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const STORAGE_KEY = 'pepball-price-override';
 
@@ -74,24 +76,53 @@ export function TokenPriceProvider({ children }: { children: React.ReactNode }) 
   const fetchPrice = useCallback(async () => {
     setLoading(true);
     setError(null);
+    const opts = { cache: 'no-cache' as RequestCache, headers: { Accept: 'application/json' } };
+
+    // 1) Try CoinGecko (no key, works in browser)
     try {
-      const res = await fetch(`${JUPITER_PRICE_URL}?ids=${PEPEBALL_MINT}`, {
-        cache: 'no-cache',
-        headers: { Accept: 'application/json' },
-      });
-      const data = await res.json();
-      if (data?.data?.[PEPEBALL_MINT]) {
-        const p = parseFloat(data.data[PEPEBALL_MINT].price ?? 0);
-        setLiveUsdPerToken(Number.isFinite(p) ? p : null);
-        setLastFetchedAt(new Date().toISOString());
-      } else {
-        setError('No price data for mint');
+      const cgRes = await fetch(
+        `${COINGECKO_PRICE_URL}?contract_addresses=${PEPEBALL_MINT}&vs_currencies=usd`,
+        opts
+      );
+      const cgData = await cgRes.json();
+      if (cgData?.[PEPEBALL_MINT]?.usd != null) {
+        const p = Number(cgData[PEPEBALL_MINT].usd);
+        if (Number.isFinite(p) && p > 0) {
+          setLiveUsdPerToken(p);
+          setLastFetchedAt(new Date().toISOString());
+          setLoading(false);
+          return;
+        }
       }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to fetch price');
-    } finally {
-      setLoading(false);
+    } catch {
+      // ignore, try next
     }
+
+    // 2) Optional: Jupiter v3 if API key is set
+    const jupiterKey = import.meta.env.VITE_JUPITER_API_KEY;
+    if (typeof jupiterKey === 'string' && jupiterKey.length > 0) {
+      try {
+        const jRes = await fetch(`${JUPITER_V3_URL}?ids=${PEPEBALL_MINT}`, {
+          ...opts,
+          headers: { ...opts.headers, 'x-api-key': jupiterKey } as HeadersInit,
+        });
+        const jData = await jRes.json();
+        if (jData?.[PEPEBALL_MINT]?.usdPrice != null) {
+          const p = Number(jData[PEPEBALL_MINT].usdPrice);
+          if (Number.isFinite(p) && p > 0) {
+            setLiveUsdPerToken(p);
+            setLastFetchedAt(new Date().toISOString());
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    setLoading(false);
+    setError('No price data (CoinGecko/Jupiter)');
   }, []);
 
   useEffect(() => {
