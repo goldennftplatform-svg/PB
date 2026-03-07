@@ -66,8 +66,16 @@ SECRETS.md
 **/*.pfx
 *.keypair
 *.secret# Test wallets (keep private!)
+test-wallets/
 test-wallets/**/*.json
-wallet-backups/**/*.json# Testnet keys (NEVER commit!)
+wallet-backups/
+wallet-backups/**/*
+speed-run-wallets/
+speed-run-wallets/*.json
+
+# Testnet keys (NEVER commit!)
 testnet-key.json
 **/testnet-key.json
 **/*-key.json
+**/*keypair*.json
+pball-new-keypair.json
