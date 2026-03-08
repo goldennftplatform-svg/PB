@@ -13,8 +13,8 @@ import {
   ROLLOVER_PERCENT,
   DEV_PERCENT,
   SECONDARY_WINNER_PERCENT,
-  SWAP_WIDGET_PROVIDER,
   TAROBASE_ENV,
+  USDC,
 } from '@/lib/constants';
 import { TAROBASE_CONFIG } from '@/lib/config';
 import { buildTakeSnapshotTx, buildSetWinnersTx, buildPayoutWinnersTx } from '@/lib/lottery-actions';
@@ -26,10 +26,9 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import WalletButton from './WalletButton';
 import MatrixRain from './MatrixRain';
+import SwapCarousel from './SwapCarousel';
 
 const LAMPORTS_PER_SOL = 1e9;
-/** Wrapped SOL mint for Jupiter (SOL → token) */
-const SOL_MINT = 'So11111111111111111111111111111111111111112';
 
 const ON_RAMP_LINKS = [
   { name: 'Coinbase', url: 'https://www.coinbase.com/how-to-buy/solana', desc: 'Buy SOL' },
@@ -61,7 +60,6 @@ function formatCountdownShort(nextDrawingAt: number): string {
 const SPIN_DURATION_MS = 2800;
 const BALL_TICK_MS = 80;
 const AUTO_PLAY_DELAY_MS = 700;
-
 export const HomePage: React.FC = () => {
   const hasAutoPlayedRef = useRef(false);
   const swapWidgetRef = useRef<HTMLDivElement>(null);
@@ -94,30 +92,6 @@ export const HomePage: React.FC = () => {
     return () => clearInterval(id);
   }, [jackpot?.nextDrawingAt]);
 
-  // Jupiter swap widget: init only when provider is jupiter
-  useEffect(() => {
-    if (SWAP_WIDGET_PROVIDER !== 'jupiter' || jupiterInitializedRef.current) return;
-    const initJupiter = () => {
-      if (typeof window === 'undefined' || !window.Jupiter) return false;
-      window.Jupiter.init({
-        displayMode: 'integrated',
-        integratedTargetId: 'jupiter-embedded-swap',
-        formProps: {
-          initialInputMint: SOL_MINT,
-          initialOutputMint: PEPEBALL_MINT,
-          swapMode: 'ExactIn',
-        },
-        onSuccess: ({ txid }) => {
-          toast.success(`Swap complete! ${txid.slice(0, 8)}…`);
-        },
-      });
-      jupiterInitializedRef.current = true;
-      return true;
-    };
-    if (initJupiter()) return;
-    const t = setInterval(() => { if (initJupiter()) clearInterval(t); }, 200);
-    return () => clearInterval(t);
-  }, []);
 
   const runDrawingAnimation = React.useCallback(() => {
     if (drawPhase === 'spinning') return;
@@ -469,36 +443,20 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* Swap widget — PondX (iframe) or Jupiter (embedded). Toggle via VITE_SWAP_WIDGET=pond|jupiter */}
-        <section
-          ref={swapWidgetRef}
-          className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border-2"
-          style={{ borderColor: 'rgba(0,255,65,0.25)', boxShadow: '0 0 24px rgba(0,255,65,0.08)' }}
-        >
-          <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>
-            Buy $PBALL here
-          </div>
-          <p className="text-sm mb-4" style={{ color: terminal.dim }}>
-            {SWAP_WIDGET_PROVIDER === 'pond' ? (
-              <>Swap via <a href="https://www.pondx.com/swap/solana" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: terminal.accent }}>Pond</a> below — we pre-filled $PBALL. Aim for $20+ to get in the draw. (Rails upgrading? Use Jupiter link in “Get $PBALL” for now.)</>
-            ) : (
-              <>Have SOL in your wallet? Swap to $PBALL below — aim for $20+ to get in the draw.</>
-            )}
-          </p>
-          {SWAP_WIDGET_PROVIDER === 'pond' ? (
-            <div className="min-h-[420px] w-full rounded-xl overflow-hidden border" style={{ borderColor: terminal.border }}>
-              <iframe
-                title="Pond swap — SOL to $PBALL"
-                src={`https://www.pondx.com/swap/solana/${PEPEBALL_MINT}?inputMint=${SOL_MINT}`}
-                className="w-full h-[420px] sm:h-[480px] border-0 rounded-xl"
-                allow="clipboard-write"
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-              />
-            </div>
-          ) : (
-            <div id="jupiter-embedded-swap" className="min-h-[360px] w-full rounded-xl overflow-hidden" />
-          )}
-        </section>
+        <SwapCarousel
+          theme={{
+            accent: terminal.accent,
+            accentDim: terminal.accentDim,
+            border: terminal.border,
+            dim: terminal.dim,
+            text: terminal.text,
+            bg: terminal.bg,
+            fontDisplay: terminal.fontDisplay,
+          }}
+          swapWidgetRef={swapWidgetRef}
+          userAddress={user?.address}
+          jupiterInitializedRef={jupiterInitializedRef}
+        />
 
         {/* Get $PBALL — funnel: chart, buy, copy CA (no connect required) */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
