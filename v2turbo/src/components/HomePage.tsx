@@ -27,6 +27,14 @@ import WalletButton from './WalletButton';
 import MatrixRain from './MatrixRain';
 
 const LAMPORTS_PER_SOL = 1e9;
+/** Wrapped SOL mint for Jupiter (SOL → token) */
+const SOL_MINT = 'So11111111111111111111111111111111111111112';
+
+const ON_RAMP_LINKS = [
+  { name: 'Coinbase', url: 'https://www.coinbase.com/how-to-buy/solana', desc: 'Buy SOL' },
+  { name: 'OKX', url: 'https://www.okx.com/en-us/buy-sol', desc: 'Buy SOL' },
+  { name: 'Gemini', url: 'https://www.gemini.com/how-to-buy/solana', desc: 'Buy SOL' },
+] as const;
 
 function formatCountdownFull(nextDrawingAt: number): { hours: number; mins: number; secs: number } {
   const now = Math.floor(Date.now() / 1000);
@@ -55,6 +63,8 @@ const AUTO_PLAY_DELAY_MS = 700;
 
 export const HomePage: React.FC = () => {
   const hasAutoPlayedRef = useRef(false);
+  const swapWidgetRef = useRef<HTMLDivElement>(null);
+  const jupiterInitializedRef = useRef(false);
   const [tick, setTick] = useState(0);
   const [drawPhase, setDrawPhase] = useState<'idle' | 'spinning' | 'revealed'>('idle');
   const [ballValues, setBallValues] = useState<number[]>([0, 0, 0, 0, 0]);
@@ -82,6 +92,31 @@ export const HomePage: React.FC = () => {
     const id = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(id);
   }, [jackpot?.nextDrawingAt]);
+
+  // Jupiter swap widget: init once when script is ready (integrated, SOL → $PBALL)
+  useEffect(() => {
+    if (jupiterInitializedRef.current) return;
+    const initJupiter = () => {
+      if (typeof window === 'undefined' || !window.Jupiter) return false;
+      window.Jupiter.init({
+        displayMode: 'integrated',
+        integratedTargetId: 'jupiter-embedded-swap',
+        formProps: {
+          initialInputMint: SOL_MINT,
+          initialOutputMint: PEPEBALL_MINT,
+          swapMode: 'ExactIn',
+        },
+        onSuccess: ({ txid }) => {
+          toast.success(`Swap complete! ${txid.slice(0, 8)}…`);
+        },
+      });
+      jupiterInitializedRef.current = true;
+      return true;
+    };
+    if (initJupiter()) return;
+    const t = setInterval(() => { if (initJupiter()) clearInterval(t); }, 200);
+    return () => clearInterval(t);
+  }, []);
 
   const runDrawingAnimation = React.useCallback(() => {
     if (drawPhase === 'spinning') return;
@@ -271,19 +306,46 @@ export const HomePage: React.FC = () => {
           )}
         </div>
 
-        {/* How to play — Powerball-simple: 3 steps */}
-        <div className="flex flex-wrap justify-center gap-6 sm:gap-10 mb-6 text-center">
-          <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0" style={{ background: 'rgba(0,255,65,0.2)', color: terminal.accent }}>1</span>
-            <span className="text-sm font-medium" style={{ color: terminal.text }}>Hold $20+ $PBALL</span>
+        {/* How to play — Powerball-simple: 3 steps + tools */}
+        <div className="flex flex-col items-center gap-4 mb-4">
+          <div className="flex flex-wrap justify-center gap-6 sm:gap-10 text-center">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0" style={{ background: 'rgba(0,255,65,0.2)', color: terminal.accent }}>1</span>
+              <span className="text-sm font-medium" style={{ color: terminal.text }}>Get SOL</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0" style={{ background: 'rgba(0,255,65,0.2)', color: terminal.accent }}>2</span>
+              <span className="text-sm font-medium" style={{ color: terminal.text }}>Buy $20+ $PBALL</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0" style={{ background: 'rgba(0,255,65,0.2)', color: terminal.accent }}>3</span>
+              <span className="text-sm font-medium" style={{ color: terminal.text }}>You're in. We draw. Even = payout.</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0" style={{ background: 'rgba(0,255,65,0.2)', color: terminal.accent }}>2</span>
-            <span className="text-sm font-medium" style={{ color: terminal.text }}>You're in</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0" style={{ background: 'rgba(0,255,65,0.2)', color: terminal.accent }}>3</span>
-            <span className="text-sm font-medium" style={{ color: terminal.text }}>We draw. Even = payout.</span>
+          {/* Tool strip: on-ramp + CTA */}
+          <div className="flex flex-wrap justify-center items-center gap-3 text-sm">
+            <span className="text-xs uppercase tracking-wider" style={{ color: terminal.dim }}>No SOL?</span>
+            {ON_RAMP_LINKS.map(({ name, url }) => (
+              <a
+                key={name}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-2 rounded-lg font-medium transition-all hover:opacity-90"
+                style={{ background: 'rgba(0,255,65,0.08)', color: terminal.accentDim, border: `1px solid ${terminal.border}` }}
+              >
+                {name}
+              </a>
+            ))}
+            <span className="text-xs" style={{ color: terminal.dim }}>→ then</span>
+            <button
+              type="button"
+              onClick={() => swapWidgetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+              className="px-4 py-2.5 rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{ background: terminal.accent, color: terminal.bg, boxShadow: '0 0 20px rgba(0,255,65,0.3)' }}
+            >
+              Buy $20 worth now
+            </button>
           </div>
         </div>
 
@@ -303,10 +365,7 @@ export const HomePage: React.FC = () => {
                 <>Next draw: {nextDrawLabel}</>
               )}
             </p>
-            <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm font-mono" style={{ color: terminal.dim }}>
-              <span>Hold $20+ $PBALL to be in.</span>
-              <span style={{ color: terminal.accentDim }}>Connect wallet to check</span>
-            </div>
+            <p className="text-xs sm:text-sm font-mono" style={{ color: terminal.dim }}>Hold $20+ $PBALL to be in. Swap below or get SOL above.</p>
           </div>
           <div className="flex justify-center sm:justify-end flex-shrink-0" aria-hidden>
             <div
@@ -321,6 +380,67 @@ export const HomePage: React.FC = () => {
                 className="w-full h-full object-cover scale-110 pointer-events-none select-none"
               />
             </div>
+          </div>
+        </section>
+
+        {/* Swap widget — in-app buy SOL → $PBALL (normies with SOL can buy here) */}
+        <section
+          ref={swapWidgetRef}
+          className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border-2"
+          style={{ borderColor: 'rgba(0,255,65,0.25)', boxShadow: '0 0 24px rgba(0,255,65,0.08)' }}
+        >
+          <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>
+            Buy $PBALL here
+          </div>
+          <p className="text-sm mb-4" style={{ color: terminal.dim }}>
+            Have SOL in your wallet? Swap to $PBALL below — aim for $20+ to get in the draw.
+          </p>
+          <div id="jupiter-embedded-swap" className="min-h-[360px] w-full rounded-xl overflow-hidden" />
+        </section>
+
+        {/* Get $PBALL — funnel: chart, buy, copy CA (no connect required) */}
+        <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="matrix-data-label mb-3 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Get $PBALL</div>
+          <p className="text-sm mb-4" style={{ color: terminal.text }}>Or open chart, Jupiter in new tab, or copy the token address.</p>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={`https://dextools.io/app/solana/token/${PEPEBALL_MINT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
+              style={{ background: 'rgba(0,255,65,0.15)', color: terminal.accent, border: `1px solid ${terminal.accentDim}` }}
+            >
+              Chart (DexTools)
+            </a>
+            <a
+              href={`https://jup.ag/swap/SOL-${PEPEBALL_MINT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
+              style={{ background: terminal.accent, color: terminal.bg, border: 'none', boxShadow: '0 0 16px rgba(0,255,65,0.25)' }}
+            >
+              Buy (Jupiter)
+            </a>
+            <a
+              href={`https://birdeye.so/token/${PEPEBALL_MINT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
+              style={{ background: 'rgba(0,255,65,0.1)', color: terminal.text, border: `1px solid ${terminal.border}` }}
+            >
+              Birdeye
+            </a>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(PEPEBALL_MINT);
+                toast.success('Contract address copied');
+              }}
+              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
+              style={{ background: 'rgba(0,255,65,0.08)', color: terminal.dim, border: `1px solid ${terminal.border}` }}
+            >
+              Copy CA
+            </button>
           </div>
         </section>
 
@@ -412,7 +532,7 @@ export const HomePage: React.FC = () => {
         {/* Who's in — one line */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="matrix-data-label mb-2">Who’s in the draw</div>
-          <p className="text-sm font-medium" style={{ color: terminal.text }}>Hold $20+ $PBALL = you're in. Connect wallet to check.</p>
+          <p className="text-sm font-medium" style={{ color: terminal.text }}>Hold $20+ $PBALL = you're in. Get it above.</p>
         </section>
 
         {/* Payout structure */}
