@@ -3,8 +3,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 const SOL_MINT = 'So11111111111111111111111111111111111111112';
-const SWAP_ROTATE_MS = 15000;
+const SWAP_ROTATE_MS = 180000; // 3 minutes
 const SWAP_PANELS = ['Jupiter', 'Pond'] as const;
+const POND_REF = 'HMtGbWoz2CwSK6ZQ5dzcRnAJZbAWHqzAjon6m6jaw8WGLW4da8Y6jknaXnFK';
 
 type Theme = {
   accent: string;
@@ -91,7 +92,7 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
           </div>
         </div>
         <p className="text-sm mb-4" style={{ color: theme.dim }}>
-          Rotates every 15s. Swap SOL or USDC → $PBALL — aim for $20+ to get in the draw.
+          Rotates every 3m. Swap SOL or USDC → $PBALL — aim for $20+ to get in the draw.
           {userAddress && (
             <>
               {' '}
@@ -115,7 +116,7 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
         >
           <iframe
             title="Pond swap — SOL to $PBALL"
-            src={`https://www.pondx.com/swap/solana/${PEPEBALL_MINT}?inputMint=${SOL_MINT}`}
+            src={`https://www.pondx.com/swap/solana/${PEPEBALL_MINT}?inputMint=${SOL_MINT}&ref=${POND_REF}`}
             className="w-full h-[420px] sm:h-[480px] border-0 rounded-xl"
             allow="clipboard-write"
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
