@@ -138,7 +138,7 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
             Drop your own widget or custom swap UI here. Same vibe as Jupiter — make it yours.
           </p>
           <a
-            href={`https://jup.ag/swap/USDC-${PEPEBALL_MINT}`}
+            href={`https://jup.ag/swap?inputMint=${USDC}&outputMint=${PEPEBALL_MINT}&amount=20100000`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 min-h-[44px] px-6 py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.02]"
@@ -179,9 +179,11 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  window.open(`https://jup.ag/swap/${USDC}-${PEPEBALL_MINT}`, '_blank', 'noopener');
+                  const amountRaw = 20100000; // 20.10 USDC (6 decimals)
+                  const url = `https://jup.ag/swap?inputMint=${USDC}&outputMint=${PEPEBALL_MINT}&amount=${amountRaw}`;
+                  window.open(url, '_blank', 'noopener');
                   setBuyPromptOpen(false);
-                  toast.success('Opened Jupiter — enter 20.10 USDC to swap');
+                  toast.success('Opened Jupiter — 20.10 USDC pre-filled');
                 }}
                 className="flex-1 min-h-[44px] px-4 py-3 rounded-xl font-semibold"
                 style={{ background: theme.accent, color: theme.bg, boxShadow: '0 0 16px rgba(0,255,65,0.25)' }}

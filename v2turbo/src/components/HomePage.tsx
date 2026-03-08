@@ -395,10 +395,10 @@ export const HomePage: React.FC = () => {
                 </div>
                 {drawPhase === 'revealed' && drawResult && !drawResult.isEven && (
                   <div
-                    className="absolute inset-0 rounded-full pointer-events-none"
+                    className="absolute inset-0 rounded-full pointer-events-none z-10"
                     style={{
-                      background: 'rgba(180, 20, 20, 0.82)',
-                      boxShadow: 'inset 0 0 0 3px rgba(220, 38, 38, 0.9)',
+                      background: 'rgba(200, 30, 30, 0.92)',
+                      boxShadow: 'inset 0 0 0 4px rgba(248, 81, 73, 0.95), 0 0 24px rgba(248, 81, 73, 0.5)',
                     }}
                     aria-hidden
                   />
