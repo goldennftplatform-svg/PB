@@ -13,6 +13,8 @@ export const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 export const PROOF_MINT = "3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump";
 /** Lottery token mint — proof by default; after one-way lock, set to production mint (env or on-chain). */
 export const PEPEBALL_MINT = import.meta.env?.VITE_PEPEBALL_MINT ?? PROOF_MINT;
+/** In-app swap widget: 'pond' (PondX iframe) or 'jupiter'. Set VITE_SWAP_WIDGET to switch; default Pond for now. */
+export const SWAP_WIDGET_PROVIDER = (import.meta.env?.VITE_SWAP_WIDGET ?? 'pond') as 'pond' | 'jupiter';
 export const MIN_HOLDING_USD = "20";
 export const DRAWING_INTERVAL_NORMAL = "172800";
 export const DRAWING_INTERVAL_HIGH_JACKPOT = "259200";

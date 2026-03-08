@@ -13,6 +13,7 @@ import {
   ROLLOVER_PERCENT,
   DEV_PERCENT,
   SECONDARY_WINNER_PERCENT,
+  SWAP_WIDGET_PROVIDER,
   TAROBASE_ENV,
 } from '@/lib/constants';
 import { TAROBASE_CONFIG } from '@/lib/config';
@@ -93,9 +94,9 @@ export const HomePage: React.FC = () => {
     return () => clearInterval(id);
   }, [jackpot?.nextDrawingAt]);
 
-  // Jupiter swap widget: init once when script is ready (integrated, SOL → $PBALL)
+  // Jupiter swap widget: init only when provider is jupiter
   useEffect(() => {
-    if (jupiterInitializedRef.current) return;
+    if (SWAP_WIDGET_PROVIDER !== 'jupiter' || jupiterInitializedRef.current) return;
     const initJupiter = () => {
       if (typeof window === 'undefined' || !window.Jupiter) return false;
       window.Jupiter.init({
@@ -468,7 +469,7 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* Swap widget — in-app buy SOL → $PBALL (normies with SOL can buy here) */}
+        {/* Swap widget — PondX (iframe) or Jupiter (embedded). Toggle via VITE_SWAP_WIDGET=pond|jupiter */}
         <section
           ref={swapWidgetRef}
           className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border-2"
@@ -478,9 +479,25 @@ export const HomePage: React.FC = () => {
             Buy $PBALL here
           </div>
           <p className="text-sm mb-4" style={{ color: terminal.dim }}>
-            Have SOL in your wallet? Swap to $PBALL below — aim for $20+ to get in the draw.
+            {SWAP_WIDGET_PROVIDER === 'pond' ? (
+              <>Swap via <a href="https://www.pondx.com/swap/solana" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: terminal.accent }}>Pond</a> below — we pre-filled $PBALL. Aim for $20+ to get in the draw. (Rails upgrading? Use Jupiter link in “Get $PBALL” for now.)</>
+            ) : (
+              <>Have SOL in your wallet? Swap to $PBALL below — aim for $20+ to get in the draw.</>
+            )}
           </p>
-          <div id="jupiter-embedded-swap" className="min-h-[360px] w-full rounded-xl overflow-hidden" />
+          {SWAP_WIDGET_PROVIDER === 'pond' ? (
+            <div className="min-h-[420px] w-full rounded-xl overflow-hidden border" style={{ borderColor: terminal.border }}>
+              <iframe
+                title="Pond swap — SOL to $PBALL"
+                src={`https://www.pondx.com/swap/solana/${PEPEBALL_MINT}`}
+                className="w-full h-[420px] sm:h-[480px] border-0 rounded-xl"
+                allow="clipboard-write"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              />
+            </div>
+          ) : (
+            <div id="jupiter-embedded-swap" className="min-h-[360px] w-full rounded-xl overflow-hidden" />
+          )}
         </section>
 
         {/* Get $PBALL — funnel: chart, buy, copy CA (no connect required) */}
