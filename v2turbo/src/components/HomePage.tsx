@@ -21,7 +21,7 @@ import { usePhantomFallback } from '@/contexts/PhantomFallbackContext';
 import { useTokenPrice } from '@/contexts/TokenPriceContext';
 import { useAuth } from '@pooflabs/web';
 import { Connection, Transaction } from '@solana/web3.js';
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import WalletButton from './WalletButton';
 import MatrixRain from './MatrixRain';
@@ -49,11 +49,12 @@ function formatCountdownShort(nextDrawingAt: number): string {
   return `${mins}m`;
 }
 
-const FIRST_VISIT_KEY = 'pepball-draw-seen';
 const SPIN_DURATION_MS = 2800;
 const BALL_TICK_MS = 80;
+const AUTO_PLAY_DELAY_MS = 700;
 
 export const HomePage: React.FC = () => {
+  const hasAutoPlayedRef = useRef(false);
   const [tick, setTick] = useState(0);
   const [drawPhase, setDrawPhase] = useState<'idle' | 'spinning' | 'revealed'>('idle');
   const [ballValues, setBallValues] = useState<number[]>([0, 0, 0, 0, 0]);
@@ -102,17 +103,15 @@ export const HomePage: React.FC = () => {
       const isEven = sum % 2 === 0;
       setDrawResult({ sum, isEven, winnerIndex: Math.floor(Math.random() * 50) + 1 });
       setDrawPhase('revealed');
-      try { sessionStorage.setItem(FIRST_VISIT_KEY, '1'); } catch { /* ignore */ }
     }, 100);
     return () => { clearInterval(spinInterval); clearInterval(stopInterval); };
   }, [drawPhase]);
 
+  // Auto-play the spin once when user lands on the site (one time per page load)
   useEffect(() => {
-    if (drawPhase !== 'idle') return;
-    try {
-      if (sessionStorage.getItem(FIRST_VISIT_KEY)) return;
-    } catch { /* ignore */ }
-    const t = setTimeout(runDrawingAnimation, 900);
+    if (drawPhase !== 'idle' || hasAutoPlayedRef.current) return;
+    hasAutoPlayedRef.current = true;
+    const t = setTimeout(runDrawingAnimation, AUTO_PLAY_DELAY_MS);
     return () => clearTimeout(t);
   }, [drawPhase, runDrawingAnimation]);
 
