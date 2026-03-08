@@ -248,10 +248,10 @@ body[data-scroll-locked] {
 }
 
 .matrix-data-label {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(0, 255, 65, 0.5);
+  color: rgba(0, 255, 65, 0.55);
 }
 
 .matrix-hero-value {

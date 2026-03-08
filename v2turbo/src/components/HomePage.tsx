@@ -13,6 +13,7 @@ import {
   ROLLOVER_PERCENT,
   DEV_PERCENT,
   SECONDARY_WINNER_PERCENT,
+  TAROBASE_ENV,
 } from '@/lib/constants';
 import { TAROBASE_CONFIG } from '@/lib/config';
 import { buildTakeSnapshotTx, buildSetWinnersTx, buildPayoutWinnersTx } from '@/lib/lottery-actions';
@@ -130,7 +131,7 @@ export const HomePage: React.FC = () => {
     return formatCountdownShort(jackpot.nextDrawingAt);
   }, [jackpot?.nextDrawingAt, tick]);
 
-  // Data-driven matrix: less terminal, more ticker/dashboard
+  // Data-driven matrix: display font for hero/titles, mono for data
   const theme = {
     bg: 'rgba(2, 8, 6, 0.5)',
     panel: 'rgba(4, 14, 10, 0.6)',
@@ -144,10 +145,15 @@ export const HomePage: React.FC = () => {
     accentAlt: '#5ce1e6',
     gold: '#e5b84a',
     red: '#f85149',
-    fontDisplay: "'Syne', system-ui, sans-serif",
+    fontDisplay: "'Orbitron', 'Syne', system-ui, sans-serif",
     fontMono: "'JetBrains Mono', 'Courier New', Consolas, monospace",
   };
   const terminal = theme;
+
+  const networkLabel = TAROBASE_ENV === 'mainnet' ? 'Mainnet' : 'Devnet';
+  const lastUpdatedLabel = jackpot?.lastUpdatedAt
+    ? new Date(jackpot.lastUpdatedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : null;
 
   const pepeBallSrc = '/pepe-ball.png';
 
@@ -217,23 +223,58 @@ export const HomePage: React.FC = () => {
       </header>
 
       <main className="relative z-10 container mx-auto px-4 py-5 sm:py-8 max-w-4xl safe-area-pad">
-        {/* Tagline */}
-        <p className="text-center text-[10px] sm:text-xs uppercase tracking-[0.2em] mb-2" style={{ color: terminal.dim, fontFamily: terminal.fontMono }}>
-          Spin your destiny · Provably fair
-        </p>
-        <div className="flex items-center justify-center gap-4 mb-6 sm:mb-8 text-[10px] sm:text-xs font-mono" style={{ color: terminal.dim }}>
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" style={{ background: terminal.accent }} />
-            LIVE
+        {/* Live data ticker — ready for onchain: network, jackpot, draw #, next draw, last updated */}
+        <div
+          className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-3 px-4 mb-5 rounded-xl border"
+          style={{
+            background: 'rgba(0, 255, 65, 0.04)',
+            borderColor: 'rgba(0, 255, 65, 0.2)',
+            boxShadow: '0 0 24px rgba(0, 255, 65, 0.06)',
+          }}
+        >
+          <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+            <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: terminal.accent, boxShadow: `0 0 8px ${terminal.accent}` }} />
+            Live
           </span>
-          <span>Draw {jackpot?.drawingNumber ?? '—'}</span>
-          <span>{nextDrawLabel}</span>
+          <span className="text-xs font-mono" style={{ color: terminal.dim }}>
+            <span className="uppercase tracking-wider mr-1" style={{ color: terminal.accentDim }}>Network</span>
+            <span style={{ color: terminal.text }}>{networkLabel}</span>
+          </span>
+          <span className="text-xs font-mono" style={{ color: terminal.dim }}>
+            <span className="uppercase tracking-wider mr-1" style={{ color: terminal.accentDim }}>Jackpot</span>
+            <span className="tabular-nums font-medium" style={{ color: terminal.gold }}>{loading ? '…' : jackpotSol != null ? `${jackpotSol} SOL` : '—'}</span>
+          </span>
+          <span className="text-xs font-mono" style={{ color: terminal.dim }}>
+            <span className="uppercase tracking-wider mr-1" style={{ color: terminal.accentDim }}>Draw</span>
+            <span style={{ color: terminal.text }}>#{jackpot?.drawingNumber ?? '—'}</span>
+          </span>
+          <span className="text-xs font-mono" style={{ color: terminal.dim }}>
+            <span className="uppercase tracking-wider mr-1" style={{ color: terminal.accentDim }}>Next</span>
+            <span className="tabular-nums" style={{ color: terminal.text }}>{nextDrawLabel}</span>
+          </span>
+          {lastUpdatedLabel && (
+            <span className="text-xs font-mono" style={{ color: terminal.dim }}>
+              <span className="uppercase tracking-wider mr-1" style={{ color: terminal.accentDim }}>Updated</span>
+              <span style={{ color: terminal.text }}>{lastUpdatedLabel}</span>
+            </span>
+          )}
         </div>
 
+        {/* Tagline */}
+        <p className="text-center text-[10px] sm:text-xs uppercase tracking-[0.25em] mb-3" style={{ color: terminal.dim, fontFamily: terminal.fontDisplay }}>
+          Spin your destiny · Provably fair
+        </p>
+
         {/* Jackpot + countdown — data hero */}
-        <section className="matrix-data-panel rounded-2xl p-5 sm:p-7 lg:p-9 mb-6 sm:mb-8 border border-[rgba(0,255,65,0.18)]">
-          <div className="matrix-data-label mb-2">Jackpot</div>
-          <div className="text-4xl sm:text-5xl lg:text-6xl font-bold matrix-hero-value pepball-glow mb-5 sm:mb-6" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+        <section
+          className="matrix-data-panel rounded-2xl p-5 sm:p-7 lg:p-9 mb-6 sm:mb-8 border"
+          style={{
+            borderColor: 'rgba(0, 255, 65, 0.22)',
+            boxShadow: '0 0 40px rgba(0, 255, 65, 0.06), inset 0 1px 0 rgba(0, 255, 65, 0.08)',
+          }}
+        >
+          <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Jackpot</div>
+          <div className="text-4xl sm:text-5xl lg:text-6xl font-bold matrix-hero-value pepball-glow mb-5 sm:mb-6 tracking-tight" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
             {loading ? '...' : error ? '—' : jackpotSol != null ? `${jackpotSol} SOL` : '—'}
           </div>
           <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm font-mono">
@@ -252,7 +293,7 @@ export const HomePage: React.FC = () => {
 
         {/* Fortune spin section */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
-          <div className="matrix-data-label mb-1">Fortune Spin</div>
+          <div className="matrix-data-label mb-1 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Fortune Spin</div>
           <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: terminal.dim }}>
             5 balls + Pepe · Even = payout · Odd = rollover
           </p>
@@ -334,7 +375,7 @@ export const HomePage: React.FC = () => {
 
         {/* Payout structure */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
-          <div className="matrix-data-label mb-3 sm:mb-4">Payout structure</div>
+          <div className="matrix-data-label mb-3 sm:mb-4 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Payout structure</div>
           <ul className="space-y-3 text-sm">
             <li className="flex justify-between">
               <span style={{ color: terminal.text }}>Main winner</span>
@@ -357,7 +398,7 @@ export const HomePage: React.FC = () => {
 
         {/* Fortune guarantee */}
         <section className="matrix-data-panel mb-6 sm:mb-8 text-xs sm:text-sm rounded-2xl p-4 sm:p-6" style={{ color: terminal.dim }}>
-          <div className="matrix-data-label mb-2 sm:mb-3">Provably fair</div>
+          <div className="matrix-data-label mb-2 sm:mb-3 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Provably fair</div>
           <ul className="space-y-2">
             <li>· No way to predict or manipulate the winner</li>
             <li>· Result verified on-chain before payout</li>
@@ -365,23 +406,28 @@ export const HomePage: React.FC = () => {
           </ul>
         </section>
 
-        {/* Current round info */}
+        {/* Current round info — live data ready for onchain (entries from lottery state when wired) */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
-          <div className="matrix-data-label mb-3 sm:mb-4">Current round</div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-xs sm:text-sm">
-            <div>
-              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Current jackpot</div>
-              <div className="font-mono tabular-nums font-medium" style={{ color: terminal.gold }}>
-                {loading ? '...' : jackpotSol != null ? `${jackpotSol} SOL` : '0.00 SOL'}
+          <div className="matrix-data-label mb-3 sm:mb-4 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Current round</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 text-xs sm:text-sm">
+            <div className="p-3 rounded-xl" style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid rgba(0,255,65,0.12)' }}>
+              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Jackpot (live)</div>
+              <div className="font-mono tabular-nums font-semibold text-base" style={{ color: terminal.gold }}>
+                {loading ? '…' : jackpotSol != null ? `${jackpotSol} SOL` : '0.00 SOL'}
               </div>
             </div>
-            <div>
-              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Entries</div>
-              <div className="font-mono">0</div>
+            <div className="p-3 rounded-xl" style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid rgba(0,255,65,0.12)' }}>
+              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Entries (on-chain)</div>
+              <div className="font-mono tabular-nums font-semibold" style={{ color: terminal.text }}>—</div>
+              <p className="text-[10px] mt-1" style={{ color: terminal.dim }}>From lottery snapshot when on-chain</p>
             </div>
-            <div>
-              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Next drawing (one for everyone)</div>
-              <div className="font-mono">{nextDrawLabel || 'TBD'}</div>
+            <div className="p-3 rounded-xl" style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid rgba(0,255,65,0.12)' }}>
+              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Next drawing</div>
+              <div className="font-mono tabular-nums" style={{ color: terminal.text }}>{nextDrawLabel || 'TBD'}</div>
+            </div>
+            <div className="p-3 rounded-xl" style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid rgba(0,255,65,0.12)' }}>
+              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Data updated</div>
+              <div className="font-mono text-xs" style={{ color: terminal.text }}>{lastUpdatedLabel ?? '—'}</div>
             </div>
           </div>
           <div className="mt-4 pt-4 border-t" style={{ borderColor: terminal.cardBorder }}>
@@ -398,7 +444,7 @@ export const HomePage: React.FC = () => {
 
         {/* Winners history */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
-          <div className="matrix-data-label mb-2">Winners</div>
+          <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Winners</div>
           <p className="text-xs mb-4" style={{ color: terminal.dim }}>All transactions verifiable on Solscan</p>
           <div className="text-center py-10" style={{ color: terminal.dim }}>
             No drawings yet
