@@ -162,6 +162,14 @@ export const HomePage: React.FC = () => {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-14px); }
     }
+    @keyframes pepball-hero-float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.02); }
+    }
+    @keyframes pepball-hero-glow {
+      0%, 100% { box-shadow: 0 0 30px rgba(0,255,65,0.35), 0 0 60px rgba(0,255,65,0.15); }
+      50% { box-shadow: 0 0 50px rgba(0,255,65,0.5), 0 0 90px rgba(0,255,65,0.25); }
+    }
     @keyframes pepball-glow {
       0%, 100% { text-shadow: 0 0 14px rgba(0,255,65,0.7), 0 0 28px rgba(0,255,65,0.4); }
       50% { text-shadow: 0 0 28px rgba(0,255,65,1), 0 0 56px rgba(0,255,65,0.6); }
@@ -171,6 +179,8 @@ export const HomePage: React.FC = () => {
       50% { opacity: 0.75; }
     }
     .pepball-float { animation: pepball-float 2.2s ease-in-out infinite; }
+    .pepball-hero-float { animation: pepball-hero-float 3s ease-in-out infinite; }
+    .pepball-hero-glow { animation: pepball-hero-glow 2.5s ease-in-out infinite; }
     .pepball-glow { animation: pepball-glow 1.4s ease-in-out infinite; }
     .pepball-pulse { animation: pepball-pulse 0.9s ease-in-out infinite; }
     .pepball-ball-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
@@ -260,9 +270,25 @@ export const HomePage: React.FC = () => {
         </div>
 
         {/* Tagline */}
-        <p className="text-center text-[10px] sm:text-xs uppercase tracking-[0.25em] mb-3" style={{ color: terminal.dim, fontFamily: terminal.fontDisplay }}>
+        <p className="text-center text-[10px] sm:text-xs uppercase tracking-[0.25em] mb-2" style={{ color: terminal.dim, fontFamily: terminal.fontDisplay }}>
           Spin your destiny · Provably fair
         </p>
+
+        {/* Hero: floating Pepe ball (like Poof preview) */}
+        <div className="flex justify-center mb-6 sm:mb-8" aria-hidden>
+          <div
+            className="pepball-hero-float pepball-hero-glow rounded-full overflow-hidden flex-shrink-0 ring-2 w-[120px] h-[120px] sm:w-[160px] sm:h-[160px]"
+            style={{
+              border: `3px solid ${terminal.accentDim}`,
+            }}
+          >
+            <img
+              src={pepeBallSrc}
+              alt=""
+              className="w-full h-full object-cover scale-110 pointer-events-none select-none"
+            />
+          </div>
+        </div>
 
         {/* Jackpot + countdown — data hero */}
         <section
