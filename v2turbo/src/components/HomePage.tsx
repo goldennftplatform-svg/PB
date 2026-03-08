@@ -312,15 +312,6 @@ export const HomePage: React.FC = () => {
                 {name}
               </a>
             ))}
-            <span className="text-xs" style={{ color: terminal.dim }}>→ then</span>
-            <button
-              type="button"
-              onClick={() => swapWidgetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-              className="px-4 py-2.5 rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{ background: terminal.accent, color: terminal.bg, boxShadow: '0 0 20px rgba(0,255,65,0.3)' }}
-            >
-              Buy $20 worth now
-            </button>
           </div>
         </div>
 

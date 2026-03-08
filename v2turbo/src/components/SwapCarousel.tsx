@@ -33,7 +33,6 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
   jupiterInitializedRef,
 }) => {
   const [swapPanelIndex, setSwapPanelIndex] = useState(0);
-  const [buyPromptOpen, setBuyPromptOpen] = useState(false);
 
   useEffect(() => {
     const initJupiter = () => {
@@ -93,19 +92,6 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
         </div>
         <p className="text-sm mb-4" style={{ color: theme.dim }}>
           Rotates every 3m. Swap SOL or USDC → $PBALL — aim for $20+ to get in the draw.
-          {userAddress && (
-            <>
-              {' '}
-              <button
-                type="button"
-                onClick={() => setBuyPromptOpen(true)}
-                className="font-semibold underline focus:outline-none"
-                style={{ color: theme.accent }}
-              >
-                Buy ~$20 worth now
-              </button>
-            </>
-          )}
         </p>
         <div style={{ display: swapPanelIndex === 0 ? 'block' : 'none' }} className="min-h-[360px] w-full rounded-xl overflow-hidden">
           <div id="jupiter-embedded-swap" className="min-h-[360px] w-full rounded-xl overflow-hidden" />
@@ -123,51 +109,6 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
           />
         </div>
       </section>
-
-      {buyPromptOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="buy-prompt-title"
-        >
-          <div
-            className="matrix-data-panel rounded-2xl p-6 sm:p-8 max-w-md w-full border-2"
-            style={{ borderColor: theme.accentDim, boxShadow: '0 0 40px rgba(0,255,65,0.15)' }}
-          >
-            <h3 id="buy-prompt-title" className="text-lg font-bold mb-3" style={{ fontFamily: theme.fontDisplay, color: theme.accent }}>
-              Buy ~$20 of $PBALL
-            </h3>
-            <p className="text-sm mb-6" style={{ color: theme.text }}>
-              Opens Jupiter with SOL → $PBALL (same as the widget). Aim for $20+ to get in the draw.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => setBuyPromptOpen(false)}
-                className="flex-1 min-h-[44px] px-4 py-3 rounded-xl font-semibold border"
-                style={{ borderColor: theme.border, color: theme.dim }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const url = `https://jup.ag/swap/SOL-${PEPEBALL_MINT}`;
-                  window.open(url, '_blank', 'noopener');
-                  setBuyPromptOpen(false);
-                  toast.success('Opened Jupiter — swap SOL → $PBALL');
-                }}
-                className="flex-1 min-h-[44px] px-4 py-3 rounded-xl font-semibold"
-                style={{ background: theme.accent, color: theme.bg, boxShadow: '0 0 16px rgba(0,255,65,0.25)' }}
-              >
-                Open Jupiter
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };
