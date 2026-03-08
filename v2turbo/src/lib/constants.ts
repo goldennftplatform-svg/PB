@@ -11,7 +11,7 @@ export const SOL = "solana";
 export const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 /** Proof-phase token (low stakes $0.50/$1/$5) — existing contract. */
 export const PROOF_MINT = "3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump";
-/** Lottery token mint — proof by default; after one-way lock, set to production mint (env or on-chain). */
+/** Lottery token mint — proof by default. To switch to production: set VITE_PEPEBALL_MINT to your new CA and redeploy. See v2turbo/docs/SWITCH_TO_PRODUCTION_TOKEN.md */
 export const PEPEBALL_MINT = import.meta.env?.VITE_PEPEBALL_MINT ?? PROOF_MINT;
 /** In-app swap widget: 'pond' (PondX iframe) or 'jupiter'. Set VITE_SWAP_WIDGET to switch; default Pond for now. */
 export const SWAP_WIDGET_PROVIDER = (import.meta.env?.VITE_SWAP_WIDGET ?? 'pond') as 'pond' | 'jupiter';
