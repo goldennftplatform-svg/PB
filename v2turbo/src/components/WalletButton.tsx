@@ -5,6 +5,7 @@ import { useAuth } from '@pooflabs/web';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Copy, LogOut, RefreshCw, Wallet } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 
 export type WalletButtonVariant = 'light' | 'dark';
@@ -87,6 +88,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
   const [balance, setBalance] = useState<number | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [justCopied, setJustCopied] = useState(false);
+  const [popupRect, setPopupRect] = useState<{ top: number; right: number } | null>(null);
   const lastFetchTime = useRef<number>(0);
   const popupRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -156,6 +158,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
         !buttonRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
+        setPopupRect(null);
       }
     };
 
@@ -186,10 +189,12 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
       await auth.logout?.();
       phantom.disconnectPhantom();
       setIsOpen(false);
+      setPopupRect(null);
     } catch (error) {
       console.error('Failed to logout', error);
       phantom.disconnectPhantom();
       setIsOpen(false);
+      setPopupRect(null);
     }
   };
 
@@ -273,6 +278,10 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
           <motion.button
             ref={buttonRef}
             onClick={() => {
+              if (!isOpen && buttonRef.current) {
+                const rect = buttonRef.current.getBoundingClientRect();
+                setPopupRect({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+              }
               copyAddress();
               setIsOpen(!isOpen);
             }}
@@ -296,7 +305,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
           </motion.button>
 
           <AnimatePresence>
-            {isOpen && (
+            {isOpen && popupRect != null && createPortal(
               <motion.div
                 ref={popupRef}
                 initial={{ opacity: 0, scale: 0.95, y: -8 }}
@@ -304,9 +313,9 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
                 exit={{ opacity: 0, scale: 0.95, y: -8 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 8px)',
-                  right: 0,
+                  position: 'fixed',
+                  top: popupRect.top,
+                  right: popupRect.right,
                   width: '320px',
                   backgroundColor: styles.popup.backgroundColor,
                   backdropFilter: 'blur(20px)',
@@ -318,7 +327,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
                       : '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
                   border: styles.popup.border,
                   overflow: 'hidden',
-                  zIndex: 100,
+                  zIndex: 10000,
                 }}
               >
                 {/* Network Indicator */}
@@ -511,7 +520,8 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ variant = 'light' })
                     </span>
                   </motion.button>
                 </div>
-              </motion.div>
+              </motion.div>,
+              document.body
             )}
           </AnimatePresence>
         </div>
