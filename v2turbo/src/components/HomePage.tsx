@@ -163,12 +163,14 @@ export const HomePage: React.FC = () => {
       50% { transform: translateY(-14px); }
     }
     @keyframes pepball-hero-float {
-      0%, 100% { transform: translateY(0) scale(1); }
-      50% { transform: translateY(-20px) scale(1.02); }
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(4px, -12px) scale(1.01); }
+      50% { transform: translate(-3px, -22px) scale(1.02); }
+      75% { transform: translate(-5px, -10px) scale(1.01); }
     }
     @keyframes pepball-hero-glow {
-      0%, 100% { box-shadow: 0 0 30px rgba(0,255,65,0.35), 0 0 60px rgba(0,255,65,0.15); }
-      50% { box-shadow: 0 0 50px rgba(0,255,65,0.5), 0 0 90px rgba(0,255,65,0.25); }
+      0%, 100% { box-shadow: 0 0 28px rgba(0,255,65,0.4), 0 0 56px rgba(0,255,65,0.12); }
+      50% { box-shadow: 0 0 48px rgba(0,255,65,0.55), 0 0 88px rgba(0,255,65,0.2); }
     }
     @keyframes pepball-glow {
       0%, 100% { text-shadow: 0 0 14px rgba(0,255,65,0.7), 0 0 28px rgba(0,255,65,0.4); }
@@ -179,8 +181,8 @@ export const HomePage: React.FC = () => {
       50% { opacity: 0.75; }
     }
     .pepball-float { animation: pepball-float 2.2s ease-in-out infinite; }
-    .pepball-hero-float { animation: pepball-hero-float 3s ease-in-out infinite; }
-    .pepball-hero-glow { animation: pepball-hero-glow 2.5s ease-in-out infinite; }
+    .pepball-hero-float { animation: pepball-hero-float 4s ease-in-out infinite; }
+    .pepball-hero-glow { animation: pepball-hero-glow 3s ease-in-out infinite; }
     .pepball-glow { animation: pepball-glow 1.4s ease-in-out infinite; }
     .pepball-pulse { animation: pepball-pulse 0.9s ease-in-out infinite; }
     .pepball-ball-hover { transition: transform 0.25s ease, box-shadow 0.25s ease; }
@@ -274,45 +276,45 @@ export const HomePage: React.FC = () => {
           Spin your destiny · Provably fair
         </p>
 
-        {/* Hero: floating Pepe ball (like Poof preview) */}
-        <div className="flex justify-center mb-6 sm:mb-8" aria-hidden>
-          <div
-            className="pepball-hero-float pepball-hero-glow rounded-full overflow-hidden flex-shrink-0 ring-2 w-[120px] h-[120px] sm:w-[160px] sm:h-[160px]"
-            style={{
-              border: `3px solid ${terminal.accentDim}`,
-            }}
-          >
-            <img
-              src={pepeBallSrc}
-              alt=""
-              className="w-full h-full object-cover scale-110 pointer-events-none select-none"
-            />
-          </div>
-        </div>
-
-        {/* Jackpot + countdown — data hero */}
+        {/* Jackpot + countdown — hero ball inside box, right-aligned (Poof-style) */}
         <section
-          className="matrix-data-panel rounded-2xl p-5 sm:p-7 lg:p-9 mb-6 sm:mb-8 border"
+          className="matrix-data-panel rounded-2xl p-5 sm:p-7 lg:p-9 mb-6 sm:mb-8 border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6"
           style={{
             borderColor: 'rgba(0, 255, 65, 0.22)',
             boxShadow: '0 0 40px rgba(0, 255, 65, 0.06), inset 0 1px 0 rgba(0, 255, 65, 0.08)',
           }}
         >
-          <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Jackpot</div>
-          <div className="text-4xl sm:text-5xl lg:text-6xl font-bold matrix-hero-value pepball-glow mb-5 sm:mb-6 tracking-tight" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
-            {loading ? '...' : error ? '—' : jackpotSol != null ? `${jackpotSol} SOL` : '—'}
+          <div className="min-w-0 flex-1">
+            <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Jackpot</div>
+            <div className="text-4xl sm:text-5xl lg:text-6xl font-bold matrix-hero-value pepball-glow mb-4 sm:mb-5 tracking-tight" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+              {loading ? '...' : error ? '—' : jackpotSol != null ? `${jackpotSol} SOL` : '—'}
+            </div>
+            <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm font-mono">
+              <span style={{ color: terminal.dim }}>Next draw</span>
+              {countdown != null ? (
+                <span className="tabular-nums pepball-pulse font-medium" style={{ color: terminal.gold, fontFamily: terminal.fontMono }}>
+                  {String(countdown.hours).padStart(2, '0')} : {String(countdown.mins).padStart(2, '0')} : {String(countdown.secs).padStart(2, '0')}
+                </span>
+              ) : (
+                <span style={{ color: terminal.dim }}>{nextDrawLabel}</span>
+              )}
+              <span style={{ color: terminal.dim }}>· $20+ $PBALL = in</span>
+              <span style={{ color: terminal.accentDim }}>Connect to check</span>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm font-mono">
-            <span style={{ color: terminal.dim }}>Next draw</span>
-            {countdown != null ? (
-              <span className="tabular-nums pepball-pulse font-medium" style={{ color: terminal.gold, fontFamily: terminal.fontMono }}>
-                {String(countdown.hours).padStart(2, '0')} : {String(countdown.mins).padStart(2, '0')} : {String(countdown.secs).padStart(2, '0')}
-              </span>
-            ) : (
-              <span style={{ color: terminal.dim }}>{nextDrawLabel}</span>
-            )}
-            <span style={{ color: terminal.dim }}>· $20+ $PBALL = in</span>
-            <span style={{ color: terminal.accentDim }}>Connect to check</span>
+          <div className="flex justify-center sm:justify-end flex-shrink-0" aria-hidden>
+            <div
+              className="pepball-hero-float pepball-hero-glow rounded-full overflow-hidden ring-2 w-[100px] h-[100px] sm:w-[140px] sm:h-[140px] lg:w-[180px] lg:h-[180px]"
+              style={{
+                border: `3px solid ${terminal.accentDim}`,
+              }}
+            >
+              <img
+                src={pepeBallSrc}
+                alt=""
+                className="w-full h-full object-cover scale-110 pointer-events-none select-none"
+              />
+            </div>
           </div>
         </section>
 
