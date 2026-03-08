@@ -343,14 +343,26 @@ export const HomePage: React.FC = () => {
               </div>
             ))}
             <div className="flex flex-col items-center">
-              <div
-                className="pepball-ball-hover w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden flex-shrink-0 ring-2"
-                style={{
-                  boxShadow: '0 0 20px rgba(0, 255, 65, 0.25), inset 0 0 10px rgba(0, 0, 0, 0.2)',
-                  border: `2px solid ${terminal.accentDim}`,
-                }}
-              >
-                <img src={pepeBallSrc} alt="PEPE" className="w-full h-full object-cover scale-110" />
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
+                <div
+                  className="pepball-ball-hover w-full h-full rounded-full overflow-hidden ring-2"
+                  style={{
+                    boxShadow: '0 0 20px rgba(0, 255, 65, 0.25), inset 0 0 10px rgba(0, 0, 0, 0.2)',
+                    border: `2px solid ${terminal.accentDim}`,
+                  }}
+                >
+                  <img src={pepeBallSrc} alt="PEPE" className="w-full h-full object-cover scale-110" />
+                </div>
+                {drawPhase === 'revealed' && drawResult && !drawResult.isEven && (
+                  <div
+                    className="absolute inset-0 rounded-full pointer-events-none"
+                    style={{
+                      background: 'rgba(248, 81, 73, 0.55)',
+                      boxShadow: 'inset 0 0 0 2px rgba(248, 81, 73, 0.4)',
+                    }}
+                    aria-hidden
+                  />
+                )}
               </div>
               <span className="text-xs mt-1" style={{ color: terminal.dim }}>Pepe</span>
             </div>
