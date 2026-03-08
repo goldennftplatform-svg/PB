@@ -357,8 +357,8 @@ export const HomePage: React.FC = () => {
                   <div
                     className="absolute inset-0 rounded-full pointer-events-none"
                     style={{
-                      background: 'rgba(248, 81, 73, 0.55)',
-                      boxShadow: 'inset 0 0 0 2px rgba(248, 81, 73, 0.4)',
+                      background: 'rgba(180, 20, 20, 0.82)',
+                      boxShadow: 'inset 0 0 0 3px rgba(220, 38, 38, 0.9)',
                     }}
                     aria-hidden
                   />
