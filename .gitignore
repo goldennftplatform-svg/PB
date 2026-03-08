@@ -79,3 +79,24 @@ testnet-key.json
 **/*-key.json
 **/*keypair*.json
 pball-new-keypair.json
+
+# Internal / personal docs (do not publish)
+GET_DEVNET_SOL.md
+DEVNET_DEPLOYMENT_SUMMARY.txt
+VERCEL_V2_ENV.txt
+jj.md
+docs/ADD_OLD_WALLET*
+docs/HOW_FjbPun*
+docs/HOW_WHY_FjbPun*
+docs/JACKPOT_*
+docs/MOVE_*
+docs/NEVER_SEND*
+docs/SAFE_NEW_KEYPAIR*
+docs/SEARCH_CHAT*
+docs/TEST_DEPLOY_BEFORE*
+docs/WHAT_HAPPENED*
+docs/WHERE_VAULT*
+token-lp-info.json
+bots/addresses.txt
+bots/wallets/*.txt
+bots/results/

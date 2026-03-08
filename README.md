@@ -1,41 +1,35 @@
-# PEPEBALL Live Dashboard
+# PEPEBALL — Solana Powerball Lottery
 
-This is the live dashboard for PEPEBALL - the ultimate Powerball lottery token!
+On-chain lottery for token holders: hold a minimum of the project token to be included in periodic draws. One draw for everyone; VRF-based fairness; payouts in SOL.
 
-## 🎰 Features
+## Stack
 
-- **Live Data Updates**: Real-time jackpot and participant tracking
-- **Interactive Dashboard**: Clickable cards and pricing tiers
-- **8-bit PEPE Theme**: Retro gaming aesthetics with South Park vibes
-- **Floating Bubbles**: Subtle bubble animations throughout
-- **Responsive Design**: Works on all devices
-- **Live Notifications**: Real-time feedback system
+- **Programs (Anchor/Rust):** `lottery`, `lp-manager`, `pepball-token`, `tax-harvest`
+- **Frontend:** `v2turbo/` — React + Vite + Tarobase (Poof), Solana wallet connect
+- **Backend:** `v2turbo/partyserver/` — Tarobase partyserver for realtime + RPC
 
-## 🚀 Access
+## Quick start
 
-Visit the live dashboard at: **https://preseteth.github.io/pepeball/**
+```bash
+# Build programs (WSL or Linux recommended for Anchor)
+anchor build
 
-## 🎨 Visual Features
+# Frontend
+cd v2turbo && bun install && bun dev
+```
 
-- **Gradient Backgrounds**: Animated pink PEPE gradients
-- **Glowing Effects**: Text shadows and value highlights
-- **Hover Animations**: Interactive card transformations
-- **Bubble System**: Continuous floating bubble generation
-- **Live Indicator**: Real-time status display
+See [docs/](docs/) for deployment, mainnet, and token setup.
 
-## 📊 Dashboard Sections
+## Repo layout
 
-1. **Header**: Animated title with spinning PEPE emoji
-2. **Live Stats**: Real-time jackpot, participants, tickets
-3. **Lottery Section**: Interactive entry system
-4. **Pricing Tiers**: Dynamic pricing with hover effects
-5. **Action Buttons**: Wallet connection and lottery entry
-6. **Footer**: Links and status information
+| Path | Description |
+|------|-------------|
+| `programs/` | Anchor programs (lottery, LP, token, tax-harvest) |
+| `v2turbo/` | Dashboard app + partyserver |
+| `app/` | Legacy static dashboard |
+| `scripts/` | Deployment, snapshot, and testing helpers |
+| `docs/` | Deployment and operations docs |
 
-## 🔄 Updates
+## License
 
-The dashboard updates every 30 seconds with live data and every minute with countdown timers.
-
----
-
-**🐸 PEPEBALL - Where memes meet money! 💰**
+Private / unlicensed unless otherwise stated.
