@@ -271,10 +271,21 @@ export const HomePage: React.FC = () => {
           )}
         </div>
 
-        {/* Tagline */}
-        <p className="text-center text-[10px] sm:text-xs uppercase tracking-[0.25em] mb-2" style={{ color: terminal.dim, fontFamily: terminal.fontDisplay }}>
-          Spin your destiny · Provably fair
-        </p>
+        {/* How to play — Powerball-simple: 3 steps */}
+        <div className="flex flex-wrap justify-center gap-6 sm:gap-10 mb-6 text-center">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0" style={{ background: 'rgba(0,255,65,0.2)', color: terminal.accent }}>1</span>
+            <span className="text-sm font-medium" style={{ color: terminal.text }}>Hold $20+ $PBALL</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0" style={{ background: 'rgba(0,255,65,0.2)', color: terminal.accent }}>2</span>
+            <span className="text-sm font-medium" style={{ color: terminal.text }}>You're in</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0" style={{ background: 'rgba(0,255,65,0.2)', color: terminal.accent }}>3</span>
+            <span className="text-sm font-medium" style={{ color: terminal.text }}>We draw. Even = payout.</span>
+          </div>
+        </div>
 
         {/* Jackpot + countdown — hero ball inside box, right-aligned */}
         <section
@@ -282,20 +293,19 @@ export const HomePage: React.FC = () => {
         >
           <div className="min-w-0 flex-1">
             <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Jackpot</div>
-            <div className="text-4xl sm:text-5xl lg:text-6xl font-bold matrix-hero-value pepball-glow mb-4 sm:mb-5 tracking-tight" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+            <div className="text-4xl sm:text-5xl lg:text-6xl font-bold matrix-hero-value pepball-glow mb-3 sm:mb-4 tracking-tight" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
               {loading ? '...' : error ? '—' : jackpotSol != null ? `${jackpotSol} SOL` : '—'}
             </div>
-            <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm font-mono">
-              <span style={{ color: terminal.dim }}>Next draw</span>
+            <p className="text-sm font-medium mb-4" style={{ color: terminal.gold }}>
               {countdown != null ? (
-                <span className="tabular-nums pepball-pulse font-medium" style={{ color: terminal.gold, fontFamily: terminal.fontMono }}>
-                  {String(countdown.hours).padStart(2, '0')} : {String(countdown.mins).padStart(2, '0')} : {String(countdown.secs).padStart(2, '0')}
-                </span>
+                <>Next draw in <span className="tabular-nums pepball-pulse">{String(countdown.hours).padStart(2, '0')}:{String(countdown.mins).padStart(2, '0')}:{String(countdown.secs).padStart(2, '0')}</span> — don't miss it.</>
               ) : (
-                <span style={{ color: terminal.dim }}>{nextDrawLabel}</span>
+                <>Next draw: {nextDrawLabel}</>
               )}
-              <span style={{ color: terminal.dim }}>· $20+ $PBALL = in</span>
-              <span style={{ color: terminal.accentDim }}>Connect to check</span>
+            </p>
+            <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm font-mono" style={{ color: terminal.dim }}>
+              <span>Hold $20+ $PBALL to be in.</span>
+              <span style={{ color: terminal.accentDim }}>Connect wallet to check</span>
             </div>
           </div>
           <div className="flex justify-center sm:justify-end flex-shrink-0" aria-hidden>
@@ -314,11 +324,11 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* Fortune spin section */}
+        {/* The draw — same vibe as Powerball: one draw, one result */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
-          <div className="matrix-data-label mb-1 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Fortune Spin</div>
-          <p className="text-xs sm:text-sm mb-4 sm:mb-6" style={{ color: terminal.dim }}>
-            5 balls + Pepe · Even = payout · Odd = rollover
+          <div className="matrix-data-label mb-1 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>The draw</div>
+          <p className="text-sm font-medium mb-4 sm:mb-6" style={{ color: terminal.text }}>
+            One draw for everyone. Even sum = payout. Odd = rollover.
           </p>
           <div className="matrix-data-label mb-3 sm:mb-4">Balls</div>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4">
@@ -380,7 +390,7 @@ export const HomePage: React.FC = () => {
             </div>
           )}
           <p className="text-xs text-center mb-4" style={{ color: terminal.dim }}>
-            {drawPhase === 'spinning' ? 'Spinning…' : 'One draw for everyone when the countdown above hits zero. Try the simulator below.'}
+            {drawPhase === 'spinning' ? 'Spinning…' : 'Try it below — same idea as the real draw.'}
           </p>
           <div className="flex flex-wrap gap-4 justify-center items-center">
             <button
@@ -394,18 +404,15 @@ export const HomePage: React.FC = () => {
                 boxShadow: '0 0 20px rgba(0, 255, 65, 0.3), 0 4px 14px rgba(0, 0, 0, 0.2)',
               }}
             >
-              {drawPhase === 'revealed' ? 'Simulate again' : 'Simulate draw'}
+              {drawPhase === 'revealed' ? 'Spin again' : 'Simulate draw'}
             </button>
           </div>
-          <p className="text-xs text-center mt-2" style={{ color: terminal.dim }}>
-            Hold $20+ of $PBALL at snapshot time to be automatically in the draw. Connect wallet to check if you qualify.
-          </p>
         </section>
 
-        {/* Entry registry */}
+        {/* Who's in — one line */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="matrix-data-label mb-2">Who’s in the draw</div>
-          <div className="text-sm mt-2" style={{ color: terminal.text }}>Everyone holding $20+ of $PBALL at snapshot time is automatically included. Connect wallet to see your status.</div>
+          <p className="text-sm font-medium" style={{ color: terminal.text }}>Hold $20+ $PBALL = you're in. Connect wallet to check.</p>
         </section>
 
         {/* Payout structure */}
