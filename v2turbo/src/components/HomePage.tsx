@@ -383,67 +383,6 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* Swap widget — in-app buy SOL → $PBALL (normies with SOL can buy here) */}
-        <section
-          ref={swapWidgetRef}
-          className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border-2"
-          style={{ borderColor: 'rgba(0,255,65,0.25)', boxShadow: '0 0 24px rgba(0,255,65,0.08)' }}
-        >
-          <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>
-            Buy $PBALL here
-          </div>
-          <p className="text-sm mb-4" style={{ color: terminal.dim }}>
-            Have SOL in your wallet? Swap to $PBALL below — aim for $20+ to get in the draw.
-          </p>
-          <div id="jupiter-embedded-swap" className="min-h-[360px] w-full rounded-xl overflow-hidden" />
-        </section>
-
-        {/* Get $PBALL — funnel: chart, buy, copy CA (no connect required) */}
-        <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
-          <div className="matrix-data-label mb-3 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Get $PBALL</div>
-          <p className="text-sm mb-4" style={{ color: terminal.text }}>Or open chart, Jupiter in new tab, or copy the token address.</p>
-          <div className="flex flex-wrap gap-3">
-            <a
-              href={`https://dextools.io/app/solana/token/${PEPEBALL_MINT}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
-              style={{ background: 'rgba(0,255,65,0.15)', color: terminal.accent, border: `1px solid ${terminal.accentDim}` }}
-            >
-              Chart (DexTools)
-            </a>
-            <a
-              href={`https://jup.ag/swap/SOL-${PEPEBALL_MINT}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
-              style={{ background: terminal.accent, color: terminal.bg, border: 'none', boxShadow: '0 0 16px rgba(0,255,65,0.25)' }}
-            >
-              Buy (Jupiter)
-            </a>
-            <a
-              href={`https://birdeye.so/token/${PEPEBALL_MINT}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
-              style={{ background: 'rgba(0,255,65,0.1)', color: terminal.text, border: `1px solid ${terminal.border}` }}
-            >
-              Birdeye
-            </a>
-            <button
-              type="button"
-              onClick={() => {
-                navigator.clipboard.writeText(PEPEBALL_MINT);
-                toast.success('Contract address copied');
-              }}
-              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
-              style={{ background: 'rgba(0,255,65,0.08)', color: terminal.dim, border: `1px solid ${terminal.border}` }}
-            >
-              Copy CA
-            </button>
-          </div>
-        </section>
-
         {/* The draw — same vibe as Powerball: one draw, one result */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
           <div className="matrix-data-label mb-1 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>The draw</div>
@@ -525,6 +464,67 @@ export const HomePage: React.FC = () => {
               }}
             >
               {drawPhase === 'revealed' ? 'Spin again' : 'Simulate draw'}
+            </button>
+          </div>
+        </section>
+
+        {/* Swap widget — in-app buy SOL → $PBALL (normies with SOL can buy here) */}
+        <section
+          ref={swapWidgetRef}
+          className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border-2"
+          style={{ borderColor: 'rgba(0,255,65,0.25)', boxShadow: '0 0 24px rgba(0,255,65,0.08)' }}
+        >
+          <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>
+            Buy $PBALL here
+          </div>
+          <p className="text-sm mb-4" style={{ color: terminal.dim }}>
+            Have SOL in your wallet? Swap to $PBALL below — aim for $20+ to get in the draw.
+          </p>
+          <div id="jupiter-embedded-swap" className="min-h-[360px] w-full rounded-xl overflow-hidden" />
+        </section>
+
+        {/* Get $PBALL — funnel: chart, buy, copy CA (no connect required) */}
+        <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="matrix-data-label mb-3 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Get $PBALL</div>
+          <p className="text-sm mb-4" style={{ color: terminal.text }}>Or open chart, Jupiter in new tab, or copy the token address.</p>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={`https://dextools.io/app/solana/token/${PEPEBALL_MINT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
+              style={{ background: 'rgba(0,255,65,0.15)', color: terminal.accent, border: `1px solid ${terminal.accentDim}` }}
+            >
+              Chart (DexTools)
+            </a>
+            <a
+              href={`https://jup.ag/swap/SOL-${PEPEBALL_MINT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
+              style={{ background: terminal.accent, color: terminal.bg, border: 'none', boxShadow: '0 0 16px rgba(0,255,65,0.25)' }}
+            >
+              Buy (Jupiter)
+            </a>
+            <a
+              href={`https://birdeye.so/token/${PEPEBALL_MINT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
+              style={{ background: 'rgba(0,255,65,0.1)', color: terminal.text, border: `1px solid ${terminal.border}` }}
+            >
+              Birdeye
+            </a>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(PEPEBALL_MINT);
+                toast.success('Contract address copied');
+              }}
+              className="inline-flex items-center gap-2 min-h-[44px] px-4 py-3 rounded-xl font-semibold text-sm transition-all hover:opacity-90"
+              style={{ background: 'rgba(0,255,65,0.08)', color: terminal.dim, border: `1px solid ${terminal.border}` }}
+            >
+              Copy CA
             </button>
           </div>
         </section>
