@@ -1,10 +1,10 @@
-import { PEPEBALL_MINT, USDC } from '@/lib/constants';
+import { PEPEBALL_MINT } from '@/lib/constants';
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 const SOL_MINT = 'So11111111111111111111111111111111111111112';
 const SWAP_ROTATE_MS = 15000;
-const SWAP_PANELS = ['Jupiter', 'Pond', 'Your swap'] as const;
+const SWAP_PANELS = ['Jupiter', 'Pond'] as const;
 
 type Theme = {
   accent: string;
@@ -57,7 +57,7 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
   }, [jupiterInitializedRef, onJupiterInit]);
 
   useEffect(() => {
-    const id = setInterval(() => setSwapPanelIndex((i) => (i + 1) % 3), SWAP_ROTATE_MS);
+    const id = setInterval(() => setSwapPanelIndex((i) => (i + 1) % 2), SWAP_ROTATE_MS);
     return () => clearInterval(id);
   }, []);
 
@@ -101,7 +101,7 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
                 className="font-semibold underline focus:outline-none"
                 style={{ color: theme.accent }}
               >
-                Buy ~$20.10 USDC worth now
+                Buy ~$20 worth now
               </button>
             </>
           )}
@@ -121,32 +121,6 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
           />
         </div>
-        <div
-          style={{
-            display: swapPanelIndex === 2 ? 'flex' : 'none',
-            borderColor: 'rgba(0,255,65,0.2)',
-            background: 'linear-gradient(145deg, rgba(0,255,65,0.04) 0%, rgba(2,12,8,0.6) 50%)',
-            boxShadow: 'inset 0 0 60px rgba(0,255,65,0.06)',
-          }}
-          className="min-h-[360px] w-full rounded-xl overflow-hidden border-2 flex flex-col items-center justify-center p-8 text-center"
-        >
-          <div className="text-4xl mb-4" aria-hidden>⚡</div>
-          <div className="matrix-data-label mb-2 font-bold tracking-wider" style={{ fontFamily: theme.fontDisplay, color: theme.accent }}>
-            Your swap
-          </div>
-          <p className="text-sm mb-6 max-w-md" style={{ color: theme.dim }}>
-            Drop your own widget or custom swap UI here. Same vibe as Jupiter — make it yours.
-          </p>
-          <a
-            href={`https://jup.ag/swap?inputMint=${USDC}&outputMint=${PEPEBALL_MINT}&amount=20100000`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 min-h-[44px] px-6 py-3 rounded-xl font-semibold text-sm transition-all hover:scale-[1.02]"
-            style={{ background: theme.accent, color: theme.bg, boxShadow: '0 0 20px rgba(0,255,65,0.3)' }}
-          >
-            Open Jupiter (USDC → $PBALL)
-          </a>
-        </div>
       </section>
 
       {buyPromptOpen && (
@@ -162,10 +136,10 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
             style={{ borderColor: theme.accentDim, boxShadow: '0 0 40px rgba(0,255,65,0.15)' }}
           >
             <h3 id="buy-prompt-title" className="text-lg font-bold mb-3" style={{ fontFamily: theme.fontDisplay, color: theme.accent }}>
-              Buy ~$20.10 of $PBALL
+              Buy ~$20 of $PBALL
             </h3>
             <p className="text-sm mb-6" style={{ color: theme.text }}>
-              We'll open Jupiter with USDC → $PBALL. Enter <strong>20.10</strong> USDC (or whatever you want) and complete the swap there.
+              Opens Jupiter with SOL → $PBALL (same as the widget). Aim for $20+ to get in the draw.
             </p>
             <div className="flex flex-wrap gap-3">
               <button
@@ -179,11 +153,10 @@ export const SwapCarousel: React.FC<SwapCarouselProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const amountRaw = 20100000; // 20.10 USDC (6 decimals)
-                  const url = `https://jup.ag/swap?inputMint=${USDC}&outputMint=${PEPEBALL_MINT}&amount=${amountRaw}`;
+                  const url = `https://jup.ag/swap/SOL-${PEPEBALL_MINT}`;
                   window.open(url, '_blank', 'noopener');
                   setBuyPromptOpen(false);
-                  toast.success('Opened Jupiter — 20.10 USDC pre-filled');
+                  toast.success('Opened Jupiter — swap SOL → $PBALL');
                 }}
                 className="flex-1 min-h-[44px] px-4 py-3 rounded-xl font-semibold"
                 style={{ background: theme.accent, color: theme.bg, boxShadow: '0 0 16px rgba(0,255,65,0.25)' }}
