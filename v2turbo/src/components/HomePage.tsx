@@ -489,7 +489,7 @@ export const HomePage: React.FC = () => {
             <div className="min-h-[420px] w-full rounded-xl overflow-hidden border" style={{ borderColor: terminal.border }}>
               <iframe
                 title="Pond swap — SOL to $PBALL"
-                src={`https://www.pondx.com/swap/solana/${PEPEBALL_MINT}`}
+                src={`https://www.pondx.com/swap/solana/${PEPEBALL_MINT}?inputMint=${SOL_MINT}`}
                 className="w-full h-[420px] sm:h-[480px] border-0 rounded-xl"
                 allow="clipboard-write"
                 sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
