@@ -196,8 +196,8 @@ export const HomePage: React.FC = () => {
       <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
       {/* Header — glass, one line, mobile-first */}
       <header
-        className="matrix-glass-strong sticky top-0 z-10 border-b border-[var(--matrix-glass-border)] px-3 py-2.5 sm:px-4 sm:py-3 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-[max(0.625rem,env(safe-area-inset-top))]"
-        style={{ boxShadow: '0 1px 0 rgba(0,255,65,0.06)' }}
+        className="matrix-glass-strong sticky top-0 z-10 border-b px-3 py-2.5 sm:px-4 sm:py-3 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-[max(0.625rem,env(safe-area-inset-top))]"
+        style={{ borderColor: 'rgba(0,255,65,0.18)', boxShadow: 'inset 0 1px 0 rgba(0,255,65,0.08), 0 1px 0 rgba(0,0,0,0.2)' }}
       >
         <div className="container mx-auto max-w-4xl flex items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3 min-w-0">
@@ -234,13 +234,13 @@ export const HomePage: React.FC = () => {
       </header>
 
       <main className="relative z-10 container mx-auto px-4 py-5 sm:py-8 max-w-4xl safe-area-pad">
-        {/* Live data ticker — ready for onchain: network, jackpot, draw #, next draw, last updated */}
+        {/* Live data ticker — elevated terminal strip */}
         <div
-          className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-3 px-4 mb-5 rounded-xl border"
+          className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-3.5 px-5 mb-5 rounded-xl border backdrop-blur-md"
           style={{
-            background: 'rgba(0, 255, 65, 0.04)',
-            borderColor: 'rgba(0, 255, 65, 0.2)',
-            boxShadow: '0 0 24px rgba(0, 255, 65, 0.06)',
+            background: 'linear-gradient(180deg, rgba(4, 14, 11, 0.5) 0%, rgba(2, 10, 8, 0.4) 100%)',
+            borderColor: 'rgba(0, 255, 65, 0.24)',
+            boxShadow: 'inset 0 1px 0 rgba(0, 255, 65, 0.1), 0 0 0 1px rgba(0,0,0,0.15), 0 4px 20px rgba(0,0,0,0.25)',
           }}
         >
           <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
@@ -276,13 +276,9 @@ export const HomePage: React.FC = () => {
           Spin your destiny · Provably fair
         </p>
 
-        {/* Jackpot + countdown — hero ball inside box, right-aligned (Poof-style) */}
+        {/* Jackpot + countdown — hero ball inside box, right-aligned */}
         <section
-          className="matrix-data-panel rounded-2xl p-5 sm:p-7 lg:p-9 mb-6 sm:mb-8 border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6"
-          style={{
-            borderColor: 'rgba(0, 255, 65, 0.22)',
-            boxShadow: '0 0 40px rgba(0, 255, 65, 0.06), inset 0 1px 0 rgba(0, 255, 65, 0.08)',
-          }}
+          className="matrix-data-panel rounded-2xl p-5 sm:p-7 lg:p-9 mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6"
         >
           <div className="min-w-0 flex-1">
             <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Jackpot</div>
