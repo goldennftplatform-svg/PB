@@ -495,6 +495,51 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
+        {/* Live token data — chart + links to live trades (Birdeye, GMGN, DexTools) */}
+        <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 overflow-hidden">
+          <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Live token data</div>
+          <p className="text-xs sm:text-sm mb-4" style={{ color: terminal.dim }}>
+            Live buys, sells, volume, and chart. Open in new tab for full view.
+          </p>
+          <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
+            <a
+              href={`https://birdeye.so/token/${PEPEBALL_MINT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all hover:opacity-90"
+              style={{ background: 'rgba(0,255,65,0.12)', color: terminal.accent, border: `1px solid ${terminal.accentDim}` }}
+            >
+              Trades & chart (Birdeye)
+            </a>
+            <a
+              href={`https://gmgn.ai/sol/token/${PEPEBALL_MINT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all hover:opacity-90"
+              style={{ background: 'rgba(0,255,65,0.08)', color: terminal.text, border: `1px solid ${terminal.border}` }}
+            >
+              Live trades (GMGN)
+            </a>
+            <a
+              href={`https://dextools.io/app/solana/token/${PEPEBALL_MINT}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all hover:opacity-90"
+              style={{ background: 'rgba(0,255,65,0.08)', color: terminal.text, border: `1px solid ${terminal.border}` }}
+            >
+              Chart (DexTools)
+            </a>
+          </div>
+          <div className="rounded-xl overflow-hidden border" style={{ borderColor: terminal.border, background: 'rgba(0,0,0,0.2)' }}>
+            <iframe
+              title="Birdeye chart — $PBALL"
+              src={`https://birdeye.so/tv-widget/${PEPEBALL_MINT}?chain=solana&viewMode=pair&chartInterval=1D&chartType=CANDLE`}
+              className="w-full h-[360px] sm:h-[420px] border-0"
+              allowFullScreen
+            />
+          </div>
+        </section>
+
         {/* Who's in — one line */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="matrix-data-label mb-2">Who’s in the draw</div>
@@ -561,6 +606,9 @@ export const HomePage: React.FC = () => {
           <div className="mt-4 pt-4 border-t" style={{ borderColor: terminal.cardBorder }}>
             <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Eligibility</div>
             <p style={{ color: terminal.text }}>Hold $20 worth of $PBALL at draw time</p>
+            <p className="text-xs mt-1 font-mono" style={{ color: terminal.accent }}>
+              $20 = 1 ticket · $100 = 4 tickets · $500 = 10 tickets (more $ = more entries per snapshot)
+            </p>
             <p className="text-xs mt-1" style={{ color: terminal.dim }}>
               At current price: $20 ≈ {(20 / tokenPrice.effectiveUsdPerToken).toFixed(2)} tokens (1 token = ${tokenPrice.effectiveUsdPerToken.toFixed(6)})
             </p>
