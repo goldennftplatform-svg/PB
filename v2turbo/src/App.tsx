@@ -1,4 +1,5 @@
 import HomePage from '@/components/HomePage';
+import FaqPage from '@/components/FaqPage';
 import { Toaster } from '@/components/ui/sonner';
 import { PhantomFallbackProvider } from '@/contexts/PhantomFallbackContext';
 import { TokenPriceProvider } from '@/contexts/TokenPriceContext';
@@ -25,6 +26,7 @@ function App(): JSX.Element {
             <AnimatePresence mode='wait'>
               <Routes location={location} key={location.pathname}>
                 <Route path='/' element={<HomePage />} />
+                <Route path='/more/faq' element={<FaqPage />} />
               </Routes>
             </AnimatePresence>
           </main>

@@ -23,6 +23,7 @@ import { useTokenPrice } from '@/contexts/TokenPriceContext';
 import { useAuth } from '@pooflabs/web';
 import { Connection, Transaction } from '@solana/web3.js';
 import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import WalletButton from './WalletButton';
 import MatrixRain from './MatrixRain';
@@ -237,7 +238,14 @@ export const HomePage: React.FC = () => {
               <span style={{ color: terminal.gold, textShadow: '0 0 10px rgba(229, 184, 74, 0.4)' }}>BALL</span>
             </h1>
           </div>
-          <div className="flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <Link
+              to="/more/faq"
+              className="text-xs sm:text-sm font-medium px-3 py-2 rounded-lg transition-all hover:opacity-90"
+              style={{ color: terminal.dim, border: `1px solid ${terminal.border}` }}
+            >
+              FAQ
+            </Link>
             <WalletButton variant="dark" />
           </div>
         </div>
@@ -971,6 +979,8 @@ export const HomePage: React.FC = () => {
         )}
 
         <footer className="relative z-10 text-center text-[10px] sm:text-xs py-8 sm:py-10" style={{ color: terminal.dim }}>
+          <Link to="/more/faq" className="underline hover:opacity-90" style={{ color: terminal.accentDim }}>FAQ</Link>
+          <span className="mx-2">·</span>
           All transactions are public and verifiable on Solana
         </footer>
       </main>
