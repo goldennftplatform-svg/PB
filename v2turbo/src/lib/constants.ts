@@ -1,4 +1,4 @@
-export const ADMIN_ADDRESS = "2QAQ367aBeHgCoHQwHo8x7ga34dANguG5Nu82Rs4ky42";
+export const ADMIN_ADDRESS = "DMj1qD5UXYW2AwxdhVwd6AsNL1RamRnEYRDmi3qad1Zw";
 
 /** Privy app ID for wallet connect (Poof/Privy plug-and-play). Set VITE_PRIVY_APP_ID in Vercel or .env. */
 export const PRIVY_CUSTOM_APP_ID = import.meta.env?.VITE_PRIVY_APP_ID ?? undefined;

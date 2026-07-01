@@ -1,4 +1,4 @@
-export const ADMIN_ADDRESS = "2QAQ367aBeHgCoHQwHo8x7ga34dANguG5Nu82Rs4ky42";
+export const ADMIN_ADDRESS = "DMj1qD5UXYW2AwxdhVwd6AsNL1RamRnEYRDmi3qad1Zw";
 export const PROJECT_VAULT_ADDRESS = "FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje";
 export const SOL = "solana";
 export const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";

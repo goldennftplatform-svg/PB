@@ -49,8 +49,9 @@ pub mod lottery {
         tier2_min_cents: u64,
         tier3_min_cents: u64,
     ) -> Result<()> {
-        require!(entry_min_cents > 0 && entry_min_cents < tier2_min_cents && tier2_min_cents < tier3_min_cents, ErrorCode::InvalidConfig);
         let lottery = &mut ctx.accounts.lottery;
+        require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
+        require!(entry_min_cents > 0 && entry_min_cents < tier2_min_cents && tier2_min_cents < tier3_min_cents, ErrorCode::InvalidConfig);
         lottery.entry_min_cents = entry_min_cents;
         lottery.tier2_min_cents = tier2_min_cents;
         lottery.tier3_min_cents = tier3_min_cents;
@@ -130,7 +131,8 @@ pub mod lottery {
     pub fn take_snapshot(ctx: Context<TakeSnapshot>) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
         let clock = Clock::get()?;
-        
+
+        require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
         require!(lottery.is_active, ErrorCode::LotteryInactive);
         
         let snapshot_interval = if lottery.fees_collected >= lottery.fast_mode_threshold {
@@ -200,6 +202,7 @@ pub mod lottery {
 
     pub fn payout_winners(ctx: Context<PayoutWinners>) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
+        require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
         require!(lottery.winners.main_winner.is_some(), ErrorCode::NoWinners);
         require!(lottery.pepe_ball_count % 2 == 1, ErrorCode::InvalidConfig); // Must be odd for payout
         
@@ -225,6 +228,7 @@ pub mod lottery {
         new_fees: u64,
     ) -> Result<()> {
         let lottery = &mut ctx.accounts.lottery;
+        require!(ctx.accounts.admin.key() == lottery.admin, ErrorCode::Unauthorized);
         lottery.fees_collected = new_fees;
         lottery.is_fast_mode = lottery.fees_collected >= lottery.fast_mode_threshold;
 
@@ -420,9 +424,9 @@ pub struct Lottery {
     pub jackpot_amount: u64,
     /// Min USD cents for 1 ticket (prod: 2000 = $20, test: 50 = $0.50 USDC)
     pub entry_min_cents: u64,
-    /// Min USD cents for 4 tickets (prod: 10000 = $100, test: 100 = $1 USDC)
+    /// Min USD cents for 2 tickets (prod: 10000 = $100)
     pub tier2_min_cents: u64,
-    /// Min USD cents for 10 tickets (prod: 50000 = $500, test: 500 = $5 USDC)
+    /// Min USD cents for 4 tickets (prod: 50000 = $500)
     pub tier3_min_cents: u64,
     pub carry_over_amount: u64,
     pub last_snapshot: i64,
@@ -459,8 +463,8 @@ pub struct Winners {
     pub minor_winners: Vec<Pubkey>,
 }
 
-/// Same ratio as prod: entry_min→1, tier2_min→4, tier3_min→10 tickets.
-/// Prod: 2000, 10000, 50000 ($20/$100/$500). Test: 50, 100, 500 (0.50/1/5 USDC).
+/// Ticket tiers: entry_min→1, tier2_min→2, tier3_min→4.
+/// Prod: 2000, 10000, 50000 ($20/$100/$500).
 fn calculate_tickets_from_usd_value(
     usd_value: u64,
     entry_min_cents: u64,
@@ -474,9 +478,9 @@ fn calculate_tickets_from_usd_value(
         return 1;
     }
     if usd_value < tier3_min_cents {
-        return 4;
+        return 2;
     }
-    10
+    4
 }
 
 #[error_code]
