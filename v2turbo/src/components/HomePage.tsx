@@ -20,7 +20,7 @@ import {
 } from '@/lib/constants';
 import { TAROBASE_CONFIG } from '@/lib/config';
 import { buildDrawReplay, formatWalletShort, pickLatestDrawing, type DrawReplay } from '@/lib/draw-replay';
-import { fetchLotteryDrawState } from '@/lib/lottery-state';
+import { fetchDevnetLotteryLive, fetchLotteryDrawState, type DevnetLotteryLive } from '@/lib/lottery-state';
 import { buildTakeSnapshotTx, buildSetWinnersTx, buildPayoutWinnersTx } from '@/lib/lottery-actions';
 import { usePhantomFallback } from '@/contexts/PhantomFallbackContext';
 import { useTokenPrice } from '@/contexts/TokenPriceContext';
@@ -97,6 +97,7 @@ export const HomePage: React.FC = () => {
     winnerAddress: string | null;
   } | null>(null);
   const [lotteryDrawState, setLotteryDrawState] = useState<Awaited<ReturnType<typeof fetchLotteryDrawState>>>(null);
+  const [devnetLive, setDevnetLive] = useState<DevnetLotteryLive | null>(null);
   const auth = useAuth() as AuthContextType;
   const phantom = usePhantomFallback();
   const user = auth.user ?? (phantom.address ? { address: phantom.address, provider: null } : null);
@@ -122,16 +123,25 @@ export const HomePage: React.FC = () => {
 
   const lastReplay = useMemo(() => {
     const latest = pickLatestDrawing(vrfDrawings ?? []);
-    return buildDrawReplay(latest, lotteryDrawState);
-  }, [vrfDrawings, lotteryDrawState]);
+    const fromDb = buildDrawReplay(latest, lotteryDrawState, devnetLive);
+    if (fromDb) return fromDb;
+    if (devnetLive) return buildDrawReplay(null, lotteryDrawState, devnetLive);
+    return null;
+  }, [vrfDrawings, lotteryDrawState, devnetLive]);
 
   useEffect(() => {
     const rpc = TAROBASE_CONFIG.rpcUrl;
     if (!rpc) return;
     let cancelled = false;
     const load = async () => {
-      const state = await fetchLotteryDrawState(rpc, LOTTERY_PDA);
-      if (!cancelled) setLotteryDrawState(state);
+      const [state, live] = await Promise.all([
+        fetchLotteryDrawState(rpc, LOTTERY_PDA),
+        fetchDevnetLotteryLive(rpc, LOTTERY_PDA, LOTTERY_PROGRAM_ID),
+      ]);
+      if (!cancelled) {
+        setLotteryDrawState(state);
+        setDevnetLive(live);
+      }
     };
     load();
     const id = setInterval(load, 30_000);
@@ -178,9 +188,17 @@ export const HomePage: React.FC = () => {
   }, [lastReplay, drawPhase]);
 
   const jackpotSol = useMemo(() => {
+    if (devnetLive?.pdaBalanceLamports != null) {
+      return (devnetLive.pdaBalanceLamports / LAMPORTS_PER_SOL).toFixed(2);
+    }
     if (!jackpot?.balance) return null;
     return (jackpot.balance / LAMPORTS_PER_SOL).toFixed(2);
-  }, [jackpot?.balance]);
+  }, [jackpot?.balance, devnetLive?.pdaBalanceLamports]);
+
+  const solscanCluster = TAROBASE_ENV === 'mainnet' ? '' : '?cluster=devnet';
+  const liveFetchedLabel = devnetLive?.fetchedAt
+    ? new Date(devnetLive.fetchedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : null;
 
   const countdown = useMemo(() => {
     if (!jackpot?.nextDrawingAt) return null;
@@ -256,6 +274,44 @@ export const HomePage: React.FC = () => {
       <MatrixRain />
       <div className="matrix-scanline" aria-hidden />
       <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
+      {TAROBASE_ENV !== 'mainnet' && devnetLive && (
+        <div
+          className="border-b px-3 py-2 sm:px-4 text-xs sm:text-sm"
+          style={{
+            background: 'rgba(0, 255, 65, 0.08)',
+            borderColor: 'rgba(0, 255, 65, 0.25)',
+            color: terminal.text,
+          }}
+        >
+          <div className="container mx-auto max-w-4xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider text-[10px]"
+                style={{ background: 'rgba(0,255,65,0.15)', color: terminal.accent }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: terminal.accent }} />
+                Live devnet
+              </span>
+              <span style={{ color: terminal.dim }}>
+                {devnetLive.totalSnapshots} draws ·{' '}
+                {devnetLive.participantAccountCount ?? devnetLive.totalParticipants} wallets in pool ·{' '}
+                {devnetLive.isActive ? 'round active' : 'paused'}
+              </span>
+            </div>
+            {devnetLive.lastSnapshot?.signature && (
+              <a
+                href={`https://solscan.io/tx/${devnetLive.lastSnapshot.signature}${solscanCluster}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono truncate max-w-full"
+                style={{ color: terminal.accentAlt }}
+              >
+                Last draw tx ↗
+              </a>
+            )}
+          </div>
+        </div>
+      )}
       {/* Header — glass, one line, mobile-first */}
       <header
         className="matrix-glass-strong sticky top-0 z-10 border-b px-3 py-2.5 sm:px-4 sm:py-3 pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-[max(0.625rem,env(safe-area-inset-top))]"
@@ -663,23 +719,35 @@ export const HomePage: React.FC = () => {
           <div className="matrix-data-label mb-3 sm:mb-4 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Current round</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 text-xs sm:text-sm">
             <div className="p-3 rounded-xl" style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid rgba(0,255,65,0.12)' }}>
-              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Jackpot (live)</div>
+              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Jackpot (on-chain)</div>
               <div className="font-mono tabular-nums font-semibold text-base" style={{ color: terminal.gold }}>
-                {loading ? '…' : jackpotSol != null ? `${jackpotSol} SOL` : '0.00 SOL'}
+                {loading && !devnetLive ? '…' : `${jackpotSol ?? '0.00'} SOL`}
               </div>
+              {devnetLive && (
+                <p className="text-[10px] mt-1" style={{ color: terminal.dim }}>
+                  PDA balance · field {((devnetLive.jackpotAmountLamports || 0) / LAMPORTS_PER_SOL).toFixed(2)} SOL
+                </p>
+              )}
             </div>
             <div className="p-3 rounded-xl" style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid rgba(0,255,65,0.12)' }}>
               <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Entries (on-chain)</div>
-              <div className="font-mono tabular-nums font-semibold" style={{ color: terminal.text }}>—</div>
-              <p className="text-[10px] mt-1" style={{ color: terminal.dim }}>From lottery snapshot when on-chain</p>
+              <div className="font-mono tabular-nums font-semibold" style={{ color: terminal.text }}>
+                {devnetLive
+                  ? `${devnetLive.participantAccountCount ?? devnetLive.totalParticipants} wallets · ${devnetLive.totalTickets} tickets`
+                  : '—'}
+              </div>
+              <p className="text-[10px] mt-1" style={{ color: terminal.dim }}>
+                {devnetLive ? `${devnetLive.totalSnapshots} snapshots completed` : 'From lottery PDA'}
+              </p>
             </div>
             <div className="p-3 rounded-xl" style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid rgba(0,255,65,0.12)' }}>
               <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Next drawing</div>
               <div className="font-mono tabular-nums" style={{ color: terminal.text }}>{nextDrawLabel || 'TBD'}</div>
             </div>
             <div className="p-3 rounded-xl" style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid rgba(0,255,65,0.12)' }}>
-              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Data updated</div>
-              <div className="font-mono text-xs" style={{ color: terminal.text }}>{lastUpdatedLabel ?? '—'}</div>
+              <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Chain sync</div>
+              <div className="font-mono text-xs" style={{ color: terminal.text }}>{liveFetchedLabel ?? lastUpdatedLabel ?? '—'}</div>
+              <p className="text-[10px] mt-1" style={{ color: terminal.dim }}>Refreshes every 30s</p>
             </div>
           </div>
           <div className="mt-4 pt-4 border-t" style={{ borderColor: terminal.cardBorder }}>
@@ -706,11 +774,26 @@ export const HomePage: React.FC = () => {
               <div className="flex flex-wrap justify-between gap-2 mb-2">
                 <span style={{ color: terminal.text }}>Draw #{lastReplay.drawNum || '—'}</span>
                 <span className="font-semibold" style={{ color: lastReplay.isPayout ? terminal.gold : terminal.accentDim }}>
-                  {lastReplay.isPayout ? 'ODD — payout' : 'EVEN — rollover'}
+                  {lastReplay.isPayout ? 'ODD — payout verified' : 'EVEN — rollover'}
                 </span>
               </div>
               <div className="text-xs font-mono space-y-1" style={{ color: terminal.dim }}>
                 <div>Pepe count: <span style={{ color: terminal.accent }}>{lastReplay.pepeCount}</span></div>
+                {lastReplay.revealedAt ? (
+                  <div>When: <span style={{ color: terminal.text }}>{formatRevealTime(lastReplay.revealedAt)}</span></div>
+                ) : null}
+                {devnetLive?.lastSnapshot?.signature && (
+                  <div>
+                    <a
+                      href={`https://solscan.io/tx/${devnetLive.lastSnapshot.signature}${solscanCluster}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: terminal.accentAlt }}
+                    >
+                      View draw on Solscan ↗
+                    </a>
+                  </div>
+                )}
                 {lastReplay.winnerIndex != null && (
                   <div>Winner index: <span style={{ color: terminal.text }}>{lastReplay.winnerIndex}</span></div>
                 )}

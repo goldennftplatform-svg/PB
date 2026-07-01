@@ -1,5 +1,5 @@
 import type { VrfDrawingsResponse } from '@/lib/collections/vrfDrawings';
-import type { LotteryDrawState } from '@/lib/lottery-state';
+import type { DevnetLotteryLive, LotteryDrawState } from '@/lib/lottery-state';
 
 export interface DrawReplay {
   drawNum: number;
@@ -46,9 +46,36 @@ function parseEvenOddResult(raw?: string): { pepeCount?: number; isPayout?: bool
   };
 }
 
+export function buildDrawReplayFromChain(live: DevnetLotteryLive): DrawReplay | null {
+  const snap = live.lastSnapshot;
+  let pepeCount = live.pepeBallCount;
+  if (pepeCount < 1 || pepeCount > 30) {
+    if (snap?.pepeCount) pepeCount = snap.pepeCount;
+    else return null;
+  }
+
+  const seedStr = live.snapshotSeed > 0n ? live.snapshotSeed.toString() : snap?.seed;
+  const ballSeed = seedStr ? BigInt(seedStr) : BigInt((live.totalSnapshots || 1) * 9973);
+  const ballValues = ballsFromSeed(ballSeed);
+  const isPayout = snap?.isOdd ?? pepeCount % 2 === 1;
+
+  return {
+    drawNum: live.totalSnapshots || 1,
+    drawingId: snap?.signature ?? 'on-chain',
+    ballValues,
+    pepeCount,
+    isPayout,
+    winnerIndex: null,
+    winnerAddress: null,
+    ballSum: ballValues.reduce((a, b) => a + b, 0),
+    revealedAt: snap?.blockTime ?? live.lastSnapshotUnix ?? null,
+  };
+}
+
 export function buildDrawReplay(
   drawing: VrfDrawingsResponse | null,
-  lotteryState: LotteryDrawState | null
+  lotteryState: LotteryDrawState | null,
+  chainLive?: DevnetLotteryLive | null
 ): DrawReplay | null {
   const parsed = parseEvenOddResult(drawing?.evenOddResult);
 
@@ -64,6 +91,8 @@ export function buildDrawReplay(
   } else if (drawing?.result != null) {
     ballSeed = BigInt((drawing.drawNum ?? 1) * 9973 + drawing.result * 7919);
     pepeCount = pepeCountFromSeed(ballSeed);
+  } else if (chainLive) {
+    return buildDrawReplayFromChain(chainLive);
   } else {
     return null;
   }
