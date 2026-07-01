@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify on-chain | PEPEBALL</title>
+  <link rel="icon" href="../assets/pepe-ball.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <h1 class="site-title"><span class="pepe">Verify</span> <span class="ball">on-chain</span></h1>
+      <p class="site-tagline">Program IDs and PDAs — confirm before you trust any link.</p>
+    </header>
+
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="../guides/index.html">Guides</a>
+      <a href="index.html">Verify</a>
+    </nav>
+
+    <div class="page-content">
+      <h2>Lottery program</h2>
+      <p class="mono" id="program-id"></p>
+      <p><a href="#" id="link-program">Solscan →</a></p>
+
+      <h2>Game snapshot (PDA)</h2>
+      <p class="mono" id="pda-id"></p>
+      <p><a href="#" id="link-pda">Solscan →</a></p>
+
+      <h2>Game registry</h2>
+      <p class="mono" id="registry-id"></p>
+      <p><a href="#" id="link-registry">Solscan →</a></p>
+
+      <h2>Cluster</h2>
+      <p id="cluster-label">devnet</p>
+
+      <div class="rule-box">
+        Scam check: if a token CA or program ID doesn't match this page, it's not official PEPEBALL.
+      </div>
+    </div>
+
+    <footer class="site-footer"><p><a href="../index.html">← Home</a></p></footer>
+  </div>
+  <script src="../assets/config.js"></script>
+  <script>
+    const c = window.PEPEBALL_CONFIG || {};
+    const cluster = c.cluster || 'devnet';
+    const q = cluster === 'mainnet-beta' ? '' : '?cluster=devnet';
+    const prog = c.lotteryProgramId || '';
+    const pda = c.lotteryPda || '';
+    const reg = c.gameRegistryProgramId || '';
+    document.getElementById('program-id').textContent = prog;
+    document.getElementById('pda-id').textContent = pda;
+    document.getElementById('registry-id').textContent = reg;
+    document.getElementById('cluster-label').textContent = cluster;
+    document.getElementById('link-program').href = 'https://solscan.io/account/' + prog + q;
+    document.getElementById('link-pda').href = 'https://solscan.io/account/' + pda + q;
+    document.getElementById('link-registry').href = 'https://solscan.io/account/' + reg + q;
+  </script>
+</body>
+</html>

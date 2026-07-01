@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guides | PEPEBALL</title>
+  <link rel="icon" href="../assets/pepe-ball.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <img src="../assets/pepe-ball.png" alt="" class="site-logo" width="72" height="72" />
+      <h1 class="site-title"><span class="pepe">Guides</span></h1>
+      <p class="site-tagline">Step-by-step — from zero SOL to qualified for the draw.</p>
+      <a href="#" class="play-cta" id="play-cta">Play now →</a>
+    </header>
+
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="index.html">Guides</a>
+      <a href="rules.html">Rules</a>
+      <a href="../verify/index.html">Verify</a>
+      <a href="../community/index.html">Community</a>
+    </nav>
+
+    <div class="page-content">
+      <h2>1 — Get SOL</h2>
+      <p>You need SOL for swaps and tx fees. Use Coinbase, OKX, Gemini, or any on-ramp. Send SOL to your Phantom (or supported) wallet on Solana.</p>
+
+      <h2>2 — Buy game tokens</h2>
+      <p>Swap SOL → game token on the <a href="#" id="play-link">live app</a> (Jupiter / Pond widget) or pump.fun / trix.market when launched. No separate “ticket purchase” — <strong>your holding at snapshot time is your entry</strong>.</p>
+
+      <h2>3 — Spread smart (optional)</h2>
+      <p>Combined USD across <strong>master + Pump shell + TRiX bridge</strong> counts toward tickets. $500 total split any way = max 4 tickets — you don't need $500 in each coin.</p>
+
+      <h2>4 — Wait for snapshot</h2>
+      <p>Admin runs a holdings snapshot before each draw. If you still hold enough combined value, you're in automatically. Check “Who's in the draw” on the live app.</p>
+
+      <h2>5 — Draw &amp; payout</h2>
+      <p>Pepe ball count (1–30): <strong>ODD = SOL payout</strong> to winners. <strong>EVEN = rollover</strong> — jackpot grows, no SOL payout that round. Verify on Solscan.</p>
+
+      <h2>More</h2>
+      <ul>
+        <li><a href="rules.html">Full rules &amp; ticket tiers</a></li>
+        <li><a href="tokens.html">Yin / Yang token model</a></li>
+        <li><a href="devnet.html">Devnet proof checklist</a></li>
+      </ul>
+    </div>
+
+    <footer class="site-footer">
+      <p><a href="../index.html">← Home</a></p>
+    </footer>
+  </div>
+  <script src="../assets/config.js"></script>
+  <script>
+    const play = (window.PEPEBALL_CONFIG || {}).playUrl || '#';
+    document.getElementById('play-cta').href = play;
+    document.getElementById('play-link').href = play;
+  </script>
+</body>
+</html>

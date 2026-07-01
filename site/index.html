@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PEPEBALL — Hold tokens, win SOL</title>
+  <meta name="description" content="Unofficial PEPEBALL info hub. Guides, rules, on-chain verify. ODD = payout. EVEN = rollover." />
+  <link rel="icon" href="assets/pepe-ball.png" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <img src="assets/pepe-ball.png" alt="" class="site-logo" width="72" height="72" />
+      <h1 class="site-title"><span class="pepe">PEPE</span><span class="ball">BALL</span></h1>
+      <p class="site-tagline" id="tagline">Hold game tokens. Win pure SOL. Combined holdings across Pump + TRiX + master mint count toward entries.</p>
+      <a href="#" class="play-cta" id="play-cta">Play now →</a>
+    </header>
+
+    <nav class="site-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="guides/index.html">Guides</a>
+      <a href="guides/rules.html">Rules</a>
+      <a href="verify/index.html">Verify</a>
+      <a href="community/index.html">Community</a>
+    </nav>
+
+    <section class="card-grid">
+      <a class="card" href="guides/index.html">
+        <div class="card-icon">📖</div>
+        <h3>Guides</h3>
+        <p>How to get SOL, buy tokens, qualify for the draw, and understand Yin/Yang (Pump + TRiX + master).</p>
+        <span class="card-link">guides →</span>
+      </a>
+
+      <a class="card" href="guides/rules.html">
+        <div class="card-icon">🎱</div>
+        <h3>Game rules</h3>
+        <p><strong>ODD = SOL payout.</strong> <strong>EVEN = rollover.</strong> Ticket tiers, combined USD across three game mints, rare meme callouts.</p>
+        <span class="card-link">rules →</span>
+      </a>
+
+      <a class="card" href="#" id="card-play">
+        <div class="card-icon">🎮</div>
+        <h3>Play</h3>
+        <p>Live app — swap, connect wallet, see jackpot, simulate the draw, verify you're in the snapshot pool.</p>
+        <span class="card-link">open app →</span>
+      </a>
+
+      <a class="card" href="verify/index.html">
+        <div class="card-icon">🔗</div>
+        <h3>Verify on-chain</h3>
+        <p>Lottery program, game snapshot PDA, game registry. Every payout verifiable on Solscan.</p>
+        <span class="card-link">verify →</span>
+      </a>
+
+      <a class="card" href="guides/tokens.html">
+        <div class="card-icon">☯️</div>
+        <h3>Tokens (Yin / Yang)</h3>
+        <p>Master 1B taxed token, Pump shell, TRiX triple launch — registered together before seal. Smart money spreads $500 combined.</p>
+        <span class="card-link">tokens →</span>
+      </a>
+
+      <a class="card" href="guides/devnet.html">
+        <div class="card-icon">🧪</div>
+        <h3>Devnet proof</h3>
+        <p>Simulated Pump + TRiX mints on devnet, eligibility math, deploy checklist before you fund mainnet programs.</p>
+        <span class="card-link">devnet →</span>
+      </a>
+
+      <a class="card" href="community/index.html">
+        <div class="card-icon">💬</div>
+        <h3>Community</h3>
+        <p>Social links, scam warnings, and how to report issues. Never share your seed phrase.</p>
+        <span class="card-link">community →</span>
+      </a>
+
+      <a class="card" href="#" id="card-repo">
+        <div class="card-icon">📁</div>
+        <h3>Repository</h3>
+        <p>Anchor programs, v2turbo app, docs, and PROMPTME for agents. Open source mechanics.</p>
+        <span class="card-link">GitHub →</span>
+      </a>
+    </section>
+
+    <div class="rule-box">
+      <strong>Core rule:</strong> Jackpot is <strong>pure SOL</strong>. You hold game tokens to qualify — winners get lamports, not more of the same bag.
+      Pepe count <strong>odd</strong> → payout round. <strong>Even</strong> → jackpot rolls.
+    </div>
+
+    <footer class="site-footer">
+      <p>Unofficial PEPEBALL info site — not financial advice.</p>
+      <p>Beware scammers. Only use links from this site or the official play URL.</p>
+      <p id="footer-repo"></p>
+    </footer>
+  </div>
+  <script src="assets/config.js"></script>
+  <script>
+    const c = window.PEPEBALL_CONFIG || {};
+    document.getElementById('tagline').textContent = c.tagline || document.getElementById('tagline').textContent;
+    const play = c.playUrl || '#';
+    document.getElementById('play-cta').href = play;
+    document.getElementById('card-play').href = play;
+    document.getElementById('card-repo').href = c.repoUrl || '#';
+    document.getElementById('footer-repo').innerHTML = c.repoUrl ? '<a href="' + c.repoUrl + '">' + c.repoUrl + '</a>' : '';
+  </script>
+</body>
+</html>

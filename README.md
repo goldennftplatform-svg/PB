@@ -26,6 +26,7 @@ See [docs/](docs/) for deployment, mainnet, and token setup.
 |------|-------------|
 | `programs/` | Anchor programs (lottery, LP, token, tax-harvest) |
 | `v2turbo/` | Dashboard app + partyserver |
+| `site/` | Static info hub (GitHub Pages — Cary0x-style) |
 | `app/` | Legacy static dashboard |
 | `scripts/` | Deployment, snapshot, and testing helpers |
 | `docs/` | Deployment and operations docs |

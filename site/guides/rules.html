@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rules | PEPEBALL</title>
+  <link rel="icon" href="../assets/pepe-ball.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <h1 class="site-title"><span class="pepe">Game</span> <span class="ball">rules</span></h1>
+      <p class="site-tagline">ODD = payout · EVEN = rollover · Jackpot = pure SOL</p>
+    </header>
+
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="index.html">Guides</a>
+      <a href="rules.html">Rules</a>
+      <a href="../verify/index.html">Verify</a>
+    </nav>
+
+    <div class="page-content">
+      <div class="rule-box">
+        <strong>ODD</strong> Pepe ball count → <strong>SOL payout round</strong><br />
+        <strong>EVEN</strong> Pepe ball count → <strong>rollover</strong> (jackpot grows, timer extends)
+      </div>
+
+      <h2>Prize</h2>
+      <p>Winners receive <strong>SOL</strong> from the jackpot wallet. Game tokens are entry keys only — the sauce is “buy these coins, win SOL.”</p>
+
+      <h2>Tickets (combined USD at snapshot)</h2>
+      <p>Sum value across all registered game mints per wallet. No double-counting master/yin.</p>
+      <table class="tiers">
+        <thead><tr><th>Combined USD</th><th>Tickets</th></tr></thead>
+        <tbody>
+          <tr><td>≥ $20</td><td>1</td></tr>
+          <tr><td>≥ $100</td><td>2</td></tr>
+          <tr><td>≥ $500</td><td>4 (max)</td></tr>
+        </tbody>
+      </table>
+      <p>Example: $200 master + $200 pump + $100 bridge = $500 → <strong>4 tickets</strong>. Holding $500 in each mint ($1,500) is still <strong>4 tickets</strong>, not 12.</p>
+
+      <h2>SOL payout split (odd rounds)</h2>
+      <table class="tiers">
+        <thead><tr><th>Recipient</th><th>%</th></tr></thead>
+        <tbody>
+          <tr><td>Main winner</td><td>60%</td></tr>
+          <tr><td>Secondary winners (×8)</td><td>4% each</td></tr>
+          <tr><td>Rollover</td><td>6%</td></tr>
+          <tr><td>Dev</td><td>2%</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Meme callout (rare)</h2>
+      <p>Most rounds: <strong>SOL only</strong>. On special admin-enabled rounds, the jackpot may buy a announced meme coin (10% of pre-snapshot SOL) before the draw outcome is known.</p>
+      <p>On <strong>ODD payout</strong> rounds with a callout, meme tokens split <strong>the same way as SOL</strong> (60 / 8×4 / 6 / 2). Not every draw — rare bonus spice.</p>
+
+      <h2>Provably fair</h2>
+      <ul>
+        <li>VRF / on-chain randomness for winner index</li>
+        <li>Holdings snapshot published before draw</li>
+        <li>All transfers verifiable on Solscan</li>
+      </ul>
+    </div>
+
+    <footer class="site-footer"><p><a href="../index.html">← Home</a></p></footer>
+  </div>
+</body>
+</html>

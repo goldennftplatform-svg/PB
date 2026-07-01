@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Community | PEPEBALL</title>
+  <link rel="icon" href="../assets/pepe-ball.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <h1 class="site-title"><span class="pepe">Community</span></h1>
+    </header>
+
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="../guides/index.html">Guides</a>
+      <a href="../verify/index.html">Verify</a>
+    </nav>
+
+    <div class="page-content">
+      <h2>Official links</h2>
+      <ul>
+        <li>Play: <a href="#" id="play-url">live app</a></li>
+        <li>Code: <a href="#" id="repo-url">GitHub</a></li>
+        <li id="discord-row" style="display:none">Discord: <a href="#" id="discord-url"></a></li>
+        <li id="twitter-row" style="display:none">X: <a href="#" id="twitter-url"></a></li>
+      </ul>
+
+      <div class="discord-banner">
+        <h3>Stay safe</h3>
+        <p style="color: var(--muted); font-size: 0.85rem;">
+          Public crypto communities attract scammers. <strong>Never</strong> click DMs, never share seed phrases,
+          never send SOL to “support.” Only use links from this site or the play app.
+        </p>
+      </div>
+    </div>
+
+    <footer class="site-footer"><p><a href="../index.html">← Home</a></p></footer>
+  </div>
+  <script src="../assets/config.js"></script>
+  <script>
+    const c = window.PEPEBALL_CONFIG || {};
+    document.getElementById('play-url').href = c.playUrl || '#';
+    document.getElementById('repo-url').href = c.repoUrl || '#';
+    if (c.discordUrl) {
+      document.getElementById('discord-row').style.display = 'list-item';
+      document.getElementById('discord-url').href = c.discordUrl;
+      document.getElementById('discord-url').textContent = c.discordUrl;
+    }
+    if (c.twitterUrl) {
+      document.getElementById('twitter-row').style.display = 'list-item';
+      document.getElementById('twitter-url').href = c.twitterUrl;
+      document.getElementById('twitter-url').textContent = c.twitterUrl;
+    }
+  </script>
+</body>
+</html>
