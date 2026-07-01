@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liquidity | PEPEBALL</title>
+  <link rel="icon" href="../assets/pepe-ball.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <h1 class="site-title"><span class="pepe">Liquidity</span> <span class="ball">plan</span></h1>
+      <p class="site-tagline">Orca pools + Jupiter routing — devnet rehearsal now.</p>
+    </header>
+
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="index.html">Guides</a>
+      <a href="devnet.html">Devnet</a>
+      <a href="../verify/index.html">Verify</a>
+    </nav>
+
+    <div class="page-content">
+      <h2>Launch split (mainnet + devnet rehearsal)</h2>
+      <ul>
+        <li><strong>5%</strong> — simulates Pump / TRiX / OG “launch buy” (snipe surface)</li>
+        <li><strong>95%</strong> — LP ops wallet → paired with SOL on Orca</li>
+      </ul>
+
+      <h2>Devnet pools (in progress)</h2>
+      <p>Create on <a href="https://www.orca.so/whirlpools" target="_blank" rel="noopener">Orca Whirlpools</a> (network = Devnet). Rehearsal price: <strong>100,000 tokens = 1 SOL</strong>.</p>
+      <table class="data-table">
+        <thead><tr><th>Pool</th><th>Mint</th><th>Deposit (each)</th></tr></thead>
+        <tbody>
+          <tr><td>SOL / OG</td><td class="mono" id="m-master"></td><td>95,000 + 0.95 SOL</td></tr>
+          <tr><td>SOL / Pump</td><td class="mono" id="m-pump"></td><td>95,000 + 0.95 SOL</td></tr>
+          <tr><td>SOL / TRiX yang</td><td class="mono" id="m-yang"></td><td>95,000 + 0.95 SOL</td></tr>
+          <tr><td>SOL / TRiX bridge</td><td class="mono" id="m-bridge"></td><td>95,000 + 0.95 SOL</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Mainnet (later)</h2>
+      <p>Six-pool topology: four SOL anchors + PBALL/BRIDGE peg + optional PBALL/PUMP cross. Full doc: <code>docs/LIQUIDITY_PAIRING_PLAN.md</code> in repo.</p>
+
+      <div class="rule-box">
+        Jupiter routes through pools you create — you don't "create Jupiter pairs." Deepest book = <strong>SOL / PBALL (master)</strong>.
+      </div>
+    </div>
+
+    <footer class="site-footer"><p><a href="devnet.html">← Devnet proof</a></p></footer>
+  </div>
+  <script src="../assets/config.js"></script>
+  <script>
+    const m = (window.PEPEBALL_CONFIG || {}).devnetMints || {};
+    document.getElementById('m-master').textContent = m.master || '—';
+    document.getElementById('m-pump').textContent = m.pumpShell || '—';
+    document.getElementById('m-yang').textContent = m.trixYang || '—';
+    document.getElementById('m-bridge').textContent = m.trixBridge || '—';
+  </script>
+</body>
+</html>

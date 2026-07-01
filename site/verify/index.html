@@ -21,20 +21,35 @@
     </nav>
 
     <div class="page-content">
-      <h2>Lottery program</h2>
-      <p class="mono" id="program-id"></p>
-      <p><a href="#" id="link-program">Solscan →</a></p>
-
-      <h2>Game snapshot (PDA)</h2>
-      <p class="mono" id="pda-id"></p>
-      <p><a href="#" id="link-pda">Solscan →</a></p>
-
-      <h2>Game registry</h2>
-      <p class="mono" id="registry-id"></p>
-      <p><a href="#" id="link-registry">Solscan →</a></p>
-
       <h2>Cluster</h2>
       <p id="cluster-label">devnet</p>
+
+      <h2>Lottery</h2>
+      <p class="mono" id="program-id"></p>
+      <p><a href="#" id="link-program">Solscan program →</a></p>
+      <p>Snapshot PDA: <span class="mono" id="pda-id"></span></p>
+      <p><a href="#" id="link-pda">Solscan PDA →</a></p>
+
+      <h2>Game registry</h2>
+      <p>Program: <span class="mono" id="registry-prog"></span></p>
+      <p><a href="#" id="link-registry-prog">Solscan program →</a></p>
+      <p>Registry PDA: <span class="mono" id="registry-pda"></span></p>
+      <p><a href="#" id="link-registry-pda">Solscan PDA →</a></p>
+
+      <h2>Other programs</h2>
+      <ul>
+        <li>pepball_token — <span class="mono" id="pepball-id"></span></li>
+        <li>tax_harvest — <span class="mono" id="tax-id"></span></li>
+        <li>lp_manager — <span class="mono" id="lp-id"></span></li>
+      </ul>
+
+      <h2>Devnet sim mints (registry)</h2>
+      <ul>
+        <li>Master: <span class="mono" id="mint-m"></span></li>
+        <li>Pump: <span class="mono" id="mint-p"></span></li>
+        <li>TRiX yang: <span class="mono" id="mint-y"></span></li>
+        <li>TRiX bridge: <span class="mono" id="mint-b"></span></li>
+      </ul>
 
       <div class="rule-box">
         Scam check: if a token CA or program ID doesn't match this page, it's not official PEPEBALL.
@@ -48,16 +63,28 @@
     const c = window.PEPEBALL_CONFIG || {};
     const cluster = c.cluster || 'devnet';
     const q = cluster === 'mainnet-beta' ? '' : '?cluster=devnet';
-    const prog = c.lotteryProgramId || '';
-    const pda = c.lotteryPda || '';
-    const reg = c.gameRegistryProgramId || '';
-    document.getElementById('program-id').textContent = prog;
-    document.getElementById('pda-id').textContent = pda;
-    document.getElementById('registry-id').textContent = reg;
-    document.getElementById('cluster-label').textContent = cluster;
-    document.getElementById('link-program').href = 'https://solscan.io/account/' + prog + q;
-    document.getElementById('link-pda').href = 'https://solscan.io/account/' + pda + q;
-    document.getElementById('link-registry').href = 'https://solscan.io/account/' + reg + q;
+    const sol = (id) => 'https://solscan.io/account/' + id + q;
+
+    document.getElementById('cluster-label').textContent = cluster + ' (rehearsal)';
+    document.getElementById('program-id').textContent = c.lotteryProgramId || '';
+    document.getElementById('pda-id').textContent = c.lotteryPda || '';
+    document.getElementById('link-program').href = sol(c.lotteryProgramId);
+    document.getElementById('link-pda').href = sol(c.lotteryPda);
+
+    document.getElementById('registry-prog').textContent = c.gameRegistryProgramId || '';
+    document.getElementById('registry-pda').textContent = c.gameRegistryPda || '';
+    document.getElementById('link-registry-prog').href = sol(c.gameRegistryProgramId);
+    document.getElementById('link-registry-pda').href = sol(c.gameRegistryPda);
+
+    document.getElementById('pepball-id').textContent = c.pepballTokenProgramId || '';
+    document.getElementById('tax-id').textContent = c.taxHarvestProgramId || '';
+    document.getElementById('lp-id').textContent = c.lpManagerProgramId || '';
+
+    const m = c.devnetMints || {};
+    document.getElementById('mint-m').textContent = m.master || '';
+    document.getElementById('mint-p').textContent = m.pumpShell || '';
+    document.getElementById('mint-y').textContent = m.trixYang || '';
+    document.getElementById('mint-b').textContent = m.trixBridge || '';
   </script>
 </body>
 </html>

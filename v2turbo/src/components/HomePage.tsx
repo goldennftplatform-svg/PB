@@ -2,6 +2,8 @@ import { AuthContextType } from '@/components/types';
 import { useRealtimeData } from '@/hooks/use-realtime-data';
 import { subscribeJackpot } from '@/lib/collections/jackpot';
 import type { JackpotResponse } from '@/lib/collections/jackpot';
+import { subscribeManyVrfDrawings } from '@/lib/collections/vrfDrawings';
+import type { VrfDrawingsResponse } from '@/lib/collections/vrfDrawings';
 import {
   ADMIN_ADDRESS,
   JACKPOT_ID,
@@ -17,6 +19,8 @@ import {
   USDC,
 } from '@/lib/constants';
 import { TAROBASE_CONFIG } from '@/lib/config';
+import { buildDrawReplay, formatWalletShort, pickLatestDrawing, type DrawReplay } from '@/lib/draw-replay';
+import { fetchLotteryDrawState } from '@/lib/lottery-state';
 import { buildTakeSnapshotTx, buildSetWinnersTx, buildPayoutWinnersTx } from '@/lib/lottery-actions';
 import { usePhantomFallback } from '@/contexts/PhantomFallbackContext';
 import { useTokenPrice } from '@/contexts/TokenPriceContext';
@@ -46,6 +50,11 @@ function formatCountdownFull(nextDrawingAt: number): { hours: number; mins: numb
   return { hours, mins, secs };
 }
 
+function formatRevealTime(ts: number): string {
+  const ms = ts > 1e12 ? ts : ts * 1000;
+  return new Date(ms).toLocaleString();
+}
+
 function formatCountdownShort(nextDrawingAt: number): string {
   const now = Math.floor(Date.now() / 1000);
   const diff = Math.max(0, nextDrawingAt - now);
@@ -60,15 +69,34 @@ function formatCountdownShort(nextDrawingAt: number): string {
 
 const SPIN_DURATION_MS = 2800;
 const BALL_TICK_MS = 80;
-const AUTO_PLAY_DELAY_MS = 700;
+
+function applyReplayToUi(replay: DrawReplay) {
+  return {
+    ballValues: replay.ballValues,
+    drawResult: {
+      sum: replay.ballSum,
+      pepeCount: replay.pepeCount,
+      isPayout: replay.isPayout,
+      winnerIndex: replay.winnerIndex ?? 0,
+      winnerAddress: replay.winnerAddress,
+    },
+  };
+}
+
 export const HomePage: React.FC = () => {
-  const hasAutoPlayedRef = useRef(false);
   const swapWidgetRef = useRef<HTMLDivElement>(null);
   const jupiterInitializedRef = useRef(false);
   const [tick, setTick] = useState(0);
   const [drawPhase, setDrawPhase] = useState<'idle' | 'spinning' | 'revealed'>('idle');
   const [ballValues, setBallValues] = useState<number[]>([0, 0, 0, 0, 0]);
-  const [drawResult, setDrawResult] = useState<{ sum: number; isEven: boolean; winnerIndex: number } | null>(null);
+  const [drawResult, setDrawResult] = useState<{
+    sum: number;
+    pepeCount: number;
+    isPayout: boolean;
+    winnerIndex: number;
+    winnerAddress: string | null;
+  } | null>(null);
+  const [lotteryDrawState, setLotteryDrawState] = useState<Awaited<ReturnType<typeof fetchLotteryDrawState>>>(null);
   const auth = useAuth() as AuthContextType;
   const phantom = usePhantomFallback();
   const user = auth.user ?? (phantom.address ? { address: phantom.address, provider: null } : null);
@@ -86,6 +114,40 @@ export const HomePage: React.FC = () => {
     true,
     JACKPOT_ID
   );
+  const { data: vrfDrawings } = useRealtimeData<VrfDrawingsResponse[]>(
+    subscribeManyVrfDrawings,
+    true,
+    ''
+  );
+
+  const lastReplay = useMemo(() => {
+    const latest = pickLatestDrawing(vrfDrawings ?? []);
+    return buildDrawReplay(latest, lotteryDrawState);
+  }, [vrfDrawings, lotteryDrawState]);
+
+  useEffect(() => {
+    const rpc = TAROBASE_CONFIG.rpcUrl;
+    if (!rpc) return;
+    let cancelled = false;
+    const load = async () => {
+      const state = await fetchLotteryDrawState(rpc, LOTTERY_PDA);
+      if (!cancelled) setLotteryDrawState(state);
+    };
+    load();
+    const id = setInterval(load, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!lastReplay || drawPhase === 'spinning') return;
+    const applied = applyReplayToUi(lastReplay);
+    setBallValues(applied.ballValues);
+    setDrawResult(applied.drawResult);
+    setDrawPhase('revealed');
+  }, [lastReplay]); // eslint-disable-line react-hooks/exhaustive-deps -- only sync when replay data changes
 
   useEffect(() => {
     if (!jackpot?.nextDrawingAt) return;
@@ -94,11 +156,12 @@ export const HomePage: React.FC = () => {
   }, [jackpot?.nextDrawingAt]);
 
 
-  const runDrawingAnimation = React.useCallback(() => {
-    if (drawPhase === 'spinning') return;
+  const replayLastDrawing = React.useCallback(() => {
+    if (!lastReplay || drawPhase === 'spinning') return;
     setDrawPhase('spinning');
     setDrawResult(null);
     setBallValues([0, 0, 0, 0, 0]);
+    const target = applyReplayToUi(lastReplay);
     const start = Date.now();
     const spinInterval = setInterval(() => {
       setBallValues(() => Array.from({ length: 5 }, () => Math.floor(Math.random() * 100)));
@@ -108,23 +171,11 @@ export const HomePage: React.FC = () => {
       if (Date.now() < stopAt) return;
       clearInterval(spinInterval);
       clearInterval(stopInterval);
-      const final = Array.from({ length: 5 }, () => Math.floor(Math.random() * 100));
-      setBallValues(final);
-      const sum = final.reduce((a, b) => a + b, 0);
-      const isEven = sum % 2 === 0;
-      setDrawResult({ sum, isEven, winnerIndex: Math.floor(Math.random() * 50) + 1 });
+      setBallValues(target.ballValues);
+      setDrawResult(target.drawResult);
       setDrawPhase('revealed');
     }, 100);
-    return () => { clearInterval(spinInterval); clearInterval(stopInterval); };
-  }, [drawPhase]);
-
-  // Auto-play the spin once when user lands on the site (one time per page load)
-  useEffect(() => {
-    if (drawPhase !== 'idle' || hasAutoPlayedRef.current) return;
-    hasAutoPlayedRef.current = true;
-    const t = setTimeout(runDrawingAnimation, AUTO_PLAY_DELAY_MS);
-    return () => clearTimeout(t);
-  }, [drawPhase, runDrawingAnimation]);
+  }, [lastReplay, drawPhase]);
 
   const jackpotSol = useMemo(() => {
     if (!jackpot?.balance) return null;
@@ -302,7 +353,7 @@ export const HomePage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0" style={{ background: 'rgba(0,255,65,0.2)', color: terminal.accent }}>3</span>
-              <span className="text-sm font-medium" style={{ color: terminal.text }}>You're in. We draw. Even = payout.</span>
+              <span className="text-sm font-medium" style={{ color: terminal.text }}>You're in. We draw. Odd = payout.</span>
             </div>
           </div>
           {/* Tool strip: on-ramp + CTA */}
@@ -357,11 +408,18 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* The draw — same vibe as Powerball: one draw, one result */}
+        {/* The draw — last result + replay */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
-          <div className="matrix-data-label mb-1 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>The draw</div>
+          <div className="matrix-data-label mb-1 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>
+            {lastReplay?.drawNum ? `Last drawing #${lastReplay.drawNum}` : 'The draw'}
+          </div>
           <p className="text-sm font-medium mb-4 sm:mb-6" style={{ color: terminal.text }}>
-            One draw for everyone. Even sum = payout. Odd = rollover.
+            One draw for everyone. <strong>Odd</strong> Pepe count = SOL payout. <strong>Even</strong> = rollover.
+            {lastReplay?.revealedAt ? (
+              <span className="block text-xs mt-1" style={{ color: terminal.dim }}>
+                Revealed {formatRevealTime(lastReplay.revealedAt)}
+              </span>
+            ) : null}
           </p>
           <div className="matrix-data-label mb-3 sm:mb-4">Balls</div>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4">
@@ -376,7 +434,7 @@ export const HomePage: React.FC = () => {
                     boxShadow: '0 0 12px rgba(0, 255, 65, 0.2)',
                   }}
                 >
-                  {drawPhase === 'idle' ? '?' : String(ballValues[i] ?? 0).padStart(2, '0')}
+                  {drawPhase === 'idle' && !lastReplay ? '?' : String(ballValues[i] ?? 0).padStart(2, '0')}
                 </div>
                 <span className="text-xs mt-1" style={{ color: terminal.dim }}>#{i + 1}</span>
               </div>
@@ -392,7 +450,7 @@ export const HomePage: React.FC = () => {
                 >
                   <img src={pepeBallSrc} alt="PEPE" className="w-full h-full object-cover scale-110" />
                 </div>
-                {drawPhase === 'revealed' && drawResult && !drawResult.isEven && (
+                {drawPhase === 'revealed' && drawResult && drawResult.isPayout && (
                   <div
                     className="absolute inset-0 rounded-full pointer-events-none z-10"
                     style={{
@@ -408,28 +466,41 @@ export const HomePage: React.FC = () => {
           </div>
           {drawPhase === 'revealed' && drawResult && (
             <div className="mb-4 sm:mb-6 p-4 sm:p-6 rounded-xl border text-center matrix-glass" style={{ borderColor: terminal.cardBorder }}>
-              <div className="text-xs uppercase tracking-wider mb-2" style={{ color: terminal.dim }}>Final sum</div>
-              <div className="text-3xl font-bold tabular-nums pepball-glow mb-2" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>{drawResult.sum}</div>
-              <div className="text-sm font-semibold mb-2" style={{ color: terminal.accent }}>
-                {drawResult.isEven ? 'Even — Payout' : 'Odd — Rollover'}
+              <div className="text-xs uppercase tracking-wider mb-2" style={{ color: terminal.dim }}>Pepe ball count</div>
+              <div className="text-3xl font-bold tabular-nums pepball-glow mb-2" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>{drawResult.pepeCount}</div>
+              <div className="text-xs mb-2" style={{ color: terminal.dim }}>Ball sum (display): {drawResult.sum}</div>
+              <div className="text-sm font-semibold mb-2" style={{ color: drawResult.isPayout ? terminal.gold : terminal.accentDim }}>
+                {drawResult.isPayout ? 'ODD — SOL PAYOUT!' : 'EVEN — ROLLOVER'}
               </div>
               <div className="text-base font-semibold py-2.5 px-5 rounded-xl inline-block mb-2" style={{ color: terminal.accent, border: `2px solid ${terminal.accentDim}` }}>
-                {drawResult.sum} · {drawResult.isEven ? 'Even payout' : 'Odd rollover'}
+                Pepe #{drawResult.pepeCount} · {drawResult.isPayout ? 'Winners paid in SOL' : 'Jackpot rolls'}
               </div>
-              {drawResult.isEven && <p className="text-sm" style={{ color: terminal.gold }}>Winners paid out on-chain.</p>}
-              <div className="mt-3 py-2.5 px-4 rounded-xl font-semibold" style={{ background: 'rgba(229, 184, 74, 0.12)', color: terminal.gold, border: `1px solid ${terminal.gold}` }}>
-                Winner index #{drawResult.winnerIndex}
-              </div>
+              {drawResult.isPayout && <p className="text-sm" style={{ color: terminal.gold }}>PEPE celebrates — SOL (+ meme bags on rare callout rounds).</p>}
+              {drawResult.winnerIndex != null && drawResult.winnerIndex > 0 && (
+                <div className="mt-3 py-2.5 px-4 rounded-xl font-semibold" style={{ background: 'rgba(229, 184, 74, 0.12)', color: terminal.gold, border: `1px solid ${terminal.gold}` }}>
+                  Winner index #{drawResult.winnerIndex}
+                  {drawResult.winnerAddress ? (
+                    <span className="block text-xs font-mono mt-1 font-normal" style={{ color: terminal.dim }}>
+                      {formatWalletShort(drawResult.winnerAddress)}
+                    </span>
+                  ) : null}
+                </div>
+              )}
             </div>
           )}
           <p className="text-xs text-center mb-4" style={{ color: terminal.dim }}>
-            {drawPhase === 'spinning' ? 'Spinning…' : 'Try it below — same idea as the real draw.'}
+            {drawPhase === 'spinning'
+              ? 'Replaying…'
+              : lastReplay
+                ? 'Last on-chain result — tap Replay to watch again.'
+                : 'No drawings yet — results appear here after the first draw.'}
           </p>
           <div className="flex flex-wrap gap-4 justify-center items-center">
             <button
               type="button"
-              onClick={runDrawingAnimation}
-              className="min-h-[44px] px-5 sm:px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] touch-manipulation"
+              onClick={replayLastDrawing}
+              disabled={!lastReplay || drawPhase === 'spinning'}
+              className="min-h-[44px] px-5 sm:px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] touch-manipulation disabled:opacity-40 disabled:hover:scale-100"
               style={{
                 border: 'none',
                 color: terminal.bg,
@@ -437,7 +508,7 @@ export const HomePage: React.FC = () => {
                 boxShadow: '0 0 20px rgba(0, 255, 65, 0.3), 0 4px 14px rgba(0, 0, 0, 0.2)',
               }}
             >
-              {drawPhase === 'revealed' ? 'Spin again' : 'Simulate draw'}
+              {drawPhase === 'spinning' ? 'Replaying…' : 'Replay'}
             </button>
           </div>
         </section>
@@ -615,7 +686,7 @@ export const HomePage: React.FC = () => {
             <div className="text-xs uppercase tracking-wider mb-1" style={{ color: terminal.dim }}>Eligibility</div>
             <p style={{ color: terminal.text }}>Hold $20 worth of $PBALL at draw time</p>
             <p className="text-xs mt-1 font-mono" style={{ color: terminal.accent }}>
-              $20 = 1 ticket · $100 = 4 tickets · $500 = 10 tickets (more $ = more entries per snapshot)
+              $20 = 1 ticket · $100 = 2 tickets · $500 = 4 tickets (combined across game mints)
             </p>
             <p className="text-xs mt-1" style={{ color: terminal.dim }}>
               At current price: $20 ≈ {(20 / tokenPrice.effectiveUsdPerToken).toFixed(2)} tokens (1 token = ${tokenPrice.effectiveUsdPerToken.toFixed(6)})
@@ -630,12 +701,34 @@ export const HomePage: React.FC = () => {
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
           <div className="matrix-data-label mb-2 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Winners</div>
           <p className="text-xs mb-4" style={{ color: terminal.dim }}>All transactions verifiable on Solscan</p>
-          <div className="text-center py-10" style={{ color: terminal.dim }}>
-            No drawings yet
-          </div>
-          <p className="text-sm text-center" style={{ color: terminal.accentDim }}>
-            Be the first winner.
-          </p>
+          {lastReplay ? (
+            <div className="p-4 rounded-xl border text-sm" style={{ borderColor: terminal.cardBorder, background: 'rgba(0,255,65,0.04)' }}>
+              <div className="flex flex-wrap justify-between gap-2 mb-2">
+                <span style={{ color: terminal.text }}>Draw #{lastReplay.drawNum || '—'}</span>
+                <span className="font-semibold" style={{ color: lastReplay.isPayout ? terminal.gold : terminal.accentDim }}>
+                  {lastReplay.isPayout ? 'ODD — payout' : 'EVEN — rollover'}
+                </span>
+              </div>
+              <div className="text-xs font-mono space-y-1" style={{ color: terminal.dim }}>
+                <div>Pepe count: <span style={{ color: terminal.accent }}>{lastReplay.pepeCount}</span></div>
+                {lastReplay.winnerIndex != null && (
+                  <div>Winner index: <span style={{ color: terminal.text }}>{lastReplay.winnerIndex}</span></div>
+                )}
+                {lastReplay.winnerAddress && (
+                  <div>Winner: <span style={{ color: terminal.text }}>{lastReplay.winnerAddress}</span></div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="text-center py-10" style={{ color: terminal.dim }}>
+                No drawings yet
+              </div>
+              <p className="text-sm text-center" style={{ color: terminal.accentDim }}>
+                Be the first winner.
+              </p>
+            </>
+          )}
         </section>
 
         {/* Game snapshot — verify on Solscan; program is live on Devnet; mainnet after deploy */}

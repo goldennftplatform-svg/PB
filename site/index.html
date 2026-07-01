@@ -10,6 +10,7 @@
 </head>
 <body>
   <div class="wrap">
+    <div class="status-banner" id="devnet-banner" style="display:none"></div>
     <header class="site-header">
       <img src="assets/pepe-ball.png" alt="" class="site-logo" width="72" height="72" />
       <h1 class="site-title"><span class="pepe">PEPE</span><span class="ball">BALL</span></h1>
@@ -61,10 +62,17 @@
         <span class="card-link">tokens →</span>
       </a>
 
+      <a class="card" href="guides/liquidity.html">
+        <div class="card-icon">💧</div>
+        <h3>Liquidity</h3>
+        <p>5% launch buy / 95% LP split. Orca devnet pools in progress — Jupiter routes through SOL anchors.</p>
+        <span class="card-link">liquidity →</span>
+      </a>
+
       <a class="card" href="guides/devnet.html">
         <div class="card-icon">🧪</div>
         <h3>Devnet proof</h3>
-        <p>Simulated Pump + TRiX mints on devnet, eligibility math, deploy checklist before you fund mainnet programs.</p>
+        <p>Simulated Pump + TRiX on devnet — programs deployed, registry wired, launch split done.</p>
         <span class="card-link">devnet →</span>
       </a>
 
@@ -98,6 +106,11 @@
   <script>
     const c = window.PEPEBALL_CONFIG || {};
     document.getElementById('tagline').textContent = c.tagline || document.getElementById('tagline').textContent;
+    const banner = document.getElementById('devnet-banner');
+    if (c.devnetBanner) {
+      banner.textContent = c.devnetBanner;
+      banner.style.display = 'block';
+    }
     const play = c.playUrl || '#';
     document.getElementById('play-cta').href = play;
     document.getElementById('card-play').href = play;

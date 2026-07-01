@@ -9,38 +9,49 @@
 </head>
 <body>
   <div class="wrap">
+    <div class="status-banner" id="devnet-banner"></div>
+
     <header class="site-header">
       <h1 class="site-title"><span class="pepe">Devnet</span> <span class="ball">proof</span></h1>
-      <p class="site-tagline">Simulated Pump + TRiX mints before mainnet funding.</p>
+      <p class="site-tagline">Simulated Pump + TRiX + OG master — rehearsal only, not mainnet.</p>
     </header>
 
     <nav class="site-nav">
       <a href="../index.html">Home</a>
       <a href="index.html">Guides</a>
+      <a href="liquidity.html">Liquidity</a>
       <a href="../verify/index.html">Verify</a>
     </nav>
 
     <div class="page-content">
-      <h2>Scripts (repo root)</h2>
-      <pre class="mono" style="white-space: pre-wrap; margin: 1rem 0;">node scripts/verify-combined-eligibility.js
-node scripts/create-devnet-trio-mints.js
-node scripts/devnet-proof-status.js</pre>
+      <h2>Checklist</h2>
+      <ul class="checklist" id="checklist"></ul>
 
-      <h2>Programs to deploy</h2>
+      <h2>Registry (devnet)</h2>
+      <p>Program: <span class="mono" id="reg-prog"></span></p>
+      <p>PDA: <span class="mono" id="reg-pda"></span></p>
+      <p><a href="#" id="link-reg-pda">Solscan registry PDA →</a></p>
+
+      <h2>Sim mints (registered)</h2>
       <ul>
-        <li>game_registry — <span class="mono" id="reg-id"></span></li>
-        <li>lottery — <span class="mono" id="lot-id"></span></li>
-        <li>tax_harvest — <span class="mono" id="tax-id"></span></li>
+        <li>Master / OG: <span class="mono" id="mint-master"></span></li>
+        <li>Pump shell: <span class="mono" id="mint-pump"></span></li>
+        <li>TRiX yang: <span class="mono" id="mint-yang"></span></li>
+        <li>TRiX bridge: <span class="mono" id="mint-bridge"></span></li>
       </ul>
 
-      <h2>Flow</h2>
-      <ol>
-        <li>Create trio mints on devnet</li>
-        <li>Deploy programs (WSL + anchor)</li>
-        <li>register_mints + seal_registry</li>
-        <li>Holdings snapshot → draw (odd/even) → SOL payout test</li>
-      </ol>
-      <p>Full doc in repo: <code>docs/DEVNET_TRIO_PROOF.md</code></p>
+      <h2>Launch emulation (5% / 95%)</h2>
+      <p>Devnet script splits each mint: <strong>5%</strong> to sim “launch buy” wallets, <strong>95%</strong> to <code>lp_ops</code> for Orca SOL pairing. Scaled to 100k tokens per mint on devnet (mainnet target = 1B).</p>
+      <pre class="mono" style="white-space: pre-wrap; margin: 1rem 0;">node scripts/devnet-launch-pool-test.js
+node scripts/devnet-proof-status.js
+node scripts/initialize-game-registry-devnet.js</pre>
+
+      <h2>Next: Orca pools</h2>
+      <p>See <a href="liquidity.html">Liquidity guide</a> — four SOL pools on Orca devnet (~0.95 SOL + 95k tokens each at rehearsal price).</p>
+
+      <div class="rule-box">
+        <strong>Not a live burn.</strong> Devnet SOL and sim mints are worthless test assets. Mainnet uses fresh SEC OP wallets and sealed registry.
+      </div>
     </div>
 
     <footer class="site-footer"><p><a href="../index.html">← Home</a></p></footer>
@@ -48,9 +59,25 @@ node scripts/devnet-proof-status.js</pre>
   <script src="../assets/config.js"></script>
   <script>
     const c = window.PEPEBALL_CONFIG || {};
-    document.getElementById('reg-id').textContent = c.gameRegistryProgramId || '—';
-    document.getElementById('lot-id').textContent = c.lotteryProgramId || '—';
-    document.getElementById('tax-id').textContent = 'Em261K95h8M48f52iuu5YSaTJXJTs1pqjZpRCPYFqXRx';
+    const q = '?cluster=devnet';
+    if (c.devnetBanner) {
+      document.getElementById('devnet-banner').textContent = c.devnetBanner;
+    }
+    const list = document.getElementById('checklist');
+    (c.devnetChecklist || []).forEach((item) => {
+      const li = document.createElement('li');
+      li.className = item.done ? 'done' : 'pending';
+      li.textContent = (item.done ? '✅ ' : '⏳ ') + item.label;
+      list.appendChild(li);
+    });
+    document.getElementById('reg-prog').textContent = c.gameRegistryProgramId || '—';
+    document.getElementById('reg-pda').textContent = c.gameRegistryPda || '—';
+    document.getElementById('link-reg-pda').href = 'https://solscan.io/account/' + (c.gameRegistryPda || '') + q;
+    const m = c.devnetMints || {};
+    document.getElementById('mint-master').textContent = m.master || '—';
+    document.getElementById('mint-pump').textContent = m.pumpShell || '—';
+    document.getElementById('mint-yang').textContent = m.trixYang || '—';
+    document.getElementById('mint-bridge').textContent = m.trixBridge || '—';
   </script>
 </body>
 </html>

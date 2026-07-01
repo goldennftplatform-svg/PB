@@ -96,7 +96,7 @@ export default function FaqPage() {
               What is PEPEBALL?
             </AccordionTrigger>
             <AccordionContent style={{ color: terminal.dim }}>
-              PEPEBALL is a Solana token ($PBALL) and an on-chain draw. Hold $20+ worth of $PBALL at snapshot time to be in the draw. We take a snapshot, run a provably fair draw (odd/even Pepe ball), and pay winners in SOL. More value held = more entries per snapshot: $20 = 1 ticket, $100 = 4, $500 = 10.
+              PEPEBALL is a Solana draw: hold game tokens at snapshot, win <strong style={{ color: terminal.accent }}>SOL</strong>. Combined USD across game mints: $20 = 1 ticket, $100 = 2, $500 = 4. <strong style={{ color: terminal.accent }}>Odd</strong> Pepe count = payout; <strong style={{ color: terminal.accent }}>even</strong> = rollover. Rare bonus rounds may add a meme coin bag (same split as SOL).
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="how-1" style={{ borderColor: terminal.border }}>
@@ -104,7 +104,7 @@ export default function FaqPage() {
               How do I get tickets / entries?
             </AccordionTrigger>
             <AccordionContent style={{ color: terminal.dim }}>
-              Hold $PBALL in your wallet at snapshot time. Minimum $20 worth to be in the draw. Entries scale: <strong style={{ color: terminal.accent }}>$20 = 1 ticket</strong>, <strong style={{ color: terminal.accent }}>$100 = 4 tickets</strong>, <strong style={{ color: terminal.accent }}>$500 = 10 tickets</strong>. Buy $PBALL via the swap widget on the main page (Jupiter or Pond) or use Birdeye/GMGN/DexTools links. No separate “ticket purchase”—your holding is your entry.
+              Hold game tokens at snapshot. Combined USD across mints: <strong style={{ color: terminal.accent }}>$20 = 1</strong>, <strong style={{ color: terminal.accent }}>$100 = 2</strong>, <strong style={{ color: terminal.accent }}>$500 = 4</strong> tickets. Swap on the main page or external DEX. Your holding at snapshot = your entry.
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="how-2" style={{ borderColor: terminal.border }}>
@@ -112,7 +112,7 @@ export default function FaqPage() {
               How does the draw work? What’s odd/even / rollover?
             </AccordionTrigger>
             <AccordionContent style={{ color: terminal.dim }}>
-              Each draw we take a snapshot and compute a “Pepe ball” count (1–30) from on-chain randomness. <strong style={{ color: terminal.accent }}>Odd</strong> = payout round: we select winners and pay out (50% main winner, 40% split across 8 minors, 10% house). <strong style={{ color: terminal.accent }}>Even</strong> = rollover: jackpot grows, timer extends, no payout that round. So roughly 50/50 chance each draw is a payout vs rollover. All verifiable on-chain (Solscan, program ID and PDA linked on the main page).
+              Pepe ball count (1–30) from on-chain randomness. <strong style={{ color: terminal.accent }}>ODD = payout</strong> (winners paid in SOL). <strong style={{ color: terminal.accent }}>EVEN = rollover</strong> (jackpot grows, timer extends). Split on payout: 60% main, 8×4% secondary, 6% rollover, 2% dev. Verifiable on Solscan.
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="how-3" style={{ borderColor: terminal.border }}>
@@ -128,7 +128,7 @@ export default function FaqPage() {
               How and when do I receive winnings?
             </AccordionTrigger>
             <AccordionContent style={{ color: terminal.dim }}>
-              When the draw is <strong>odd</strong> (payout round), winners are set on-chain and paid in SOL to their wallet. Main winner gets 50% of the jackpot; 8 minor winners split 40%; 10% goes to the house. You don’t need to “claim”—if you’re selected, the SOL is sent to the wallet that held $PBALL at snapshot. You can verify every transaction on Solscan.
+              On <strong>odd</strong> (payout) rounds, winners receive <strong>SOL</strong> automatically: 60% main, 8 minors at 4% each. On rare meme callout rounds, meme bags use the same split. No claim step — snapshot wallet receives funds. Verify on Solscan.
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="scams" style={{ borderColor: terminal.border }}>
