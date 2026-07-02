@@ -70,6 +70,7 @@ node scripts/round-ledger.js export-public
 - [Round ledger](docs/ROUND_LEDGER.md) — fixed SOL + meme accounting
 - [Game rules (site)](site/guides/rules.html) — tiers, splits, ODD/EVEN
 - [Brand kit](site/guides/brand.html) — soundbites for your launch content
+- [Hall of Fame](site/leaderboard/index.html) — early winners & lore
 - [Mainnet checklist](docs/MAINNET_GO_LIVE_CHECKLIST.md)
 - [Devnet go/no-go](docs/DEVNET_GO_NO_GO.md)
 

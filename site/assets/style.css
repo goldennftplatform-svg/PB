@@ -341,3 +341,176 @@ table.tiers th { color: var(--accent); background: rgba(0, 255, 65, 0.06); }
 @media (max-width: 600px) {
   .card-grid { grid-template-columns: 1fr; }
 }
+
+/* Leaderboard / Hall of Fame */
+.section-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.legends-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.legend-card {
+  display: flex;
+  gap: 0.75rem;
+  background: rgba(0, 255, 65, 0.04);
+  border: 1px solid rgba(229, 184, 74, 0.35);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+}
+
+.legend-rank {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--gold);
+  font-weight: 800;
+  line-height: 1;
+  min-width: 2rem;
+}
+
+.legend-card h3 {
+  font-family: var(--font-display);
+  color: var(--accent);
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.legend-title { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.35rem; }
+.legend-sol { font-size: 0.85rem; color: var(--gold); margin-bottom: 0.35rem; }
+.legend-quote { font-size: 0.78rem; color: var(--text); font-style: italic; margin-bottom: 0.5rem; }
+.legend-wallet { font-size: 0.68rem; word-break: break-all; }
+
+.network-tag {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-left: 0.25rem;
+}
+
+.timeline { position: relative; padding-left: 0.5rem; }
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1rem 1fr;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 1.25rem;
+  align-items: start;
+}
+
+.timeline-date { font-size: 0.72rem; color: var(--muted); text-align: right; padding-top: 0.15rem; }
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  margin-top: 0.35rem;
+  justify-self: center;
+}
+
+.timeline-body strong { display: block; color: var(--text); font-size: 0.88rem; margin-bottom: 0.25rem; }
+.timeline-body p { font-size: 0.8rem; color: var(--muted); margin: 0; }
+.timeline-tag {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.draw-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 1rem;
+  background: rgba(2, 10, 8, 0.5);
+}
+
+.draw-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.draw-header h3 {
+  font-family: var(--font-display);
+  color: var(--accent);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.draw-meta { font-size: 0.72rem; color: var(--muted); margin-left: auto; }
+.draw-lore { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.75rem; line-height: 1.55; }
+
+.draw-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+.draw-stats strong { color: var(--gold); }
+
+.draw-winner {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.draw-winner .label {
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+}
+
+.draw-links { font-size: 0.75rem; margin-top: 0.75rem; }
+
+.minors-details { font-size: 0.78rem; color: var(--muted); margin-top: 0.5rem; }
+.minors-details ul { padding-left: 1.1rem; margin-top: 0.35rem; }
+.minors-details li { margin-bottom: 0.25rem; }
+
+.badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.badge-odd { background: rgba(0, 255, 65, 0.15); color: var(--accent); }
+.badge-even { background: rgba(248, 81, 73, 0.12); color: #f85149; }
+
+.rollover-card {
+  border-left: 3px solid #f85149;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  background: rgba(248, 81, 73, 0.05);
+  font-size: 0.82rem;
+}
+
+.rollover-card p { color: var(--muted); margin: 0.35rem 0; }
+
+.leaderboard-teaser {
+  margin-bottom: 1.5rem;
+}
+
+.leaderboard-teaser .legend-card {
+  max-width: 100%;
+}
+
+@media (max-width: 600px) {
+  .timeline-row { grid-template-columns: 1fr; }
+  .timeline-date { text-align: left; }
+  .timeline-dot { display: none; }
+}

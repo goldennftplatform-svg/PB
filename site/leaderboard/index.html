@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hall of Fame | PEPEBALL</title>
+  <meta name="description" content="PEPEBALL leaderboard — early winners, ODD payouts, rollover lore, and on-chain proof." />
+  <link rel="icon" href="../assets/pepe-ball.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <img src="../assets/pepe-ball.png" alt="" class="site-logo" width="72" height="72" />
+      <h1 class="site-title"><span class="pepe">Hall of</span> <span class="ball">Fame</span></h1>
+      <p class="site-tagline" id="board-intro"></p>
+    </header>
+
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="index.html">Leaderboard</a>
+      <a href="../guides/rules.html">Rules</a>
+      <a href="../verify/index.html">Verify</a>
+    </nav>
+
+    <section class="page-content" id="legends-section">
+      <h2>Legends — main winners</h2>
+      <p class="section-hint">Ranked by draw order. Add <code>alias</code> in <code>site/assets/leaderboard.json</code> to name your early champs.</p>
+      <div id="legends-grid" class="legends-grid"></div>
+    </section>
+
+    <section class="page-content">
+      <h2>Lore timeline</h2>
+      <div id="timeline" class="timeline"></div>
+    </section>
+
+    <section class="page-content">
+      <h2>Draw archive</h2>
+      <div id="draws-list"></div>
+    </section>
+
+    <section class="page-content" id="rollovers-section" style="display:none">
+      <h2>Rollover buildup</h2>
+      <p class="section-hint">EVEN rounds — pot stayed. Hype compounded. Waiting for the next ODD.</p>
+      <div id="rollovers-list"></div>
+    </section>
+
+    <div class="rule-box">
+      <strong>Verify everything.</strong> Every tx links to Solscan. Edit winners via
+      <code>node scripts/export-leaderboard-from-preflight.js</code> after each ODD draw, then push <code>site/</code>.
+    </div>
+
+    <footer class="site-footer"><p><a href="../index.html">← Home</a></p></footer>
+  </div>
+  <script src="../assets/config.js"></script>
+  <script>
+    const cluster = (window.PEPEBALL_CONFIG || {}).cluster || 'devnet';
+    const clusterQ = cluster === 'mainnet-beta' ? '' : '?cluster=devnet';
+    const solscan = (sig) => 'https://solscan.io/tx/' + sig + clusterQ;
+    const solscanAcct = (pk) => 'https://solscan.io/account/' + pk + clusterQ;
+
+    function shortAddr(a) {
+      if (!a || a.length < 12) return a || '—';
+      return a.slice(0, 4) + '…' + a.slice(-4);
+    }
+
+    function outcomeBadge(outcome) {
+      const odd = outcome === 'ODD_PAYOUT' || outcome === 'ODD_PAYOUT_COMPLETE';
+      return '<span class="badge ' + (odd ? 'badge-odd' : 'badge-even') + '">' +
+        (odd ? 'ODD · PAID' : 'EVEN · ROLLOVER') + '</span>';
+    }
+
+    async function load() {
+      const res = await fetch('../assets/leaderboard.json');
+      const data = await res.json();
+      document.getElementById('board-intro').textContent = data.intro || '';
+
+      const legends = document.getElementById('legends-grid');
+      (data.legends || []).forEach((leg) => {
+        const card = document.createElement('article');
+        card.className = 'legend-card';
+        card.innerHTML =
+          '<div class="legend-rank">#' + leg.rank + '</div>' +
+          '<div class="legend-body">' +
+          '<h3>' + (leg.alias || shortAddr(leg.wallet)) + '</h3>' +
+          '<p class="legend-title">' + (leg.title || '') + '</p>' +
+          '<p class="legend-sol">' + (leg.solWon != null ? leg.solWon.toFixed(4) + ' SOL' : '') +
+          ' <span class="network-tag">' + (leg.network || '') + '</span></p>' +
+          '<p class="legend-quote">"' + (leg.quote || '') + '"</p>' +
+          '<a href="' + solscanAcct(leg.wallet) + '" class="mono legend-wallet">' + leg.wallet + '</a>' +
+          '</div>';
+        legends.appendChild(card);
+      });
+      if (!(data.legends || []).length) {
+        legends.innerHTML = '<p style="color:var(--muted)">No legends yet — first ODD draw writes history.</p>';
+      }
+
+      const timeline = document.getElementById('timeline');
+      (data.milestones || []).forEach((m) => {
+        const row = document.createElement('div');
+        row.className = 'timeline-row';
+        row.innerHTML =
+          '<div class="timeline-date">' + m.date + '</div>' +
+          '<div class="timeline-dot"></div>' +
+          '<div class="timeline-body">' +
+          '<span class="timeline-tag">' + (m.tag || '') + '</span>' +
+          '<strong>' + m.title + '</strong>' +
+          '<p>' + m.lore + '</p></div>';
+        timeline.appendChild(row);
+      });
+
+      const draws = document.getElementById('draws-list');
+      (data.draws || []).slice().reverse().forEach((d) => {
+        const block = document.createElement('article');
+        block.className = 'draw-card';
+        const minors = (d.minors || [])
+          .map(
+            (m) =>
+              '<li><a href="' + solscanAcct(m.wallet) + '">' + shortAddr(m.wallet) + '</a>' +
+              (m.sol != null ? ' — ' + m.sol.toFixed(4) + ' SOL' : '') + '</li>'
+          )
+          .join('');
+        const links = d.links || {};
+        const linkHtml = Object.entries(links)
+          .filter(([, v]) => v)
+          .map(([k, v]) => '<a href="' + solscan(v) + '">' + k + '</a>')
+          .join(' · ');
+        block.innerHTML =
+          '<div class="draw-header">' +
+          '<h3>' + d.roundLabel + '</h3>' + outcomeBadge(d.outcome) +
+          '<span class="draw-meta">' + d.date + ' · ' + d.network + '</span></div>' +
+          '<p class="draw-lore">' + (d.lore || '') + '</p>' +
+          '<div class="draw-stats">' +
+          '<span>Pepe <strong>' + d.pepeCount + '</strong></span>' +
+          '<span>Tickets <strong>' + (d.totalTickets || '—') + '</strong></span>' +
+          (d.winningTicketIndex != null ? '<span>Win ticket <strong>#' + d.winningTicketIndex + '</strong></span>' : '') +
+          '</div>' +
+          '<div class="draw-winner">' +
+          '<span class="label">Main</span> ' +
+          '<a href="' + solscanAcct(d.mainWinner.wallet) + '">' +
+          (d.mainWinner.alias || shortAddr(d.mainWinner.wallet)) + '</a>' +
+          (d.mainWinner.sol != null ? ' <strong>' + d.mainWinner.sol.toFixed(4) + ' SOL</strong>' : '') +
+          '</div>' +
+          (minors ? '<details class="minors-details"><summary>8 minor winners</summary><ul>' + minors + '</ul></details>' : '') +
+          (linkHtml ? '<p class="draw-links">' + linkHtml + '</p>' : '');
+        draws.appendChild(block);
+      });
+
+      const rolls = data.rollovers || [];
+      if (rolls.length) {
+        document.getElementById('rollovers-section').style.display = 'block';
+        const rl = document.getElementById('rollovers-list');
+        rolls.forEach((r) => {
+          const el = document.createElement('div');
+          el.className = 'rollover-card';
+          el.innerHTML = '<strong>' + r.title + '</strong><p>' + r.lore + '</p><span class="draw-meta">Pepe ' + r.pepeCount + ' · ' + r.date + '</span>';
+          rl.appendChild(el);
+        });
+      }
+    }
+
+    load().catch((e) => {
+      document.getElementById('board-intro').textContent = 'Could not load leaderboard.json';
+      console.error(e);
+    });
+  </script>
+</body>
+</html>

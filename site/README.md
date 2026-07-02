@@ -40,6 +40,7 @@ Or: **Settings → Pages → Deploy from branch → `/site`**
 | `/guides/tokens.html` | Yin/Yang / TRiX |
 | `/guides/liquidity.html` | Tax + LP |
 | `/guides/devnet.html` | Rehearsal checklist |
+| `/leaderboard/` | Hall of Fame — winners, lore timeline, draw archive |
 | `/verify/` | Programs, PDAs, public wallets |
 | `/community/` | Links + safety |
 

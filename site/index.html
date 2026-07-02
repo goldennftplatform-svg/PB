@@ -28,11 +28,19 @@
       <a href="guides/rules.html">Rules</a>
       <a href="guides/round-ledger.html">Round ledger</a>
       <a href="guides/brand.html">Brand</a>
+      <a href="leaderboard/index.html">Hall of Fame</a>
       <a href="verify/index.html">Verify</a>
       <a href="community/index.html">Community</a>
     </nav>
 
     <section class="pitch-strip" id="pitch-strip" aria-label="Core mechanics"></section>
+
+    <section class="leaderboard-teaser page-content" id="leaderboard-teaser" style="display:none">
+      <h2>Hall of Fame</h2>
+      <p class="section-hint">Early legends — verified on Solscan.</p>
+      <div id="teaser-legend"></div>
+      <p style="margin-top:0.75rem"><a href="leaderboard/index.html">Full leaderboard &amp; lore timeline →</a></p>
+    </section>
 
     <section class="rule-box rule-box--hero">
       <strong>The hook:</strong> You're already buying meme coins. PEPEBALL turns that into a shot at a <strong>pure SOL jackpot</strong>.
@@ -87,6 +95,13 @@
         <h3>Tax &amp; liquidity</h3>
         <p>2.5% trade tax → jackpot. LP fee harvest path. Harmonized drip sells into SOL for the prize pool.</p>
         <span class="card-link">liquidity →</span>
+      </a>
+
+      <a class="card" href="leaderboard/index.html">
+        <div class="card-icon">🏆</div>
+        <h3>Hall of Fame</h3>
+        <p>Early winners, ODD payouts, rollover lore, and Solscan proof. The buildup before mainnet.</p>
+        <span class="card-link">leaderboard →</span>
       </a>
 
       <a class="card" href="guides/brand.html">
@@ -154,6 +169,23 @@
       li.textContent = t;
       list.appendChild(li);
     });
+
+    fetch('assets/leaderboard.json')
+      .then((r) => r.json())
+      .then((board) => {
+        const top = (board.legends || [])[0];
+        if (!top) return;
+        document.getElementById('leaderboard-teaser').style.display = 'block';
+        const short = top.wallet.length > 12 ? top.wallet.slice(0, 4) + '…' + top.wallet.slice(-4) : top.wallet;
+        document.getElementById('teaser-legend').innerHTML =
+          '<article class="legend-card">' +
+          '<div class="legend-rank">#' + top.rank + '</div>' +
+          '<div class="legend-body"><h3>' + (top.alias || short) + '</h3>' +
+          '<p class="legend-title">' + (top.title || '') + '</p>' +
+          '<p class="legend-sol">' + (top.solWon != null ? top.solWon.toFixed(4) + ' SOL' : '') + '</p>' +
+          '<p class="legend-quote">"' + (top.quote || '') + '"</p></div></article>';
+      })
+      .catch(() => {});
   </script>
 </body>
 </html>

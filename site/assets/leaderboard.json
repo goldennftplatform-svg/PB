@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "updatedAt": "2026-07-02T00:00:00.000Z",
+  "intro": "Every ODD round writes a name into the chain. This is the public record — early winners, rollovers that built the pot, and the lore that led to mainnet.",
+  "milestones": [
+    {
+      "date": "2026-07-01",
+      "title": "Five programs on devnet",
+      "lore": "Lottery, game-registry, pepball-token, tax-harvest, and lp-manager deployed. The machine exists.",
+      "tag": "deploy"
+    },
+    {
+      "date": "2026-07-01",
+      "title": "Game-day admin handoff",
+      "lore": "Lottery re-initialized under compartmentalized SEC OP wallets. Hardened binary — random wallets can't snapshot.",
+      "tag": "security"
+    },
+    {
+      "date": "2026-07-01",
+      "title": "Genesis ODD payout",
+      "lore": "First full preflight: Pepe count 7 → ODD. Real SOL left jackpot_tax and hit winner wallets on Solscan.",
+      "tag": "genesis"
+    },
+    {
+      "date": "2026-07-01",
+      "title": "Round ledger live",
+      "lore": "Fixed SOL commitment per round — no fuzzy jackpot math when meme bags pump.",
+      "tag": "ledger"
+    },
+    {
+      "date": "2026-07-02",
+      "title": "Info hub + Hall of Fame",
+      "lore": "GitHub Pages goes live. Early legends get etched here before mainnet fireworks.",
+      "tag": "lore"
+    }
+  ],
+  "draws": [
+    {
+      "id": "devnet-draw-001",
+      "roundLabel": "Genesis Draw",
+      "network": "devnet",
+      "date": "2026-07-01",
+      "outcome": "ODD_PAYOUT",
+      "pepeCount": 7,
+      "seed": "843930448394710746",
+      "participants": 24,
+      "totalTickets": 4605,
+      "winningTicketIndex": 741,
+      "jackpotSol": 2.01,
+      "lore": "The rehearsal that proved it all: combined entries, on-chain snapshot, Pepe said 7 (ODD), and SOL moved to winners. This is the blueprint for every mainnet payout.",
+      "mainWinner": {
+        "wallet": "64o3GQCSzF2pjfukZKSDAymBPJpgxKA8i6a6LFnvs68k",
+        "alias": "Genesis Champion",
+        "sol": 1.0049,
+        "tx": "3PxeV3nmszk2Czwi31RcvYtrS5KT8uDMxUcLoDos8kPaVaamffYFPZXNTSPHRFMmie6hfwkbsXswZLwtkxwYpbXd"
+      },
+      "minors": [
+        { "wallet": "Bgy1JjiJ3oC2DJ3gJHWgbKUAkko6JPdtmQYC82Zc45Qn", "sol": 0.1005 },
+        { "wallet": "DUnSsYe6t8dg24h8FXrm96Q5aQvmzQCGRRSHjpxq6X8B", "sol": 0.1005 },
+        { "wallet": "8pvPtLSnQToBKcMg6gLtUHCAoEKdufsXYMFN36WvKaV7", "sol": 0.1005 },
+        { "wallet": "9fVo6yrXP9kPDdcvzAVYcV7ynSUS6RcdXN1a9kfSNoUm", "sol": 0.1005 },
+        { "wallet": "2Cx8aSHN6igzwWmauTg4c5imStmx1YNPtzc4QbudfVbj", "sol": 0.1005 },
+        { "wallet": "GoHJQGzNL2tXAeoz7851DoupYorXLngBm9y2EpdwpHgv", "sol": 0.1005 },
+        { "wallet": "4eE15Y1qihabyKt3b9hu3rMRAA1LXGmQsxGUmKQo3x85", "sol": 0.1005 },
+        { "wallet": "2YTgCfHXxttsyfBFAh3dCyPrE6m1AeiNSRo2YBx36h39", "sol": 0.1005 }
+      ],
+      "links": {
+        "snapshot": "3RdV1MqYDkg5y188i9kbqHCjJ8AwhsjZftFhJuacspQGLrP6ZACLpH6MUpSoFqMQv7efCQkTUkEuz4Ec6sUn3X8u",
+        "setWinners": "qBxHQrYHqmtTn7jv9tghA4x6v5YqXYh73BeCBJZdZFiapGpdtCzfTX5SBwWv4L1v1EcTZhsxvk5J3xtvd4byHLz",
+        "solPayout": "3PxeV3nmszk2Czwi31RcvYtrS5KT8uDMxUcLoDos8kPaVaamffYFPZXNTSPHRFMmie6hfwkbsXswZLwtkxwYpbXd",
+        "onChainPayout": "5CRq8Mumroyw8iifJ2NtievCvf1VeddEsm6GnMsQvbTKu8EuVrdp9e91DWQoYHXkkFesR3npwQTHtmSWSsEaBkKn"
+      }
+    }
+  ],
+  "rollovers": [],
+  "legends": [
+    {
+      "rank": 1,
+      "wallet": "64o3GQCSzF2pjfukZKSDAymBPJpgxKA8i6a6LFnvs68k",
+      "alias": "Genesis Champion",
+      "title": "First ODD main winner",
+      "drawId": "devnet-draw-001",
+      "solWon": 1.0049,
+      "network": "devnet",
+      "quote": "Pepe count 7. Ticket #741. History."
+    }
+  ]
+}
