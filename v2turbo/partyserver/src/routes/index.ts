@@ -14,6 +14,12 @@
 import type { Hono } from 'hono';
 import type { ApiEndpointConfig } from '../types/api';
 import { healthHandler, healthEndpointConfig } from './health.js';
+import {
+  getMemeCalloutHandler,
+  getMemeCalloutConfig,
+  putMemeCalloutHandler,
+  putMemeCalloutConfig,
+} from './meme-callout.js';
 
 // ═══════════════════════════════════════════════════════════════
 // OAuth Routes (uncomment to enable social login)
@@ -69,6 +75,15 @@ export const routes: RouteRegistry = {
   health: {
     config: healthEndpointConfig,
     handler: healthHandler,
+  },
+
+  getMemeCallout: {
+    config: getMemeCalloutConfig,
+    handler: getMemeCalloutHandler,
+  },
+  putMemeCallout: {
+    config: putMemeCalloutConfig,
+    handler: putMemeCalloutHandler,
   },
 
   // ─────────────────────────────────────────────────────────────

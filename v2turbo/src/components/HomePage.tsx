@@ -21,6 +21,14 @@ import {
 import { TAROBASE_CONFIG } from '@/lib/config';
 import { buildDrawReplay, formatWalletShort, pickLatestDrawing, type DrawReplay } from '@/lib/draw-replay';
 import { fetchDevnetLotteryLive, fetchLotteryDrawState, type DevnetLotteryLive } from '@/lib/lottery-state';
+import { fetchRoundLedgerPublic, type RoundLedgerPublic } from '@/lib/round-ledger-public';
+import {
+  buildRoundLedgerEnableCalloutCli,
+  fetchMemeCallout,
+  isValidSolanaMint,
+  saveMemeCallout,
+  type MemeCalloutConfig,
+} from '@/lib/meme-callout';
 import { buildTakeSnapshotTx, buildSetWinnersTx, buildPayoutWinnersTx } from '@/lib/lottery-actions';
 import { usePhantomFallback } from '@/contexts/PhantomFallbackContext';
 import { useTokenPrice } from '@/contexts/TokenPriceContext';
@@ -98,6 +106,12 @@ export const HomePage: React.FC = () => {
   } | null>(null);
   const [lotteryDrawState, setLotteryDrawState] = useState<Awaited<ReturnType<typeof fetchLotteryDrawState>>>(null);
   const [devnetLive, setDevnetLive] = useState<DevnetLotteryLive | null>(null);
+  const [roundLedger, setRoundLedger] = useState<RoundLedgerPublic | null>(null);
+  const [memeCallout, setMemeCallout] = useState<MemeCalloutConfig | null>(null);
+  const [calloutEnabledInput, setCalloutEnabledInput] = useState(false);
+  const [calloutMintInput, setCalloutMintInput] = useState('');
+  const [calloutLabelInput, setCalloutLabelInput] = useState('');
+  const [calloutSaveLoading, setCalloutSaveLoading] = useState(false);
   const auth = useAuth() as AuthContextType;
   const phantom = usePhantomFallback();
   const user = auth.user ?? (phantom.address ? { address: phantom.address, provider: null } : null);
@@ -150,6 +164,48 @@ export const HomePage: React.FC = () => {
       clearInterval(id);
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadLedger = async () => {
+      const data = await fetchRoundLedgerPublic();
+      if (!cancelled) setRoundLedger(data);
+    };
+    loadLedger();
+    const id = setInterval(loadLedger, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadCallout = async () => {
+      const data = await fetchMemeCallout();
+      if (cancelled || !data) return;
+      setMemeCallout(data);
+      setCalloutEnabledInput(data.enabled);
+      setCalloutMintInput(data.mint ?? '');
+      setCalloutLabelInput(data.label ?? '');
+    };
+    loadCallout();
+    const id = setInterval(loadCallout, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  const activeMemeCallout = useMemo(() => {
+    if (memeCallout?.enabled && memeCallout.mint) {
+      return { mint: memeCallout.mint, label: memeCallout.label, source: 'live' as const };
+    }
+    if (roundLedger?.active?.calloutEnabled && roundLedger.active.memeMint) {
+      return { mint: roundLedger.active.memeMint, label: '', source: 'ledger' as const };
+    }
+    return null;
+  }, [memeCallout, roundLedger]);
 
   useEffect(() => {
     if (!lastReplay || drawPhase === 'spinning') return;
@@ -395,6 +451,101 @@ export const HomePage: React.FC = () => {
             </span>
           )}
         </div>
+
+        {activeMemeCallout && (
+          <div
+            className="mb-5 rounded-xl border px-4 py-3 sm:px-5 sm:py-4 backdrop-blur-md"
+            style={{
+              background: 'rgba(0, 255, 65, 0.06)',
+              borderColor: 'rgba(0, 255, 65, 0.35)',
+            }}
+          >
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: terminal.accent, fontFamily: terminal.fontDisplay }}>
+                Rare meme bonus round
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: 'rgba(229,184,74,0.15)', color: terminal.gold }}>
+                {networkLabel}
+              </span>
+              {activeMemeCallout.label && (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: 'rgba(0,255,65,0.12)', color: terminal.text }}>
+                  {activeMemeCallout.label}
+                </span>
+              )}
+            </div>
+            <p className="text-xs font-mono break-all mb-1" style={{ color: terminal.text }}>
+              <span className="uppercase tracking-wider mr-1" style={{ color: terminal.accentDim }}>Contract (CA)</span>
+              {activeMemeCallout.mint}
+            </p>
+            <p className="text-[10px]" style={{ color: terminal.dim }}>
+              ODD payout rounds may include meme bags — SOL jackpot every draw. 10% pre-snapshot SOL buys this token when callout runs.
+            </p>
+            <a
+              href={`https://solscan.io/token/${activeMemeCallout.mint}${TAROBASE_ENV === 'devnet' ? '?cluster=devnet' : ''}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] mt-2 inline-block underline"
+              style={{ color: terminal.accentAlt }}
+            >
+              View on Solscan →
+            </a>
+          </div>
+        )}
+
+        {roundLedger?.active && (
+          <div
+            className="mb-5 rounded-xl border px-4 py-3 sm:px-5 sm:py-4 backdrop-blur-md"
+            style={{
+              background: 'rgba(4, 14, 11, 0.45)',
+              borderColor: 'rgba(229, 184, 74, 0.35)',
+            }}
+          >
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: terminal.gold, fontFamily: terminal.fontDisplay }}>
+                Round ledger
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: 'rgba(0,255,65,0.1)', color: terminal.accentDim }}>
+                {roundLedger.active.id}
+              </span>
+              {roundLedger.active.outcome && (
+                <span
+                  className="text-[10px] font-mono px-2 py-0.5 rounded font-semibold"
+                  style={{
+                    background: roundLedger.active.isOdd ? 'rgba(0,255,65,0.15)' : 'rgba(248,81,73,0.12)',
+                    color: roundLedger.active.isOdd ? terminal.accent : terminal.red,
+                  }}
+                >
+                  {roundLedger.active.isOdd ? 'ODD · PAYOUT' : 'EVEN · ROLLOVER'}
+                </span>
+              )}
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 text-xs font-mono">
+              <p style={{ color: terminal.dim }}>
+                <span className="uppercase tracking-wider mr-1" style={{ color: terminal.gold }}>SOL committed</span>
+                <span className="font-semibold tabular-nums" style={{ color: terminal.text }}>
+                  {roundLedger.active.solCommittedSol.toFixed(4)} SOL
+                </span>
+                <span className="ml-1" style={{ color: terminal.dim }}>(fixed prize)</span>
+              </p>
+              {(roundLedger.active.calloutEnabled || activeMemeCallout) && (
+                <p style={{ color: terminal.dim }}>
+                  <span className="uppercase tracking-wider mr-1" style={{ color: terminal.gold }}>Meme bonus</span>
+                  <span className="font-semibold tabular-nums" style={{ color: terminal.text }}>
+                    {roundLedger.active.memeStashRaw !== '0'
+                      ? `${roundLedger.active.memeStashRaw} raw`
+                      : activeMemeCallout?.mint
+                        ? 'callout set'
+                        : '—'}
+                  </span>
+                  <span className="ml-1" style={{ color: terminal.dim }}>(token count fixed)</span>
+                </p>
+              )}
+            </div>
+            <p className="text-[10px] mt-2" style={{ color: terminal.dim }}>
+              Live wallet balance may differ — committed SOL is what ODD pays from. Meme USD floats; token stash does not.
+            </p>
+          </div>
+        )}
 
         {/* How to play — Powerball-simple: 3 steps + tools */}
         <div className="flex flex-col items-center gap-4 mb-4">
@@ -1013,6 +1164,143 @@ export const HomePage: React.FC = () => {
                   At 6 decimals, 1,000,000 raw = 1 token. So 1M raw = $5 → $5 per token.
                 </p>
               </div>
+            </div>
+
+            {/* Meme callout — rare bonus round CA */}
+            <div className="border-t pt-6 mt-6 space-y-4" style={{ borderColor: terminal.border }}>
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <h4 className="text-sm font-bold tracking-tight" style={{ color: terminal.gold, fontFamily: terminal.fontDisplay }}>
+                  Meme callout — bonus contract (CA)
+                </h4>
+                <span
+                  className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider"
+                  style={{ background: TAROBASE_ENV === 'devnet' ? 'rgba(0,255,65,0.12)' : 'rgba(229,184,74,0.15)', color: TAROBASE_ENV === 'devnet' ? terminal.accent : terminal.gold }}
+                >
+                  {networkLabel}
+                </span>
+              </div>
+              <p className="text-xs" style={{ color: terminal.dim }}>
+                Rare rounds only — pick any promo mint (Wpond, Trump, etc.). Players see the CA when enabled. On {networkLabel.toLowerCase()} now; same control works on mainnet later.
+              </p>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={calloutEnabledInput}
+                  onChange={(e) => setCalloutEnabledInput(e.target.checked)}
+                  className="rounded"
+                />
+                <span style={{ color: terminal.text }}>Enable meme callout for this round</span>
+              </label>
+              <div>
+                <label className="text-xs uppercase block mb-2" style={{ color: terminal.dim }}>
+                  Contract address (mint CA)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 3X36yhq35MJnt2JjwodeFDfv2MFPb99RC53yUyNrpump"
+                  value={calloutMintInput}
+                  onChange={(e) => setCalloutMintInput(e.target.value)}
+                  disabled={!calloutEnabledInput}
+                  className="font-mono text-sm w-full px-3 py-2 rounded border disabled:opacity-50"
+                  style={{ borderColor: terminal.border, background: terminal.bg, color: terminal.text }}
+                />
+              </div>
+              <div>
+                <label className="text-xs uppercase block mb-2" style={{ color: terminal.dim }}>
+                  Label (optional) — e.g. Wpond, Trump
+                </label>
+                <input
+                  type="text"
+                  placeholder="Partner name"
+                  value={calloutLabelInput}
+                  onChange={(e) => setCalloutLabelInput(e.target.value)}
+                  disabled={!calloutEnabledInput}
+                  className="font-mono text-sm w-full max-w-xs px-3 py-2 rounded border disabled:opacity-50"
+                  style={{ borderColor: terminal.border, background: terminal.bg, color: terminal.text }}
+                />
+              </div>
+              <div className="flex flex-wrap gap-3 items-center">
+                <button
+                  type="button"
+                  disabled={calloutSaveLoading || !user?.address}
+                  onClick={async () => {
+                    if (!user?.address) return;
+                    const mint = calloutMintInput.trim();
+                    if (calloutEnabledInput && !isValidSolanaMint(mint)) {
+                      toast.error('Enter a valid Solana contract address (mint)');
+                      return;
+                    }
+                    setCalloutSaveLoading(true);
+                    try {
+                      const result = await saveMemeCallout(user.address, {
+                        enabled: calloutEnabledInput,
+                        mint: calloutEnabledInput ? mint : null,
+                        label: calloutLabelInput,
+                        network: TAROBASE_ENV === 'mainnet' ? 'mainnet' : 'devnet',
+                      });
+                      setMemeCallout(result.config);
+                      if (result.viaApi) {
+                        toast.success('Meme callout saved — visible to all players');
+                      } else {
+                        toast.success('Saved locally (API unavailable — redeploy partyserver for public sync)');
+                      }
+                      if (calloutEnabledInput && mint) {
+                        navigator.clipboard?.writeText(buildRoundLedgerEnableCalloutCli(mint)).catch(() => {});
+                      }
+                    } catch (e: unknown) {
+                      const msg = e instanceof Error ? e.message : String(e);
+                      toast.error(msg || 'Failed to save meme callout');
+                    } finally {
+                      setCalloutSaveLoading(false);
+                    }
+                  }}
+                  className="px-4 py-2 rounded border font-medium disabled:opacity-50"
+                  style={{ borderColor: terminal.accent, color: terminal.accent }}
+                >
+                  {calloutSaveLoading ? '…' : 'Save callout'}
+                </button>
+                <button
+                  type="button"
+                  disabled={calloutSaveLoading || !user?.address}
+                  onClick={async () => {
+                    if (!user?.address) return;
+                    setCalloutEnabledInput(false);
+                    setCalloutMintInput('');
+                    setCalloutLabelInput('');
+                    setCalloutSaveLoading(true);
+                    try {
+                      const result = await saveMemeCallout(user.address, {
+                        enabled: false,
+                        mint: null,
+                        label: '',
+                        network: TAROBASE_ENV === 'mainnet' ? 'mainnet' : 'devnet',
+                      });
+                      setMemeCallout(result.config);
+                      toast.success('Meme callout cleared');
+                    } catch (e: unknown) {
+                      const msg = e instanceof Error ? e.message : String(e);
+                      toast.error(msg || 'Failed to clear callout');
+                    } finally {
+                      setCalloutSaveLoading(false);
+                    }
+                  }}
+                  className="px-4 py-2 rounded border disabled:opacity-50"
+                  style={{ borderColor: terminal.red, color: terminal.red }}
+                >
+                  Clear callout
+                </button>
+              </div>
+              {memeCallout?.updatedAt ? (
+                <p className="text-[10px] font-mono" style={{ color: terminal.dim }}>
+                  Last saved {new Date(memeCallout.updatedAt).toLocaleString()}
+                  {memeCallout.updatedBy ? ` · ${formatWalletShort(memeCallout.updatedBy)}` : ''}
+                </p>
+              ) : null}
+              {calloutEnabledInput && calloutMintInput.trim() && isValidSolanaMint(calloutMintInput) && (
+                <p className="text-[10px] font-mono break-all" style={{ color: terminal.dim }}>
+                  Round ledger CLI: {buildRoundLedgerEnableCalloutCli(calloutMintInput.trim())}
+                </p>
+              )}
             </div>
 
             {/* Lottery controls — Trigger snapshot, Set winners, Execute payout */}

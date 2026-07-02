@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "exportedAt": "2026-07-02T02:37:00.047Z",
+  "activeRoundId": "2026-07-02-r001",
+  "roundCount": 1,
+  "active": {
+    "id": "2026-07-02-r001",
+    "status": "open",
+    "phase": "A",
+    "solCommittedSol": 10,
+    "solCommittedLamports": "10000000000",
+    "calloutEnabled": false,
+    "memeMint": null,
+    "memeStashRaw": "0",
+    "pepeBallCount": null,
+    "outcome": null,
+    "isOdd": null,
+    "openedAt": "2026-07-02T02:36:59.696Z",
+    "notes": ""
+  },
+  "splits": {
+    "sol": {
+      "mainPercent": 50,
+      "minorEachPercent": 5,
+      "minorCount": 8,
+      "housePercent": 10
+    },
+    "meme": {
+      "mainPercent": 60,
+      "minorEachPercent": 4,
+      "minorCount": 8,
+      "rolloverPercent": 6,
+      "devPercent": 2
+    }
+  }
+}
