@@ -84,6 +84,56 @@ a:hover { color: var(--accent); text-decoration: underline; }
   margin-right: auto;
 }
 
+.hero-pitch {
+  color: var(--text);
+  font-size: 0.95rem;
+  max-width: 40rem;
+  margin: 1rem auto 0;
+  line-height: 1.65;
+}
+
+.pitch-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.pitch-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+}
+
+.pitch-card h3 {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  color: var(--gold);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.04em;
+}
+
+.pitch-card p {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.rule-box--hero {
+  margin-bottom: 1.5rem;
+  border-left-color: var(--gold);
+  background: rgba(229, 184, 74, 0.06);
+}
+
+.soundbite {
+  font-size: 1rem;
+  color: var(--accent);
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
 .play-cta {
   display: inline-block;
   margin-top: 1.25rem;

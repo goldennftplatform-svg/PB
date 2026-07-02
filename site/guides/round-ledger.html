@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Round ledger | PEPEBALL</title>
+  <meta name="description" content="Fixed SOL commitment per draw round. Separate meme bonus stash. Auditable accounting for PEPEBALL." />
+  <link rel="icon" href="../assets/pepe-ball.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <h1 class="site-title"><span class="pepe">Round</span> <span class="ball">ledger</span></h1>
+      <p class="site-tagline">Two buckets. Fixed numbers. No fuzzy jackpot math.</p>
+    </header>
+
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="index.html">Guides</a>
+      <a href="rules.html">Rules</a>
+      <a href="round-ledger.html">Round ledger</a>
+      <a href="../verify/index.html">Verify</a>
+    </nav>
+
+    <div class="page-content">
+      <div class="rule-box">
+        <strong>Problem we solve:</strong> You seed a $10k SOL jackpot and run a meme promo. The meme 3×'s but the displayed prize barely moves.
+        Players get confused. <strong>Round ledger</strong> separates <strong>SOL committed</strong> (fixed prize) from <strong>meme bonus</strong> (fixed token count, USD floats).
+      </div>
+
+      <h2>Bucket 1 — SOL jackpot (every round)</h2>
+      <p>Admin opens a round with a <strong>committed lamport amount</strong>. That's what ODD pays from — 50% main, 5% × 8 minors, 10% house reserve.</p>
+      <p>Live wallet balance can grow from tax drip and LP harvest, but the <strong>committed</strong> number is what you promised for that draw cycle.</p>
+      <table class="tiers" id="sol-split-table">
+        <thead><tr><th>Recipient</th><th>% of committed SOL</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h2>Bucket 2 — Meme callout (rare rounds)</h2>
+      <p>Admin enables a callout → 10% of pre-snapshot SOL buys an announced meme mint <strong>once</strong>. We record <strong>raw token count</strong> at buy time.</p>
+      <p>On ODD payout, meme splits by <strong>% of tokens</strong> — not USD. If the coin moons, winners get a bonus. SOL math unchanged.</p>
+      <table class="tiers" id="meme-split-table">
+        <thead><tr><th>Recipient</th><th>% of meme stash (tokens)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h2>EVEN rollover</h2>
+      <p>Pepe count even → no SOL payout that round. SOL commitment and meme stash <strong>roll forward</strong>. Hype builds. Next ODD hits harder.</p>
+
+      <h2>On the live app</h2>
+      <p>When a round is active, the homepage shows a <strong>Round ledger</strong> strip: round ID, SOL committed, optional meme stash, ODD/EVEN outcome.</p>
+      <p>Admin updates via CLI, then <code>export-public</code> for the site:</p>
+      <pre class="mono" style="white-space: pre-wrap;">node scripts/round-ledger.js open --sol 10
+node scripts/round-ledger.js record-snapshot --pepe 7 --seed &lt;SEED&gt;
+node scripts/round-ledger.js export-public</pre>
+
+      <h2>Full docs</h2>
+      <p>Repo: <code>docs/ROUND_LEDGER.md</code> · Meme callouts: <code>docs/SNAPSHOT_MEME_CALLOUT.md</code></p>
+    </div>
+
+    <footer class="site-footer"><p><a href="../index.html">← Home</a></p></footer>
+  </div>
+  <script src="../assets/config.js"></script>
+  <script>
+    const c = window.PEPEBALL_CONFIG || {};
+    const sol = c.solPayoutSplit || {};
+    const meme = c.memePayoutSplit || {};
+    const solBody = document.querySelector('#sol-split-table tbody');
+    solBody.innerHTML =
+      '<tr><td>Main winner</td><td>' + (sol.main || 50) + '%</td></tr>' +
+      '<tr><td>Secondary ×' + (sol.minorCount || 8) + '</td><td>' + (sol.minorEach || 5) + '% each</td></tr>' +
+      '<tr><td>House reserve</td><td>' + (sol.house || 10) + '%</td></tr>';
+    const memeBody = document.querySelector('#meme-split-table tbody');
+    memeBody.innerHTML =
+      '<tr><td>Main winner</td><td>' + (meme.main || 60) + '%</td></tr>' +
+      '<tr><td>Secondary ×' + (meme.minorCount || 8) + '</td><td>' + (meme.minorEach || 4) + '% each</td></tr>' +
+      '<tr><td>Rollover reserve</td><td>' + (meme.rollover || 6) + '%</td></tr>' +
+      '<tr><td>Dev</td><td>' + (meme.dev || 2) + '%</td></tr>';
+  </script>
+</body>
+</html>

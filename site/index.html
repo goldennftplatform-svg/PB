@@ -4,17 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PEPEBALL — Hold tokens, win SOL</title>
-  <meta name="description" content="Unofficial PEPEBALL info hub. Guides, rules, on-chain verify. ODD = payout. EVEN = rollover." />
+  <meta name="description" content="On-chain Solana Powerball. Hold game tokens, win pure SOL. ODD = payout. EVEN = rollover. Provably fair. Round ledger. 2.5% tax feeds the jackpot." />
+  <meta property="og:title" content="PEPEBALL — Hold the coins. Win SOL." />
+  <meta property="og:description" content="ODD pays. EVEN rolls. Pure SOL jackpot. On-chain lottery for Solana." />
   <link rel="icon" href="assets/pepe-ball.png" />
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
   <div class="wrap">
     <div class="status-banner" id="devnet-banner" style="display:none"></div>
+
     <header class="site-header">
-      <img src="assets/pepe-ball.png" alt="" class="site-logo" width="72" height="72" />
+      <img src="assets/pepe-ball.png" alt="PEPEBALL" class="site-logo" width="72" height="72" />
       <h1 class="site-title"><span class="pepe">PEPE</span><span class="ball">BALL</span></h1>
-      <p class="site-tagline" id="tagline">Hold game tokens. Win pure SOL. Combined holdings across Pump + TRiX + master mint count toward entries.</p>
+      <p class="site-tagline" id="tagline"></p>
+      <p class="hero-pitch" id="hero-pitch"></p>
       <a href="#" class="play-cta" id="play-cta">Play now →</a>
     </header>
 
@@ -22,90 +26,107 @@
       <a href="index.html">Home</a>
       <a href="guides/index.html">Guides</a>
       <a href="guides/rules.html">Rules</a>
+      <a href="guides/round-ledger.html">Round ledger</a>
+      <a href="guides/brand.html">Brand</a>
       <a href="verify/index.html">Verify</a>
       <a href="community/index.html">Community</a>
     </nav>
 
+    <section class="pitch-strip" id="pitch-strip" aria-label="Core mechanics"></section>
+
+    <section class="rule-box rule-box--hero">
+      <strong>The hook:</strong> You're already buying meme coins. PEPEBALL turns that into a shot at a <strong>pure SOL jackpot</strong>.
+      Pepe count <strong>odd</strong> → winners paid. <strong>Even</strong> → rollover — pot grows, crowd stays hyped.
+    </section>
+
     <section class="card-grid">
       <a class="card" href="guides/index.html">
         <div class="card-icon">📖</div>
-        <h3>Guides</h3>
-        <p>How to get SOL, buy tokens, qualify for the draw, and understand Yin/Yang (Pump + TRiX + master).</p>
+        <h3>How to play</h3>
+        <p>Get SOL → buy game tokens → hold through snapshot → wait for ODD. Five steps. No separate ticket SKU.</p>
         <span class="card-link">guides →</span>
       </a>
 
       <a class="card" href="guides/rules.html">
         <div class="card-icon">🎱</div>
         <h3>Game rules</h3>
-        <p><strong>ODD = SOL payout.</strong> <strong>EVEN = rollover.</strong> Ticket tiers, combined USD across three game mints, rare meme callouts.</p>
+        <p><strong>ODD = SOL payout.</strong> <strong>EVEN = rollover.</strong> Combined USD tiers. Rare meme callouts. All math published.</p>
         <span class="card-link">rules →</span>
       </a>
 
       <a class="card" href="#" id="card-play">
         <div class="card-icon">🎮</div>
-        <h3>Play</h3>
-        <p>Live app — swap, connect wallet, see jackpot, simulate the draw, verify you're in the snapshot pool.</p>
+        <h3>Live app</h3>
+        <p>Swap, connect wallet, live devnet jackpot, draw replay, round ledger strip. This is where the game runs.</p>
         <span class="card-link">open app →</span>
+      </a>
+
+      <a class="card" href="guides/round-ledger.html">
+        <div class="card-icon">📒</div>
+        <h3>Round ledger</h3>
+        <p>Fixed SOL commitment per round. Meme bonus = fixed token count. No "jackpot didn't move when my bag 3×'d" confusion.</p>
+        <span class="card-link">ledger →</span>
       </a>
 
       <a class="card" href="verify/index.html">
         <div class="card-icon">🔗</div>
         <h3>Verify on-chain</h3>
-        <p>Lottery program, game snapshot PDA, game registry. Every payout verifiable on Solscan.</p>
+        <p>Programs, PDAs, game-day public wallets. Match before you send a single lamport.</p>
         <span class="card-link">verify →</span>
       </a>
 
       <a class="card" href="guides/tokens.html">
         <div class="card-icon">☯️</div>
-        <h3>Tokens (Yin / Yang)</h3>
-        <p>Master 1B taxed token, Pump shell, TRiX triple launch — registered together before seal. Smart money spreads $500 combined.</p>
+        <h3>Token universe</h3>
+        <p>Master taxed token, Pump shell, TRiX triple launch — combined holdings count toward tickets.</p>
         <span class="card-link">tokens →</span>
       </a>
 
       <a class="card" href="guides/liquidity.html">
         <div class="card-icon">💧</div>
-        <h3>Liquidity</h3>
-        <p>5% launch buy / 95% LP split. Orca devnet pools in progress — Jupiter routes through SOL anchors.</p>
+        <h3>Tax &amp; liquidity</h3>
+        <p>2.5% trade tax → jackpot. LP fee harvest path. Harmonized drip sells into SOL for the prize pool.</p>
         <span class="card-link">liquidity →</span>
+      </a>
+
+      <a class="card" href="guides/brand.html">
+        <div class="card-icon">🎬</div>
+        <h3>Brand &amp; media</h3>
+        <p>Talking points, soundbites, hashtags — for your clips, spaces, and launch thread.</p>
+        <span class="card-link">brand kit →</span>
       </a>
 
       <a class="card" href="guides/devnet.html">
         <div class="card-icon">🧪</div>
         <h3>Devnet proof</h3>
-        <p>Simulated Pump + TRiX on devnet — programs deployed, registry wired, launch split done.</p>
-        <span class="card-link">devnet →</span>
-      </a>
-
-      <a class="card" href="community/index.html">
-        <div class="card-icon">💬</div>
-        <h3>Community</h3>
-        <p>Social links, scam warnings, and how to report issues. Never share your seed phrase.</p>
-        <span class="card-link">community →</span>
+        <p>Hardened lottery, game-day admin, ODD payout tested. See what's green before mainnet.</p>
+        <span class="card-link">checklist →</span>
       </a>
 
       <a class="card" href="#" id="card-repo">
         <div class="card-icon">📁</div>
-        <h3>Repository</h3>
-        <p>Anchor programs, v2turbo app, docs, and PROMPTME for agents. Open source mechanics.</p>
+        <h3>Open mechanics</h3>
+        <p>Anchor programs, v2turbo app, runbooks, preflight scripts. Don't trust — verify the code.</p>
         <span class="card-link">GitHub →</span>
       </a>
     </section>
 
-    <div class="rule-box">
-      <strong>Core rule:</strong> Jackpot is <strong>pure SOL</strong>. You hold game tokens to qualify — winners get lamports, not more of the same bag.
-      Pepe count <strong>odd</strong> → payout round. <strong>Even</strong> → jackpot rolls.
-    </div>
+    <section class="page-content" id="talking-section">
+      <h2>Why players care</h2>
+      <ul id="talking-list"></ul>
+    </section>
 
     <footer class="site-footer">
-      <p>Unofficial PEPEBALL info site — not financial advice.</p>
-      <p>Beware scammers. Only use links from this site or the official play URL.</p>
+      <p><strong>PEPEBALL</strong> — not financial advice. Meme coins are volatile. Only use official links.</p>
+      <p>Beware impersonators. Never share your seed phrase.</p>
       <p id="footer-repo"></p>
     </footer>
   </div>
   <script src="assets/config.js"></script>
   <script>
     const c = window.PEPEBALL_CONFIG || {};
-    document.getElementById('tagline').textContent = c.tagline || document.getElementById('tagline').textContent;
+    document.getElementById('tagline').textContent = c.tagline || '';
+    document.getElementById('hero-pitch').textContent = c.heroPitch || '';
     const banner = document.getElementById('devnet-banner');
     if (c.devnetBanner) {
       banner.textContent = c.devnetBanner;
@@ -115,7 +136,24 @@
     document.getElementById('play-cta').href = play;
     document.getElementById('card-play').href = play;
     document.getElementById('card-repo').href = c.repoUrl || '#';
-    document.getElementById('footer-repo').innerHTML = c.repoUrl ? '<a href="' + c.repoUrl + '">' + c.repoUrl + '</a>' : '';
+    document.getElementById('footer-repo').innerHTML = c.repoUrl
+      ? '<a href="' + c.repoUrl + '">' + c.repoUrl + '</a> · <a href="' + play + '">Live app</a>'
+      : '';
+
+    const strip = document.getElementById('pitch-strip');
+    (c.pillars || []).forEach((p) => {
+      const el = document.createElement('div');
+      el.className = 'pitch-card';
+      el.innerHTML = '<h3>' + p.title + '</h3><p>' + p.body + '</p>';
+      strip.appendChild(el);
+    });
+
+    const list = document.getElementById('talking-list');
+    (c.talkingPoints || []).forEach((t) => {
+      const li = document.createElement('li');
+      li.textContent = t;
+      list.appendChild(li);
+    });
   </script>
 </body>
 </html>

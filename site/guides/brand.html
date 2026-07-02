@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brand &amp; media | PEPEBALL</title>
+  <meta name="description" content="PEPEBALL brand kit — headlines, soundbites, hashtags for creators and marketing." />
+  <link rel="icon" href="../assets/pepe-ball.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <img src="../assets/pepe-ball.png" alt="" class="site-logo" width="72" height="72" />
+      <h1 class="site-title"><span class="pepe">Brand</span> <span class="ball">&amp; media</span></h1>
+      <p class="site-tagline" id="brand-subhead"></p>
+    </header>
+
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="index.html">Guides</a>
+      <a href="brand.html">Brand</a>
+      <a href="../community/index.html">Community</a>
+    </nav>
+
+    <div class="page-content">
+      <h2>Headline</h2>
+      <p class="soundbite" id="headline"></p>
+
+      <h2>Soundbites (for clips &amp; spaces)</h2>
+      <ul>
+        <li class="soundbite" id="sb-odd"></li>
+        <li class="soundbite" id="sb-sol"></li>
+        <li><strong>Tax line:</strong> <span id="tax-line"></span></li>
+        <li><strong>Ledger line:</strong> Fixed SOL prize. Fixed meme tokens on bonus rounds. No bait-and-switch.</li>
+        <li><strong>Trust line:</strong> Don't trust us — Solscan every payout.</li>
+      </ul>
+
+      <h2>Hashtags</h2>
+      <p id="hashtags" class="mono"></p>
+
+      <h2>Visual</h2>
+      <p>Logo: <code>site/assets/pepe-ball.png</code> — matrix green + gold. Match the live app aesthetic.</p>
+      <p>Hero motif: floating Pepe ball, 1–30 count reveal, <strong>ODD = green payout</strong> / <strong>EVEN = red rollover</strong>.</p>
+
+      <h2>Story arc (30s video)</h2>
+      <ol>
+        <li><strong>Hook:</strong> "You're already aping meme coins."</li>
+        <li><strong>Twist:</strong> "What if your bags were Powerball tickets — and the prize was SOL?"</li>
+        <li><strong>Mechanic:</strong> Hold $20+ combined → you're in. Pepe draws 1–30. Odd pays.</li>
+        <li><strong>Trust:</strong> On-chain. Round ledger. Solscan.</li>
+        <li><strong>CTA:</strong> Play link + verify page.</li>
+      </ol>
+
+      <h2>What NOT to say</h2>
+      <ul>
+        <li>Don't promise every round has a meme coin bonus — <strong>rare callouts only</strong>.</li>
+        <li>Don't imply guaranteed returns — it's a lottery.</li>
+        <li>Don't share admin or jackpot private keys — ever.</li>
+      </ul>
+
+      <div class="discord-banner">
+        <h3>Your media</h3>
+        <p style="color: var(--muted); font-size: 0.85rem;">
+          Add your video/audio links to <code>site/assets/config.js</code> → <code>mediaKit</code> or post in community channels when live.
+        </p>
+        <p style="margin-top: 0.75rem;"><a href="#" class="play-cta" id="play-cta" style="margin-top:0">Open live app →</a></p>
+      </div>
+    </div>
+
+    <footer class="site-footer"><p><a href="../index.html">← Home</a></p></footer>
+  </div>
+  <script src="../assets/config.js"></script>
+  <script>
+    const c = window.PEPEBALL_CONFIG || {};
+    const m = c.mediaKit || {};
+    document.getElementById('brand-subhead').textContent = m.subhead || '';
+    document.getElementById('headline').textContent = m.headline || '';
+    document.getElementById('sb-odd').textContent = m.soundbiteOdd || '';
+    document.getElementById('sb-sol').textContent = m.soundbiteSol || '';
+    document.getElementById('tax-line').textContent = c.tokenTaxLabel || '';
+    document.getElementById('hashtags').textContent = (m.hashtags || []).join(' ');
+    document.getElementById('play-cta').href = c.playUrl || '#';
+  </script>
+</body>
+</html>

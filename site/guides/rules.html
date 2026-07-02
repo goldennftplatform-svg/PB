@@ -18,54 +18,82 @@
       <a href="../index.html">Home</a>
       <a href="index.html">Guides</a>
       <a href="rules.html">Rules</a>
+      <a href="round-ledger.html">Round ledger</a>
       <a href="../verify/index.html">Verify</a>
     </nav>
 
     <div class="page-content">
       <div class="rule-box">
-        <strong>ODD</strong> Pepe ball count → <strong>SOL payout round</strong><br />
-        <strong>EVEN</strong> Pepe ball count → <strong>rollover</strong> (jackpot grows, timer extends)
+        <strong>ODD</strong> Pepe ball count (1–30) → <strong>SOL payout round</strong><br />
+        <strong>EVEN</strong> Pepe ball count → <strong>rollover</strong> — committed prize rolls, timer extends, crowd stays in
       </div>
 
-      <h2>Prize</h2>
-      <p>Winners receive <strong>SOL</strong> from the jackpot wallet. Game tokens are entry keys only — the sauce is “buy these coins, win SOL.”</p>
+      <h2>Prize — pure SOL</h2>
+      <p>Winners receive <strong>SOL</strong> from the jackpot treasury wallet (<code>jackpot_tax</code>). Game tokens are entry keys — the prize is lamports you can spend anywhere.</p>
+      <p>Each round's <strong>SOL commitment</strong> is recorded in the <a href="round-ledger.html">round ledger</a> so the prize isn't confused with meme coin price action.</p>
+
+      <h2>How you get in</h2>
+      <p>No separate ticket purchase. <strong>Hold game tokens at snapshot time.</strong> Combined USD across all registered mints per wallet.</p>
 
       <h2>Tickets (combined USD at snapshot)</h2>
-      <p>Sum value across all registered game mints per wallet. No double-counting master/yin.</p>
-      <table class="tiers">
+      <table class="tiers" id="tier-table">
         <thead><tr><th>Combined USD</th><th>Tickets</th></tr></thead>
-        <tbody>
-          <tr><td>≥ $20</td><td>1</td></tr>
-          <tr><td>≥ $100</td><td>2</td></tr>
-          <tr><td>≥ $500</td><td>4 (max)</td></tr>
-        </tbody>
+        <tbody></tbody>
       </table>
-      <p>Example: $200 master + $200 pump + $100 bridge = $500 → <strong>4 tickets</strong>. Holding $500 in each mint ($1,500) is still <strong>4 tickets</strong>, not 12.</p>
+      <p>Example: $200 + $200 + $100 = <strong>4 tickets</strong>. $500 in each mint ($1,500 total) is still <strong>4 tickets max</strong> — anti-whale-gaming.</p>
 
-      <h2>SOL payout split (odd rounds)</h2>
-      <table class="tiers">
+      <h2>SOL payout split (ODD rounds)</h2>
+      <table class="tiers" id="sol-split-table">
         <thead><tr><th>Recipient</th><th>%</th></tr></thead>
-        <tbody>
-          <tr><td>Main winner</td><td>60%</td></tr>
-          <tr><td>Secondary winners (×8)</td><td>4% each</td></tr>
-          <tr><td>Rollover</td><td>6%</td></tr>
-          <tr><td>Dev</td><td>2%</td></tr>
-        </tbody>
+        <tbody></tbody>
       </table>
+
+      <h2>Trade tax → jackpot</h2>
+      <p id="tax-desc"></p>
+      <p>Tax tokens harvest to the jackpot wallet, drip-sell to SOL in small chunks. LP fees can be claimed manually and forwarded. See <a href="liquidity.html">liquidity guide</a>.</p>
 
       <h2>Meme callout (rare)</h2>
-      <p>Most rounds: <strong>SOL only</strong>. On special admin-enabled rounds, the jackpot may buy a announced meme coin (10% of pre-snapshot SOL) before the draw outcome is known.</p>
-      <p>On <strong>ODD payout</strong> rounds with a callout, meme tokens split <strong>the same way as SOL</strong> (60 / 8×4 / 6 / 2). Not every draw — rare bonus spice.</p>
+      <p>Most rounds: <strong>SOL only</strong>. On special admin-enabled rounds, 10% of pre-snapshot SOL buys an announced meme mint <strong>before</strong> the draw outcome is known.</p>
+      <p>On <strong>ODD</strong> with a callout, meme tokens split by <strong>fixed % of token count</strong> (USD value floats):</p>
+      <table class="tiers" id="meme-split-table">
+        <thead><tr><th>Recipient</th><th>% of meme stash</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p><strong>EVEN rollover:</strong> meme stash stays in reserve for a future callout — no winner split that round.</p>
 
       <h2>Provably fair</h2>
       <ul>
-        <li>VRF / on-chain randomness for winner index</li>
-        <li>Holdings snapshot published before draw</li>
-        <li>All transfers verifiable on Solscan</li>
+        <li>On-chain snapshot seed + Pepe count (1–30)</li>
+        <li>Hardened admin auth — only game-day admin can snapshot / settle</li>
+        <li>Holdings snapshot before draw</li>
+        <li>Every payout tx on Solscan</li>
       </ul>
     </div>
 
     <footer class="site-footer"><p><a href="../index.html">← Home</a></p></footer>
   </div>
+  <script src="../assets/config.js"></script>
+  <script>
+    const c = window.PEPEBALL_CONFIG || {};
+    const tiers = document.querySelector('#tier-table tbody');
+    (c.tiers || []).forEach((t) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td>≥ $' + t.usd + '</td><td>' + t.tickets + '</td>';
+      tiers.appendChild(tr);
+    });
+    const sol = c.solPayoutSplit || {};
+    document.querySelector('#sol-split-table tbody').innerHTML =
+      '<tr><td>Main winner</td><td>' + sol.main + '%</td></tr>' +
+      '<tr><td>Secondary ×' + sol.minorCount + '</td><td>' + sol.minorEach + '% each</td></tr>' +
+      '<tr><td>House reserve</td><td>' + sol.house + '%</td></tr>';
+    const meme = c.memePayoutSplit || {};
+    document.querySelector('#meme-split-table tbody').innerHTML =
+      '<tr><td>Main winner</td><td>' + meme.main + '%</td></tr>' +
+      '<tr><td>Secondary ×' + meme.minorCount + '</td><td>' + meme.minorEach + '% each</td></tr>' +
+      '<tr><td>Rollover reserve</td><td>' + meme.rollover + '%</td></tr>' +
+      '<tr><td>Dev</td><td>' + meme.dev + '%</td></tr>';
+    document.getElementById('tax-desc').textContent =
+      (c.tokenTaxBps / 100).toFixed(2) + '% total trade tax on the token leg — majority flows to the jackpot wallet.';
+  </script>
 </body>
 </html>

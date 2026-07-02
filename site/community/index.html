@@ -11,28 +11,35 @@
   <div class="wrap">
     <header class="site-header">
       <h1 class="site-title"><span class="pepe">Community</span></h1>
+      <p class="site-tagline">Official links only. Verify everything on-chain.</p>
     </header>
 
     <nav class="site-nav">
       <a href="../index.html">Home</a>
-      <a href="../guides/index.html">Guides</a>
+      <a href="../guides/brand.html">Brand</a>
       <a href="../verify/index.html">Verify</a>
     </nav>
 
     <div class="page-content">
       <h2>Official links</h2>
       <ul>
-        <li>Play: <a href="#" id="play-url">live app</a></li>
-        <li>Code: <a href="#" id="repo-url">GitHub</a></li>
-        <li id="discord-row" style="display:none">Discord: <a href="#" id="discord-url"></a></li>
-        <li id="twitter-row" style="display:none">X: <a href="#" id="twitter-url"></a></li>
+        <li><strong>Play:</strong> <a href="#" id="play-url">live app</a></li>
+        <li><strong>Info hub:</strong> <a href="#" id="info-url">GitHub Pages</a></li>
+        <li><strong>Code:</strong> <a href="#" id="repo-url">GitHub repo</a></li>
+        <li id="discord-row" style="display:none"><strong>Discord:</strong> <a href="#" id="discord-url"></a></li>
+        <li id="twitter-row" style="display:none"><strong>X:</strong> <a href="#" id="twitter-url"></a></li>
       </ul>
+
+      <h2>Share the pitch</h2>
+      <ul id="share-points"></ul>
+      <p><a href="../guides/brand.html">Full brand kit →</a> (soundbites, hashtags, 30s story arc)</p>
 
       <div class="discord-banner">
         <h3>Stay safe</h3>
         <p style="color: var(--muted); font-size: 0.85rem;">
           Public crypto communities attract scammers. <strong>Never</strong> click DMs, never share seed phrases,
-          never send SOL to “support.” Only use links from this site or the play app.
+          never send SOL to "support." Only use links from this site or the play app.
+          Match program IDs on the <a href="../verify/index.html">verify page</a> before you ape.
         </p>
       </div>
     </div>
@@ -44,6 +51,7 @@
     const c = window.PEPEBALL_CONFIG || {};
     document.getElementById('play-url').href = c.playUrl || '#';
     document.getElementById('repo-url').href = c.repoUrl || '#';
+    document.getElementById('info-url').href = (c.repoUrl || '').replace('github.com', 'github.io').replace(/\/$/, '') + '/';
     if (c.discordUrl) {
       document.getElementById('discord-row').style.display = 'list-item';
       document.getElementById('discord-url').href = c.discordUrl;
@@ -54,6 +62,12 @@
       document.getElementById('twitter-url').href = c.twitterUrl;
       document.getElementById('twitter-url').textContent = c.twitterUrl;
     }
+    const ul = document.getElementById('share-points');
+    (c.talkingPoints || []).slice(0, 4).forEach((t) => {
+      const li = document.createElement('li');
+      li.textContent = t;
+      ul.appendChild(li);
+    });
   </script>
 </body>
 </html>

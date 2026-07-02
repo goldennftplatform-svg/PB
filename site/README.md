@@ -1,53 +1,48 @@
 # PEPEBALL info site (GitHub Pages)
 
-Cary0x-style static hub for guides, rules, verify links, and play CTA. Lives in **`site/`** in this repo.
+Marketing + docs hub for PEPEBALL — Cary0x-style card layout, matrix theme. **No build step.**
+
+**Live after push:** `https://goldennftplatform-svg.github.io/PB/`
 
 ## Local preview
 
 ```bash
 cd site
 npx --yes serve .
-# open http://localhost:3000
+# http://localhost:3000
 ```
-
-Or open `site/index.html` in a browser (some links work best with a local server).
 
 ## Configure
 
 Edit **`site/assets/config.js`** (public only):
 
-- `playUrl` — live game (e.g. `https://soflotto.com`)
+- `playUrl` — live app (`https://pb-n7kx.vercel.app`)
 - `repoUrl`, `discordUrl`, `twitterUrl`
-- Program IDs / cluster for verify page
+- `publicWallets` — admin + jackpot_tax pubkeys
+- `pillars`, `talkingPoints`, `mediaKit` — marketing copy
+- Program IDs / devnet mints for verify page
 
-## Deploy to GitHub Pages
+## Deploy
 
-### Option A — GitHub UI (simplest)
+**GitHub Actions:** `.github/workflows/github-pages.yml` — auto-deploys `site/` on push to `main`.
 
-1. Push `site/` to `main`
-2. Repo **Settings → Pages**
-3. **Build and deployment → Source:** Deploy from a branch
-4. Branch: `main`, folder: **`/site`**
-5. Save — site at `https://<user>.github.io/<repo>/`
-
-For a **user site** (`cary0x.github.io` style): use a repo named `<username>.github.io` and set Pages root to `/site` or move contents to repo root.
-
-### Option B — GitHub Actions
-
-Workflow: `.github/workflows/github-pages.yml` (uploads `site/` on push).
+Or: **Settings → Pages → Deploy from branch → `/site`**
 
 ## Pages
 
 | Path | Content |
 |------|---------|
-| `/` | Card hub (like cary0x home) |
-| `/guides/` | How to play |
-| `/guides/rules.html` | ODD/EVEN, tiers, meme callout |
-| `/guides/tokens.html` | Yin/Yang |
-| `/guides/devnet.html` | Devnet proof |
-| `/verify/` | Solscan links |
-| `/community/` | Social + safety |
+| `/` | Hero, pillars, talking points, card hub |
+| `/guides/` | How to play (5 steps) |
+| `/guides/rules.html` | ODD/EVEN, tiers, SOL + meme splits, tax |
+| `/guides/round-ledger.html` | Fixed SOL + meme accounting |
+| `/guides/brand.html` | Brand kit — soundbites, hashtags, video arc |
+| `/guides/tokens.html` | Yin/Yang / TRiX |
+| `/guides/liquidity.html` | Tax + LP |
+| `/guides/devnet.html` | Rehearsal checklist |
+| `/verify/` | Programs, PDAs, public wallets |
+| `/community/` | Links + safety |
 
-## Theme
+## For your media
 
-Matrix green / gold — matches v2turbo live app. No build step required.
+Use **`guides/brand.html`** for launch threads, spaces, and video scripts. Add Discord/X URLs to `config.js` when ready.

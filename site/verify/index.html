@@ -24,6 +24,11 @@
       <h2>Cluster</h2>
       <p id="cluster-label">devnet</p>
 
+      <h2>Public game-day wallets (verify before funding)</h2>
+      <p>Admin (snapshot / settlement): <span class="mono" id="wallet-admin"></span></p>
+      <p>Jackpot / tax (payouts): <span class="mono" id="wallet-jackpot"></span></p>
+      <p class="mono" style="font-size:0.75rem;color:var(--muted)">Legacy addresses (2QAQ…, FjbPun…) — do not fund on game day.</p>
+
       <h2>Lottery</h2>
       <p class="mono" id="program-id"></p>
       <p><a href="#" id="link-program">Solscan program →</a></p>
@@ -61,6 +66,9 @@
   <script src="../assets/config.js"></script>
   <script>
     const c = window.PEPEBALL_CONFIG || {};
+    const w = c.publicWallets || {};
+    document.getElementById('wallet-admin').textContent = w.admin || '—';
+    document.getElementById('wallet-jackpot').textContent = w.jackpotTax || '—';
     const cluster = c.cluster || 'devnet';
     const q = cluster === 'mainnet-beta' ? '' : '?cluster=devnet';
     const sol = (id) => 'https://solscan.io/account/' + id + q;
