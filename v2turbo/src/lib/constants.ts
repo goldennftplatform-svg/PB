@@ -1,3 +1,6 @@
+/** GitHub Pages info hub — rules, verify, leaderboard, brand kit */
+export const INFO_SITE_URL = import.meta.env?.VITE_INFO_SITE_URL ?? "https://goldennftplatform-svg.github.io/PB/";
+
 export const ADMIN_ADDRESS = "DMj1qD5UXYW2AwxdhVwd6AsNL1RamRnEYRDmi3qad1Zw";
 
 /** Privy app ID for wallet connect (Poof/Privy plug-and-play). Set VITE_PRIVY_APP_ID in Vercel or .env. */
