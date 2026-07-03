@@ -52,7 +52,8 @@
     const c = window.PEPEBALL_CONFIG || {};
     document.getElementById('play-url').href = c.playUrl || '#';
     document.getElementById('repo-url').href = c.repoUrl || '#';
-    document.getElementById('info-url').href = (c.repoUrl || '').replace('github.com', 'github.io').replace(/\/$/, '') + '/';
+    document.getElementById('info-url').href = c.infoSiteUrl || c.repoUrl || '#';
+    document.getElementById('info-url').textContent = c.infoSiteUrl || 'GitHub Pages';
     if (c.discordUrl) {
       document.getElementById('discord-row').style.display = 'list-item';
       document.getElementById('discord-url').href = c.discordUrl;

@@ -1,0 +1,76 @@
+{
+  "$schema": "pepeball-launch-manifest-v1",
+  "_comment": "PUBLIC ONLY. Fill before game day. Must match on-chain GameRegistry after seal. Never put keypairs here.",
+  "network": "mainnet-beta",
+  "launchPhase": "pre-deploy | programs-deployed | mints-created | registry-sealed | live",
+  "programs": {
+    "game_registry": null,
+    "pepball_token": null,
+    "lottery": null,
+    "tax_harvest": null,
+    "lp_manager": null
+  },
+  "registryPda": null,
+  "mints": {
+    "master": {
+      "role": "Custom 1B taxed SPL via pepball-token program",
+      "address": null,
+      "createdBy": "pepball_token::initialize_token"
+    },
+    "pump_shell": {
+      "role": "Pump.fun Yang — marketing shell",
+      "address": null,
+      "platform": "pump.fun"
+    },
+    "trix_yang": {
+      "role": "TRiX attention coin",
+      "address": null,
+      "platform": "trix.market"
+    },
+    "trix_yin": {
+      "role": "MUST equal master mint",
+      "address": null,
+      "platform": "trix.market"
+    },
+    "trix_bridge": {
+      "role": "TRiX 1:1 bridge / discovery",
+      "address": null,
+      "platform": "trix.market"
+    }
+  },
+  "wallets": {
+    "jackpot_tax": null,
+    "admin": null
+  },
+  "peg": {
+    "numerator": 1,
+    "denominator": 1,
+    "description": "master ↔ bridge fixed at launch"
+  },
+  "lotteryTiersCents": {
+    "tier1": 2000,
+    "tier2": 10000,
+    "tier3": 50000,
+    "tickets": [1, 2, 4],
+    "eligibility": "combined_usd_across_game_mints_not_per_mint"
+  },
+  "memeCallout": {
+    "enabled": false,
+    "frequency": "rare — admin-enabled per round only",
+    "buyBpsOfPreSnapshotSol": 1000,
+    "oneAndDone": true,
+    "splitPercents": { "main": 64, "secondaryEach": 4.25, "dev": 2 },
+    "roundMemeMint": null
+  },
+  "sealedAt": null,
+  "preflight": [
+    "All 5 programs deployed with NEW keypairs",
+    "Master mint created via pepball-token",
+    "Pump + TRiX launches complete — mint CAs known",
+    "game_registry::register_mints with ALL five mint pubkeys",
+    "game_registry::seal_registry executed",
+    "Lottery initialized with tier cents 2000/10000/50000",
+    "tax_harvest + lp_manager initialized pointing to jackpot wallet",
+    "Frontend reads registry PDA — no post-launch env mint flip"
+  ]
+}

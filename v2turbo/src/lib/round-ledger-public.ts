@@ -20,7 +20,7 @@ export type RoundLedgerPublic = {
   } | null;
   splits: {
     sol: { mainPercent: number; minorEachPercent: number; minorCount: number; housePercent: number };
-    meme: { mainPercent: number; minorEachPercent: number; minorCount: number; rolloverPercent: number; devPercent: number };
+    meme: { mainPercent: number; minorEachPercent: number; minorCount: number; devPercent: number; oneAndDone?: boolean };
   };
 };
 
@@ -32,7 +32,7 @@ const EMPTY: RoundLedgerPublic = {
   active: null,
   splits: {
     sol: { mainPercent: 50, minorEachPercent: 5, minorCount: 8, housePercent: 10 },
-    meme: { mainPercent: 60, minorEachPercent: 4, minorCount: 8, rolloverPercent: 6, devPercent: 2 },
+    meme: { mainPercent: 64, minorEachPercent: 4.25, minorCount: 8, devPercent: 2, oneAndDone: true },
   },
 };
 

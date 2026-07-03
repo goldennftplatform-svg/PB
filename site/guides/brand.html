@@ -31,8 +31,9 @@
       <ul>
         <li class="soundbite" id="sb-odd"></li>
         <li class="soundbite" id="sb-sol"></li>
+        <li class="soundbite" id="sb-meme"></li>
         <li><strong>Tax line:</strong> <span id="tax-line"></span></li>
-        <li><strong>Ledger line:</strong> Fixed SOL prize. Fixed meme tokens on bonus rounds. No bait-and-switch.</li>
+        <li><strong>Ledger line:</strong> SOL: 50% / 5%×8 / 10%. Meme bonus (rare): 64% / 4.25%×8 / 2% — 100% on ODD.</li>
         <li><strong>Trust line:</strong> Don't trust us — Solscan every payout.</li>
       </ul>
 
@@ -78,6 +79,7 @@
     document.getElementById('headline').textContent = m.headline || '';
     document.getElementById('sb-odd').textContent = m.soundbiteOdd || '';
     document.getElementById('sb-sol').textContent = m.soundbiteSol || '';
+    document.getElementById('sb-meme').textContent = m.soundbiteMeme || '';
     document.getElementById('tax-line').textContent = c.tokenTaxLabel || '';
     document.getElementById('hashtags').textContent = (m.hashtags || []).join(' ');
     document.getElementById('play-cta').href = c.playUrl || '#';

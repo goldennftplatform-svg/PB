@@ -54,12 +54,12 @@
 
       <h2>Meme callout (rare)</h2>
       <p>Most rounds: <strong>SOL only</strong>. On special admin-enabled rounds, 10% of pre-snapshot SOL buys an announced meme mint <strong>before</strong> the draw outcome is known.</p>
-      <p>On <strong>ODD</strong> with a callout, meme tokens split by <strong>fixed % of token count</strong> (USD value floats):</p>
+      <p>On <strong>ODD</strong> with a callout, meme tokens split by <strong>fixed % of token count</strong> — <strong>100% paid out</strong> (no reserve carry):</p>
       <table class="tiers" id="meme-split-table">
         <thead><tr><th>Recipient</th><th>% of meme stash</th></tr></thead>
         <tbody></tbody>
       </table>
-      <p><strong>EVEN rollover:</strong> meme stash stays in reserve for a future callout — no winner split that round.</p>
+      <p><strong>EVEN rollover:</strong> no meme split that round — stash stays whole for a future callout round (draw rollover only, not a 6% slice).</p>
 
       <h2>Provably fair</h2>
       <ul>
@@ -90,8 +90,8 @@
     document.querySelector('#meme-split-table tbody').innerHTML =
       '<tr><td>Main winner</td><td>' + meme.main + '%</td></tr>' +
       '<tr><td>Secondary ×' + meme.minorCount + '</td><td>' + meme.minorEach + '% each</td></tr>' +
-      '<tr><td>Rollover reserve</td><td>' + meme.rollover + '%</td></tr>' +
-      '<tr><td>Dev</td><td>' + meme.dev + '%</td></tr>';
+      '<tr><td>Dev</td><td>' + meme.dev + '%</td></tr>' +
+      '<tr><td colspan="2"><em>100% on ODD — no meme reserve</em></td></tr>';
     document.getElementById('tax-desc').textContent =
       (c.tokenTaxBps / 100).toFixed(2) + '% total trade tax on the token leg — majority flows to the jackpot wallet.';
   </script>

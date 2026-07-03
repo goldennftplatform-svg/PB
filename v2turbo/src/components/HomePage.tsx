@@ -9,12 +9,14 @@ import {
   JACKPOT_ID,
   LOTTERY_PDA,
   LOTTERY_PROGRAM_ID,
-  MAIN_WINNER_PERCENT,
   PEPEBALL_MINT,
   PROOF_MINT,
-  ROLLOVER_PERCENT,
-  DEV_PERCENT,
-  SECONDARY_WINNER_PERCENT,
+  SOL_MAIN_PERCENT,
+  SOL_MINOR_EACH_PERCENT,
+  SOL_HOUSE_PERCENT,
+  MEME_MAIN_PERCENT,
+  MEME_MINOR_EACH_PERCENT,
+  MEME_DEV_PERCENT,
   TAROBASE_ENV,
   USDC,
 } from '@/lib/constants';
@@ -22,6 +24,7 @@ import { TAROBASE_CONFIG } from '@/lib/config';
 import { buildDrawReplay, formatWalletShort, pickLatestDrawing, type DrawReplay } from '@/lib/draw-replay';
 import { fetchDevnetLotteryLive, fetchLotteryDrawState, type DevnetLotteryLive } from '@/lib/lottery-state';
 import { fetchRoundLedgerPublic, type RoundLedgerPublic } from '@/lib/round-ledger-public';
+import { fetchIndexerStatusPublic, type IndexerStatusPublic } from '@/lib/indexer-status-public';
 import {
   buildRoundLedgerEnableCalloutCli,
   fetchMemeCallout,
@@ -107,6 +110,7 @@ export const HomePage: React.FC = () => {
   const [lotteryDrawState, setLotteryDrawState] = useState<Awaited<ReturnType<typeof fetchLotteryDrawState>>>(null);
   const [devnetLive, setDevnetLive] = useState<DevnetLotteryLive | null>(null);
   const [roundLedger, setRoundLedger] = useState<RoundLedgerPublic | null>(null);
+  const [indexerStatus, setIndexerStatus] = useState<IndexerStatusPublic | null>(null);
   const [memeCallout, setMemeCallout] = useState<MemeCalloutConfig | null>(null);
   const [calloutEnabledInput, setCalloutEnabledInput] = useState(false);
   const [calloutMintInput, setCalloutMintInput] = useState('');
@@ -173,6 +177,20 @@ export const HomePage: React.FC = () => {
     };
     loadLedger();
     const id = setInterval(loadLedger, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadIndexer = async () => {
+      const data = await fetchIndexerStatusPublic();
+      if (!cancelled) setIndexerStatus(data);
+    };
+    loadIndexer();
+    const id = setInterval(loadIndexer, 60_000);
     return () => {
       cancelled = true;
       clearInterval(id);
@@ -450,7 +468,75 @@ export const HomePage: React.FC = () => {
               <span style={{ color: terminal.text }}>{lastUpdatedLabel}</span>
             </span>
           )}
+          {indexerStatus && indexerStatus.entrantCount > 0 && (
+            <span className="text-xs font-mono" style={{ color: terminal.dim }}>
+              <span className="uppercase tracking-wider mr-1" style={{ color: terminal.accentDim }}>Registered</span>
+              <span className="tabular-nums font-medium" style={{ color: terminal.accent }}>
+                {indexerStatus.entrantCount.toLocaleString()}
+              </span>
+              {indexerStatus.qualifiedHolderCount > 0 && (
+                <span className="ml-1" style={{ color: terminal.dim }}>
+                  / {indexerStatus.qualifiedHolderCount.toLocaleString()} qualify
+                </span>
+              )}
+            </span>
+          )}
         </div>
+
+        {indexerStatus && (indexerStatus.entrantCount > 0 || indexerStatus.qualifiedHolderCount > 0) && (
+          <div
+            className="mb-5 rounded-xl border px-4 py-3 sm:px-5 backdrop-blur-md"
+            style={{
+              background: 'rgba(4, 14, 11, 0.4)',
+              borderColor:
+                indexerStatus.syncStatus === 'ok'
+                  ? 'rgba(0, 255, 65, 0.28)'
+                  : indexerStatus.syncStatus === 'stale'
+                    ? 'rgba(229, 184, 74, 0.35)'
+                    : 'rgba(248, 81, 73, 0.25)',
+            }}
+          >
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: terminal.accentDim, fontFamily: terminal.fontDisplay }}>
+                Draw registration
+              </span>
+              <span
+                className="text-[10px] font-mono px-2 py-0.5 rounded uppercase"
+                style={{
+                  background:
+                    indexerStatus.syncStatus === 'ok'
+                      ? 'rgba(0,255,65,0.12)'
+                      : 'rgba(229,184,74,0.15)',
+                  color: indexerStatus.syncStatus === 'ok' ? terminal.accent : terminal.gold,
+                }}
+              >
+                {indexerStatus.syncStatus}
+              </span>
+            </div>
+            <p className="text-xs font-mono" style={{ color: terminal.text }}>
+              <span className="font-semibold tabular-nums" style={{ color: terminal.accent }}>
+                {indexerStatus.entrantCount.toLocaleString()}
+              </span>
+              <span style={{ color: terminal.dim }}> wallets registered on-chain</span>
+              {indexerStatus.qualifiedHolderCount > 0 && (
+                <>
+                  <span style={{ color: terminal.dim }}> · </span>
+                  <span className="tabular-nums">{indexerStatus.qualifiedHolderCount.toLocaleString()}</span>
+                  <span style={{ color: terminal.dim }}> hold enough to qualify</span>
+                  {indexerStatus.registrationGapCount > 0 && (
+                    <span style={{ color: terminal.gold }}>
+                      {' '}
+                      · {indexerStatus.registrationGapCount.toLocaleString()} still need to register
+                    </span>
+                  )}
+                </>
+              )}
+            </p>
+            <p className="text-[10px] mt-1" style={{ color: terminal.dim }}>
+              Hold $20+ $PBALL and register before snapshot — indexer updates every few minutes on {networkLabel}.
+            </p>
+          </div>
+        )}
 
         {activeMemeCallout && (
           <div
@@ -478,7 +564,7 @@ export const HomePage: React.FC = () => {
               {activeMemeCallout.mint}
             </p>
             <p className="text-[10px]" style={{ color: terminal.dim }}>
-              ODD payout rounds may include meme bags — SOL jackpot every draw. 10% pre-snapshot SOL buys this token when callout runs.
+              ODD payout rounds may include meme bags (100% paid — no token reserve). SOL jackpot every draw.
             </p>
             <a
               href={`https://solscan.io/token/${activeMemeCallout.mint}${TAROBASE_ENV === 'devnet' ? '?cluster=devnet' : ''}`}
@@ -835,22 +921,35 @@ export const HomePage: React.FC = () => {
         {/* Payout structure */}
         <section className="matrix-data-panel rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
           <div className="matrix-data-label mb-3 sm:mb-4 font-semibold tracking-[0.2em]" style={{ fontFamily: terminal.fontDisplay }}>Payout structure</div>
-          <ul className="space-y-3 text-sm">
+          <p className="text-xs mb-3" style={{ color: terminal.dim }}>SOL every ODD round. Meme bonus = rare callout only — 100% paid out, no token reserve.</p>
+          <div className="text-[10px] uppercase tracking-wider mb-2" style={{ color: terminal.gold }}>SOL jackpot</div>
+          <ul className="space-y-2 text-sm mb-5">
             <li className="flex justify-between">
               <span style={{ color: terminal.text }}>Main winner</span>
-              <span style={{ color: terminal.gold }}>{MAIN_WINNER_PERCENT}%</span>
+              <span style={{ color: terminal.gold }}>{SOL_MAIN_PERCENT}%</span>
             </li>
             <li className="flex justify-between">
               <span style={{ color: terminal.text }}>Secondary (×8)</span>
-              <span style={{ color: terminal.dim }}>{SECONDARY_WINNER_PERCENT}% each</span>
+              <span style={{ color: terminal.dim }}>{SOL_MINOR_EACH_PERCENT}% each</span>
             </li>
             <li className="flex justify-between">
-              <span style={{ color: terminal.text }}>Rollover</span>
-              <span style={{ color: terminal.accent }}>{ROLLOVER_PERCENT}%</span>
+              <span style={{ color: terminal.text }}>House reserve</span>
+              <span style={{ color: terminal.dim }}>{SOL_HOUSE_PERCENT}%</span>
+            </li>
+          </ul>
+          <div className="text-[10px] uppercase tracking-wider mb-2" style={{ color: terminal.accentDim }}>Meme callout bonus (one-and-done)</div>
+          <ul className="space-y-2 text-sm">
+            <li className="flex justify-between">
+              <span style={{ color: terminal.text }}>Main winner</span>
+              <span style={{ color: terminal.gold }}>{MEME_MAIN_PERCENT}%</span>
             </li>
             <li className="flex justify-between">
-              <span style={{ color: terminal.text }}>Dev fee</span>
-              <span style={{ color: terminal.dim }}>{DEV_PERCENT}%</span>
+              <span style={{ color: terminal.text }}>Secondary (×8)</span>
+              <span style={{ color: terminal.dim }}>{MEME_MINOR_EACH_PERCENT}% each</span>
+            </li>
+            <li className="flex justify-between">
+              <span style={{ color: terminal.text }}>Dev</span>
+              <span style={{ color: terminal.dim }}>{MEME_DEV_PERCENT}%</span>
             </li>
           </ul>
         </section>

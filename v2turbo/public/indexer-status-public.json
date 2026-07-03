@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "exportedAt": null,
+  "roundId": null,
+  "syncStatus": "pending",
+  "entrantCount": 0,
+  "totalTickets": 0,
+  "qualifiedHolderCount": 0,
+  "registrationGapCount": 0,
+  "coveragePercent": null,
+  "lastParticipantSyncAt": null,
+  "lastHolderScanAt": null,
+  "lastManifestAt": null,
+  "lastManifestMerkle": null,
+  "onChainTotalParticipants": null,
+  "onChainTotalTickets": null,
+  "crossCheck": null,
+  "network": "devnet"
+}

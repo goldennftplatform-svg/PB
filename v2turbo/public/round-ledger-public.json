@@ -26,11 +26,11 @@
       "housePercent": 10
     },
     "meme": {
-      "mainPercent": 60,
-      "minorEachPercent": 4,
+      "mainPercent": 64,
+      "minorEachPercent": 4.25,
       "minorCount": 8,
-      "rolloverPercent": 6,
-      "devPercent": 2
+      "devPercent": 2,
+      "oneAndDone": true
     }
   }
 }

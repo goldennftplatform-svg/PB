@@ -73,10 +73,10 @@ node scripts/round-ledger.js export-public</pre>
       '<tr><td>House reserve</td><td>' + (sol.house || 10) + '%</td></tr>';
     const memeBody = document.querySelector('#meme-split-table tbody');
     memeBody.innerHTML =
-      '<tr><td>Main winner</td><td>' + (meme.main || 60) + '%</td></tr>' +
-      '<tr><td>Secondary ×' + (meme.minorCount || 8) + '</td><td>' + (meme.minorEach || 4) + '% each</td></tr>' +
-      '<tr><td>Rollover reserve</td><td>' + (meme.rollover || 6) + '%</td></tr>' +
-      '<tr><td>Dev</td><td>' + (meme.dev || 2) + '%</td></tr>';
+      '<tr><td>Main winner</td><td>' + (meme.main || 64) + '%</td></tr>' +
+      '<tr><td>Secondary ×' + (meme.minorCount || 8) + '</td><td>' + (meme.minorEach || 4.25) + '% each</td></tr>' +
+      '<tr><td>Dev</td><td>' + (meme.dev || 2) + '%</td></tr>' +
+      '<tr><td colspan="2"><em>100% on ODD — no meme reserve</em></td></tr>';
   </script>
 </body>
 </html>

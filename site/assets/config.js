@@ -6,6 +6,7 @@ window.PEPEBALL_CONFIG = {
     "The on-chain Powerball for Solana degens: your meme bags are the ticket. The prize is pure SOL. Every draw is provable. Every payout is on Solscan.",
   playUrl: "https://pb-n7kx.vercel.app",
   repoUrl: "https://github.com/goldennftplatform-svg/PB",
+  infoSiteUrl: "https://goldennftplatform-svg.github.io/PB/",
   discordUrl: "",
   twitterUrl: "",
   cluster: "devnet",
@@ -45,8 +46,11 @@ window.PEPEBALL_CONFIG = {
   /** SOL jackpot split (every ODD payout round) */
   solPayoutSplit: { main: 50, minorEach: 5, minorCount: 8, house: 10 },
 
-  /** Meme callout bonus split (% of fixed token stash — rare rounds only) */
-  memePayoutSplit: { main: 60, minorEach: 4, minorCount: 8, rollover: 6, dev: 2 },
+  /** Meme callout bonus — 100% paid on ODD (no reserve slice; former 6% folded into winners) */
+  memePayoutSplit: { main: 64, minorEach: 4.25, minorCount: 8, dev: 2, oneAndDone: true },
+
+  memeCallout:
+    "Rare bonus rounds only — admin picks the CA per round. On ODD: 64% / 4.25%×8 / 2% of token stash — 100% paid, no meme reserve. SOL jackpot unchanged.",
 
   pillars: [
     {
@@ -59,7 +63,7 @@ window.PEPEBALL_CONFIG = {
     },
     {
       title: "Round ledger — no fuzzy math",
-      body: "Each draw locks a fixed SOL commitment. Rare meme bonuses use a fixed token count. Price pumps don't silently change what you promised to pay.",
+      body: "Each draw locks a fixed SOL commitment. Rare meme bonuses: 64% / 4.25%×8 / 2% of a fixed token stash — 100% on ODD, no reserve slice.",
     },
     {
       title: "2.5% tax feeds the pot",
@@ -73,11 +77,8 @@ window.PEPEBALL_CONFIG = {
     "Combined USD snapshot — can't game one thin pool for 12 tickets.",
     "Admin can't rug snapshot: hardened program requires game-day admin key.",
     "Every payout tx on Solscan. Verify before you trust.",
-    "Rare meme callout rounds: bonus token bags on ODD — SOL prize every time.",
+    "Rare meme callout: 64% / 4.25%×8 / 2% of token stash on ODD — one-and-done, no meme rollover.",
   ],
-
-  memeCallout:
-    "Rare bonus rounds only — admin enables per round. Fixed token stash split by %, not USD. SOL jackpot unchanged.",
 
   devnetChecklist: [
     { label: "5 Anchor programs on devnet", done: true },
@@ -97,6 +98,7 @@ window.PEPEBALL_CONFIG = {
     hashtags: ["#PEPEBALL", "#Solana", "#OnChainLottery", "#ODDPays"],
     soundbiteOdd: "ODD pays. EVEN rolls. Pepe decides.",
     soundbiteSol: "Your bags get you in. Winners walk away with SOL.",
+    soundbiteMeme: "Rare meme bonus: 64% / 4.25%×8 / 2% — 100% on ODD, no reserve.",
     logoPath: "assets/pepe-ball.png",
     note: "Drop your video/audio links in community page config when ready.",
   },

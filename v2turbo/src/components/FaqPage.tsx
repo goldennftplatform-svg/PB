@@ -174,7 +174,7 @@ export default function FaqPage() {
               What is PEPEBALL?
             </AccordionTrigger>
             <AccordionContent className="text-sm leading-relaxed pb-4" style={{ color: terminal.dim }}>
-              PEPEBALL is a Solana draw: hold game tokens at snapshot, win <strong style={{ color: terminal.accent }}>SOL</strong>. Combined USD across game mints: $20 = 1 ticket, $100 = 2, $500 = 4. <strong style={{ color: terminal.accent }}>Odd</strong> Pepe count = payout; <strong style={{ color: terminal.accent }}>even</strong> = rollover. Rare bonus rounds may add a meme coin bag (same split as SOL). See{' '}
+              PEPEBALL is a Solana draw: hold game tokens at snapshot, win <strong style={{ color: terminal.accent }}>SOL</strong>. Combined USD across game mints: $20 = 1 ticket, $100 = 2, $500 = 4. <strong style={{ color: terminal.accent }}>Odd</strong> Pepe count = payout; <strong style={{ color: terminal.accent }}>even</strong> = rollover. Rare meme callout rounds pay a bonus token bag (64% / 4.25%×8 / 2% — 100% on ODD, no reserve). See{' '}
               <a href={`${INFO_SITE_URL}guides/rules.html`} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: terminal.accentAlt }}>full rules</a>.
             </AccordionContent>
           </AccordionItem>
@@ -208,7 +208,7 @@ export default function FaqPage() {
               How and when do I receive winnings?
             </AccordionTrigger>
             <AccordionContent className="text-sm leading-relaxed pb-4" style={{ color: terminal.dim }}>
-              On <strong style={{ color: terminal.accent }}>odd</strong> (payout) rounds, winners receive <strong style={{ color: terminal.accent }}>SOL</strong> to their snapshot wallet. On rare meme callout rounds, meme bags use a fixed token stash split. Verify every payout on{' '}
+              On <strong style={{ color: terminal.accent }}>odd</strong> (payout) rounds, winners receive <strong style={{ color: terminal.accent }}>SOL</strong> to their snapshot wallet (50% main, 8×5% minors, 10% house). On rare meme callout rounds, the token stash splits <strong style={{ color: terminal.accent }}>64% / 4.25%×8 / 2%</strong> — fully paid on ODD, no meme rollover slice. Verify every payout on{' '}
               <a href={`${INFO_SITE_URL}leaderboard/`} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: terminal.accentAlt }}>Hall of Fame</a>.
             </AccordionContent>
           </AccordionItem>
