@@ -23,10 +23,6 @@ export const DRAWING_INTERVAL_NORMAL = "172800";
 export const DRAWING_INTERVAL_HIGH_JACKPOT = "259200";
 export const HIGH_JACKPOT_THRESHOLD = "200000000000";
 export const JACKPOT_ID = "main";
-export const MAIN_WINNER_PERCENT = "60";
-export const SECONDARY_WINNER_PERCENT = "4";
-export const ROLLOVER_PERCENT = "6";
-export const DEV_PERCENT = "2";
 /** Meme callout bonus — 100% paid on ODD (no 6% reserve; former rollover folded into winners) */
 export const MEME_MAIN_PERCENT = "64";
 export const MEME_MINOR_EACH_PERCENT = "4.25";
@@ -34,7 +30,8 @@ export const MEME_DEV_PERCENT = "2";
 /** SOL jackpot split (ODD payout rounds) */
 export const SOL_MAIN_PERCENT = "50";
 export const SOL_MINOR_EACH_PERCENT = "5";
-export const SOL_HOUSE_PERCENT = "10";
+export const SOL_ROLLOVER_PERCENT = "8";
+export const SOL_DEV_PERCENT = "2";
 export const LOTTERY_HOUSE_ID = "lottery_house";
 
 /** Lottery program ID — same on devnet and mainnet once deployed to mainnet */

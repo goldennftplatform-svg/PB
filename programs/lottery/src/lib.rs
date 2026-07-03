@@ -206,10 +206,10 @@ pub mod lottery {
         require!(lottery.winners.main_winner.is_some(), ErrorCode::NoWinners);
         require!(lottery.pepe_ball_count % 2 == 1, ErrorCode::InvalidConfig); // Must be odd for payout
         
-        // 50/50 payout: 50% main, 40% 8 minors, 10% house (enforced off-chain)
+        // 50/50 payout: 50% main, 40% 8 minors, 8% rollover reserve, 2% dev (enforced off-chain)
         // Reset for next round
         lottery.carry_over_amount = 0;
-        lottery.jackpot_amount = 0;  // All paid out (or set to house fee if keeping some)
+        lottery.jackpot_amount = 0;  // Winners paid; rollover reserve + fees handled off-chain
         lottery.winners.main_winner = None;
         lottery.winners.minor_winners.clear();
         lottery.snapshot_seed = 0;

@@ -191,7 +191,7 @@ export default function FaqPage() {
               How does the draw work? What’s odd/even / rollover?
             </AccordionTrigger>
             <AccordionContent className="text-sm leading-relaxed pb-4" style={{ color: terminal.dim }}>
-              Pepe ball count (1–30) from on-chain randomness. <strong style={{ color: terminal.accent }}>ODD = payout</strong> (winners paid in SOL). <strong style={{ color: terminal.accent }}>EVEN = rollover</strong> (jackpot grows, timer extends). SOL split on payout: 50% main, 8×5% minors, 10% house. Verifiable on Solscan — see{' '}
+              Pepe ball count (1–30) from on-chain randomness. <strong style={{ color: terminal.accent }}>ODD = payout</strong> (winners paid in SOL). <strong style={{ color: terminal.accent }}>EVEN = rollover</strong> (jackpot grows, timer extends). SOL split on payout: 50% main, 8×5% minors, 8% rollover reserve, 2% dev. Verifiable on Solscan — see{' '}
               <a href={`${INFO_SITE_URL}verify/`} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: terminal.accentAlt }}>verify page</a>.
             </AccordionContent>
           </AccordionItem>
@@ -208,7 +208,7 @@ export default function FaqPage() {
               How and when do I receive winnings?
             </AccordionTrigger>
             <AccordionContent className="text-sm leading-relaxed pb-4" style={{ color: terminal.dim }}>
-              On <strong style={{ color: terminal.accent }}>odd</strong> (payout) rounds, winners receive <strong style={{ color: terminal.accent }}>SOL</strong> to their snapshot wallet (50% main, 8×5% minors, 10% house). On rare meme callout rounds, the token stash splits <strong style={{ color: terminal.accent }}>64% / 4.25%×8 / 2%</strong> — fully paid on ODD, no meme rollover slice. Verify every payout on{' '}
+              On <strong style={{ color: terminal.accent }}>odd</strong> (payout) rounds, winners receive <strong style={{ color: terminal.accent }}>SOL</strong> to their snapshot wallet (50% main, 8×5% minors). <strong style={{ color: terminal.accent }}>8%</strong> stays in the jackpot reserve; <strong style={{ color: terminal.accent }}>2%</strong> dev. On rare meme callout rounds, the token stash splits <strong style={{ color: terminal.accent }}>64% / 4.25%×8 / 2%</strong> — fully paid on ODD, no meme rollover slice. Verify every payout on{' '}
               <a href={`${INFO_SITE_URL}leaderboard/`} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: terminal.accentAlt }}>Hall of Fame</a>.
             </AccordionContent>
           </AccordionItem>

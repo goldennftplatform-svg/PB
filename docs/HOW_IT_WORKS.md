@@ -37,7 +37,8 @@ The jackpot comes from:
    - Transfers SOL from lottery account to winners
    - 50% to main winner
    - 40% split among 8 minor winners (5% each)
-   - 10% house fee
+   - 8% rollover reserve (stays in jackpot)
+   - 2% dev fee
 
 ## 🛠️ Scripts You Can Use
 

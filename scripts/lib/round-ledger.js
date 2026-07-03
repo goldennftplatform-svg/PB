@@ -12,7 +12,8 @@ const SOL_SPLITS = {
   mainBps: 5000n,
   minorTotalBps: 4000n,
   minorCount: 8n,
-  houseBps: 1000n,
+  rolloverBps: 800n,
+  devBps: 200n,
 };
 
 const MEME_SPLITS = {
@@ -186,12 +187,14 @@ function calcSolPayoutSplits(lamports) {
   const total = BigInt(lamports);
   const main = (total * SOL_SPLITS.mainBps) / 10000n;
   const minorEach = (total * SOL_SPLITS.minorTotalBps) / 10000n / SOL_SPLITS.minorCount;
-  const house = (total * SOL_SPLITS.houseBps) / 10000n;
-  const paid = main + minorEach * SOL_SPLITS.minorCount;
+  const rollover = (total * SOL_SPLITS.rolloverBps) / 10000n;
+  const dev = (total * SOL_SPLITS.devBps) / 10000n;
+  const paid = main + minorEach * SOL_SPLITS.minorCount + dev;
   return {
     mainLamports: main.toString(),
     minorEachLamports: minorEach.toString(),
-    houseLamports: house.toString(),
+    rolloverLamports: rollover.toString(),
+    devLamports: dev.toString(),
     paidLamports: paid.toString(),
     totalLamports: total.toString(),
   };
@@ -279,7 +282,8 @@ function toPublicSummary(ledger) {
         mainPercent: 50,
         minorEachPercent: 5,
         minorCount: 8,
-        housePercent: 10,
+        rolloverPercent: 8,
+        devPercent: 2,
       },
       meme: {
         mainPercent: 64,

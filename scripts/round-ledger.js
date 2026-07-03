@@ -188,7 +188,8 @@ function cmdSplits() {
     console.log('\nSOL splits for', sol, 'SOL:');
     console.log('  Main (50%):', (Number(s.mainLamports) / LAMPORTS_PER_SOL).toFixed(6));
     console.log('  Each minor (5% ×8):', (Number(s.minorEachLamports) / LAMPORTS_PER_SOL).toFixed(6));
-    console.log('  House (10%):', (Number(s.houseLamports) / LAMPORTS_PER_SOL).toFixed(6));
+    console.log('  Rollover reserve (8%):', (Number(s.rolloverLamports) / LAMPORTS_PER_SOL).toFixed(6));
+    console.log('  Dev (2%):', (Number(s.devLamports) / LAMPORTS_PER_SOL).toFixed(6));
   }
   if (meme) {
     const m = calcMemePayoutSplits(meme);

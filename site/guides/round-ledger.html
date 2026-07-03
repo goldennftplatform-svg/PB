@@ -30,7 +30,7 @@
       </div>
 
       <h2>Bucket 1 — SOL jackpot (every round)</h2>
-      <p>Admin opens a round with a <strong>committed lamport amount</strong>. That's what ODD pays from — 50% main, 5% × 8 minors, 10% house reserve.</p>
+      <p>Admin opens a round with a <strong>committed lamport amount</strong>. That's what ODD pays from — 50% main, 5% × 8 minors, 8% rollover reserve, 2% dev.</p>
       <p>Live wallet balance can grow from tax drip and LP harvest, but the <strong>committed</strong> number is what you promised for that draw cycle.</p>
       <table class="tiers" id="sol-split-table">
         <thead><tr><th>Recipient</th><th>% of committed SOL</th></tr></thead>
@@ -70,7 +70,8 @@ node scripts/round-ledger.js export-public</pre>
     solBody.innerHTML =
       '<tr><td>Main winner</td><td>' + (sol.main || 50) + '%</td></tr>' +
       '<tr><td>Secondary ×' + (sol.minorCount || 8) + '</td><td>' + (sol.minorEach || 5) + '% each</td></tr>' +
-      '<tr><td>House reserve</td><td>' + (sol.house || 10) + '%</td></tr>';
+      '<tr><td>Rollover reserve</td><td>' + (sol.rollover || 8) + '%</td></tr>' +
+      '<tr><td>Dev</td><td>' + (sol.dev || 2) + '%</td></tr>';
     const memeBody = document.querySelector('#meme-split-table tbody');
     memeBody.innerHTML =
       '<tr><td>Main winner</td><td>' + (meme.main || 64) + '%</td></tr>' +

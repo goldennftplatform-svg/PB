@@ -240,15 +240,14 @@ class SecurePayoutTool {
         }
 
         // 50/50 ROLLOVER PAYOUT STRUCTURE (when odd Pepe ball count):
-        // 50% Main Winner, 40% split 8 minors (5% each), 10% house fee
-        // Calculate with overflow protection
-        const mainReward = jackpot / 2n; // 50% to main winner
-        const minorPool = (jackpot * 2n) / 5n; // 40% total for minor winners
-        const minorPayoutPerWinner = minorPool / 8n; // 5% to each of 8 minor winners
-        const houseFee = jackpot / 10n; // 10% house fee
+        // 50% Main Winner, 40% split 8 minors (5% each), 8% rollover reserve, 2% dev fee
+        const mainReward = jackpot / 2n;
+        const minorPool = (jackpot * 2n) / 5n;
+        const minorPayoutPerWinner = minorPool / 8n;
+        const rolloverReserve = (jackpot * 8n) / 100n;
+        const devFee = (jackpot * 2n) / 100n;
         
-        // Calculate remainder to handle rounding
-        const total = mainReward + minorPool + houseFee;
+        const total = mainReward + minorPool + rolloverReserve + devFee;
         const remainder = jackpot - total;
         
         // Security: Verify totals match (allow small remainder due to integer division)
@@ -268,8 +267,10 @@ class SecurePayoutTool {
             minorPayoutPerWinnerSOL: Number(minorPayoutPerWinner) / 1e9,
             totalMinorPayout: Number(minorPool),
             totalMinorPayoutSOL: Number(minorPool) / 1e9,
-            houseFee: Number(houseFee),
-            houseFeeSOL: Number(houseFee) / 1e9,
+            rolloverReserve: Number(rolloverReserve),
+            rolloverReserveSOL: Number(rolloverReserve) / 1e9,
+            devFee: Number(devFee),
+            devFeeSOL: Number(devFee) / 1e9,
             minorWinnersCount: 8,
             validated: true
         };
@@ -324,7 +325,8 @@ class SecurePayoutTool {
             console.log(`Minor Winners Pool: ${payouts.minorPoolSOL.toFixed(4)} SOL (40%)`);
             console.log(`Each Minor Winner: ${payouts.minorPayoutPerWinnerSOL.toFixed(4)} SOL (5%)`);
             console.log(`Total Minor Payout: ${payouts.totalMinorPayoutSOL.toFixed(4)} SOL (40%)`);
-            console.log(`House Fee: ${payouts.houseFeeSOL.toFixed(4)} SOL (10%)`);
+            console.log(`Rollover reserve: ${payouts.rolloverReserveSOL.toFixed(4)} SOL (8% — stays in jackpot)`);
+            console.log(`Dev fee: ${payouts.devFeeSOL.toFixed(4)} SOL (2%)`);
             console.log(`Main Winner: ${lottery.winners.mainWinner.toString()}`);
             console.log(`Minor Winners: ${lottery.winners.minorWinners?.length || 0}\n`);
 

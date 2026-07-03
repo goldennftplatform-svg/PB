@@ -85,7 +85,8 @@
     document.querySelector('#sol-split-table tbody').innerHTML =
       '<tr><td>Main winner</td><td>' + sol.main + '%</td></tr>' +
       '<tr><td>Secondary ×' + sol.minorCount + '</td><td>' + sol.minorEach + '% each</td></tr>' +
-      '<tr><td>House reserve</td><td>' + sol.house + '%</td></tr>';
+      '<tr><td>Rollover reserve</td><td>' + sol.rollover + '%</td></tr>' +
+      '<tr><td>Dev</td><td>' + sol.dev + '%</td></tr>';
     const meme = c.memePayoutSplit || {};
     document.querySelector('#meme-split-table tbody').innerHTML =
       '<tr><td>Main winner</td><td>' + meme.main + '%</td></tr>' +

@@ -110,7 +110,7 @@ async function triggerSnapshotRaw() {
             '🔍 Check the transaction logs for the Pepe ball count and 50/50 outcome.\n'
         );
         console.log(
-            '   - ODD count  => payout mode (50% main, 40% minors, 10% house)'
+            '   - ODD count  => payout mode (50% main, 40% minors, 8% rollover, 2% dev)'
         );
         console.log(
             '   - EVEN count => rollover (jackpot grows, timer extended)\n'

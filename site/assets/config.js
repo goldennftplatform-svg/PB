@@ -44,7 +44,7 @@ window.PEPEBALL_CONFIG = {
   ],
 
   /** SOL jackpot split (every ODD payout round) */
-  solPayoutSplit: { main: 50, minorEach: 5, minorCount: 8, house: 10 },
+  solPayoutSplit: { main: 50, minorEach: 5, minorCount: 8, rollover: 8, dev: 2 },
 
   /** Meme callout bonus — 100% paid on ODD (no reserve slice; former 6% folded into winners) */
   memePayoutSplit: { main: 64, minorEach: 4.25, minorCount: 8, dev: 2, oneAndDone: true },

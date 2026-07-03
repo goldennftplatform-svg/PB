@@ -13,7 +13,8 @@ import {
   PROOF_MINT,
   SOL_MAIN_PERCENT,
   SOL_MINOR_EACH_PERCENT,
-  SOL_HOUSE_PERCENT,
+  SOL_ROLLOVER_PERCENT,
+  SOL_DEV_PERCENT,
   MEME_MAIN_PERCENT,
   MEME_MINOR_EACH_PERCENT,
   MEME_DEV_PERCENT,
@@ -933,8 +934,12 @@ export const HomePage: React.FC = () => {
               <span style={{ color: terminal.dim }}>{SOL_MINOR_EACH_PERCENT}% each</span>
             </li>
             <li className="flex justify-between">
-              <span style={{ color: terminal.text }}>House reserve</span>
-              <span style={{ color: terminal.dim }}>{SOL_HOUSE_PERCENT}%</span>
+              <span style={{ color: terminal.text }}>Rollover reserve</span>
+              <span style={{ color: terminal.dim }}>{SOL_ROLLOVER_PERCENT}%</span>
+            </li>
+            <li className="flex justify-between">
+              <span style={{ color: terminal.text }}>Dev</span>
+              <span style={{ color: terminal.dim }}>{SOL_DEV_PERCENT}%</span>
             </li>
           </ul>
           <div className="text-[10px] uppercase tracking-wider mb-2" style={{ color: terminal.accentDim }}>Meme callout bonus (one-and-done)</div>

@@ -23,7 +23,8 @@
       "mainPercent": 50,
       "minorEachPercent": 5,
       "minorCount": 8,
-      "housePercent": 10
+      "rolloverPercent": 8,
+      "devPercent": 2
     },
     "meme": {
       "mainPercent": 64,

@@ -58,7 +58,8 @@ Players are **not** manually registering during the round. At **pre-drawing snap
 |--------|---|
 | Main winner | 50% |
 | Secondary winners (×8) | 5% each |
-| House | 10% |
+| Rollover reserve | 8% |
+| Dev fee | 2% |
 
 **Meme callout bonus (rare rounds only — fixed token stash on ODD)**
 

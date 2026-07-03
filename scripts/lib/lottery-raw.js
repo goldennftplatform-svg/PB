@@ -11,6 +11,7 @@ const {
 
 const LOTTERY_PROGRAM_ID = new PublicKey('8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7');
 const LOTTERY_PDA = new PublicKey('ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb');
+const DEV_FEE_RECIPIENT = new PublicKey('DMj1qD5UXYW2AwxdhVwd6AsNL1RamRnEYRDmi3qad1Zw');
 
 function disc(name) {
   const h = crypto.createHash('sha256');
@@ -293,8 +294,9 @@ function calcPayoutLamports(jackpotLamports) {
   const jackpot = BigInt(jackpotLamports);
   const main = jackpot / 2n;
   const minorEach = (jackpot * 2n) / 5n / 8n;
-  const house = jackpot / 10n;
-  return { main, minorEach, house, total: jackpot };
+  const rollover = (jackpot * 8n) / 100n;
+  const dev = (jackpot * 2n) / 100n;
+  return { main, minorEach, rollover, dev, total: jackpot };
 }
 
 async function sendSolPayouts(connection, payer, jackpotLamports, mainWinner, minorWinners) {
@@ -304,7 +306,7 @@ async function sendSolPayouts(connection, payer, jackpotLamports, mainWinner, mi
   if (available <= reserve) {
     throw new Error(`Payout wallet too low: ${(payerBal / LAMPORTS_PER_SOL).toFixed(4)} SOL`);
   }
-  const { main, minorEach } = calcPayoutLamports(available);
+  const { main, minorEach, dev } = calcPayoutLamports(available);
   const tx = new Transaction();
   tx.add(
     SystemProgram.transfer({
@@ -320,6 +322,15 @@ async function sendSolPayouts(connection, payer, jackpotLamports, mainWinner, mi
         fromPubkey: payer.publicKey,
         toPubkey: w,
         lamports: Number(minorEach),
+      })
+    );
+  }
+  if (dev > 0n) {
+    tx.add(
+      SystemProgram.transfer({
+        fromPubkey: payer.publicKey,
+        toPubkey: DEV_FEE_RECIPIENT,
+        lamports: Number(dev),
       })
     );
   }

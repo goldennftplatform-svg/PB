@@ -68,7 +68,8 @@ node scripts/round-ledger.js export-public
 |-----------|---|
 | Main winner | 50% |
 | 8 minors | 5% each (40% total) |
-| House reserve | 10% |
+| Rollover reserve | 8% |
+| Dev | 2% |
 
 ### Meme stash (callout rounds only — **% of token count**, one-and-done)
 
