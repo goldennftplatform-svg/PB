@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "drawId": "latest",
+  "headline": "Genesis Draw",
+  "subhead": "Devnet rehearsal — how PEPEBALL works, with hard-linked Solscan proof",
+  "steps": [
+    {
+      "id": "qualify",
+      "phase": "1",
+      "title": "Hold & qualify",
+      "body": "No ticket purchase. Combined USD across game mints at snapshot: $20 = 1 ticket, $100 = 2, $500 = 4 max. Wallets register on-chain before the draw."
+    },
+    {
+      "id": "snapshot",
+      "phase": "2",
+      "title": "Holdings snapshot + Pepe draw",
+      "body": "Game-day admin runs take_snapshot on the lottery program. Pepe ball count (1–30) is derived on-chain. Odd = payout round. Even = rollover.",
+      "linkKey": "snapshot",
+      "linkLabel": "Snapshot tx on Solscan"
+    },
+    {
+      "id": "winners",
+      "phase": "3",
+      "title": "Winner index (VRF)",
+      "body": "Snapshot seed expands the ticket pool. One winning index is selected and written on-chain — main winner + 8 minors.",
+      "linkKey": "setWinners",
+      "linkLabel": "set_winners tx"
+    },
+    {
+      "id": "payout",
+      "phase": "4",
+      "title": "SOL payout (ODD)",
+      "body": "Lamports leave the jackpot_tax wallet: 50% main, 8×5% minors, 8% stays as rollover reserve, 2% dev. Every transfer is a separate on-chain tx you can verify.",
+      "linkKey": "solPayout",
+      "linkLabel": "SOL payout tx"
+    },
+    {
+      "id": "reset",
+      "phase": "5",
+      "title": "On-chain round reset",
+      "body": "payout_winners clears lottery state for the next round — participants reset, rollover counter zeroed, ready for the next cycle.",
+      "linkKey": "onChainPayout",
+      "linkLabel": "payout_winners tx"
+    }
+  ]
+}

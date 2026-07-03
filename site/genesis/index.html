@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Genesis proof | PEPEBALL</title>
+  <meta name="description" content="Visual walkthrough of the Genesis devnet draw — hold, snapshot, ODD payout, Solscan proof for every step." />
+  <link rel="icon" href="../assets/pepe-ball.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="status-banner" id="devnet-banner" style="display:none"></div>
+
+    <header class="site-header">
+      <img src="../assets/pepe-ball.png" alt="" class="site-logo" width="72" height="72" />
+      <h1 class="site-title"><span class="pepe">Genesis</span> <span class="ball">proof</span></h1>
+      <p class="site-tagline" id="page-subhead"></p>
+    </header>
+
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="../guides/rules.html">Rules</a>
+      <a href="../leaderboard/index.html">Hall of Fame</a>
+      <a href="../verify/index.html">Verify</a>
+    </nav>
+
+    <section class="genesis-hero page-content" id="hero" style="display:none">
+      <div class="genesis-hero-top">
+        <span class="badge badge-odd" id="hero-outcome">ODD · PAID</span>
+        <span class="network-tag" id="hero-network">devnet</span>
+      </div>
+      <h2 id="hero-title">Genesis Draw</h2>
+      <p class="genesis-hero-lore" id="hero-lore"></p>
+      <div class="genesis-stats" id="hero-stats"></div>
+      <div class="pepe-reveal" id="pepe-reveal">
+        <span class="pepe-reveal-label">Pepe ball count</span>
+        <span class="pepe-reveal-count" id="pepe-count">—</span>
+        <span class="pepe-reveal-verdict" id="pepe-verdict">ODD → PAYOUT</span>
+      </div>
+    </section>
+
+    <section class="page-content">
+      <h2>How one round works</h2>
+      <p class="section-hint">Static story + live data from <code>leaderboard.json</code>. After each devnet/mainnet ODD draw, run <code>export-leaderboard-from-preflight.js</code> and push.</p>
+      <div class="genesis-pipeline" id="pipeline"></div>
+    </section>
+
+    <section class="page-content">
+      <h2>Payout split (this draw)</h2>
+      <p class="section-hint">SOL committed bucket — same math every ODD round.</p>
+      <div class="split-bar" id="split-bar"></div>
+      <ul class="split-legend" id="split-legend"></ul>
+    </section>
+
+    <section class="page-content">
+      <h2>Main winner</h2>
+      <div id="main-winner-card"></div>
+    </section>
+
+    <section class="page-content">
+      <h2>All proof links</h2>
+      <ul class="proof-link-list" id="proof-links"></ul>
+    </section>
+
+    <div class="rule-box">
+      <strong>POC pattern.</strong> This page is the template for every future draw recap — swap <code>drawId</code> in
+      <code>genesis-flow.json</code> or duplicate the page per milestone. Hall of Fame holds the archive;
+      Genesis is the “how it works” story with txs pinned to each step.
+    </div>
+
+    <footer class="site-footer">
+      <p><a href="../index.html">← Home</a> · <a href="#" id="play-link">Live app</a></p>
+    </footer>
+  </div>
+
+  <script src="../assets/config.js"></script>
+  <script>
+    const cfg = window.PEPEBALL_CONFIG || {};
+    const cluster = cfg.cluster || 'devnet';
+    const clusterQ = cluster === 'mainnet-beta' ? '' : '?cluster=devnet';
+    const solscanTx = (sig) => 'https://solscan.io/tx/' + sig + clusterQ;
+    const solscanAcct = (pk) => 'https://solscan.io/account/' + pk + clusterQ;
+
+    function shortAddr(a) {
+      if (!a || a.length < 12) return a || '—';
+      return a.slice(0, 4) + '…' + a.slice(-4);
+    }
+
+    function renderSplitBar(sol) {
+      const parts = [
+        { label: 'Main 50%', pct: sol.main || 50, cls: 'split-main' },
+        { label: 'Minors 40%', pct: (sol.minorEach || 5) * (sol.minorCount || 8), cls: 'split-minors' },
+        { label: 'Rollover 8%', pct: sol.rollover || 8, cls: 'split-rollover' },
+        { label: 'Dev 2%', pct: sol.dev || 2, cls: 'split-dev' },
+      ];
+      const bar = document.getElementById('split-bar');
+      const legend = document.getElementById('split-legend');
+      bar.innerHTML = parts
+        .map((p) => '<div class="split-seg ' + p.cls + '" style="width:' + p.pct + '%" title="' + p.label + '"></div>')
+        .join('');
+      legend.innerHTML = parts.map((p) => '<li><span class="split-dot ' + p.cls + '"></span>' + p.label + '</li>').join('');
+    }
+
+    function renderPipeline(steps, draw) {
+      const links = draw.links || {};
+      const el = document.getElementById('pipeline');
+      el.innerHTML = '';
+      steps.forEach((step, i) => {
+        const row = document.createElement('article');
+        row.className = 'genesis-step';
+        const sig = step.linkKey ? links[step.linkKey] : null;
+        let extra = '';
+        if (step.id === 'qualify') {
+          extra =
+            '<div class="step-stat-row">' +
+            '<span><strong>' + (draw.participants || '—') + '</strong> wallets</span>' +
+            '<span><strong>' + (draw.totalTickets || '—') + '</strong> tickets</span>' +
+            '</div>';
+        }
+        if (step.id === 'snapshot' && draw.pepeCount != null) {
+          extra =
+            '<div class="step-stat-row">' +
+            '<span>Pepe <strong>' + draw.pepeCount + '</strong></span>' +
+            (draw.seed ? '<span class="mono">seed ' + shortAddr(String(draw.seed)) + '…</span>' : '') +
+            '</div>';
+        }
+        if (step.id === 'winners' && draw.winningTicketIndex != null) {
+          extra = '<div class="step-stat-row">Winning ticket <strong>#' + draw.winningTicketIndex + '</strong></div>';
+        }
+        row.innerHTML =
+          '<div class="genesis-step-marker">' +
+          '<span class="genesis-step-num">' + step.phase + '</span>' +
+          (i < steps.length - 1 ? '<span class="genesis-step-line" aria-hidden="true"></span>' : '') +
+          '</div>' +
+          '<div class="genesis-step-body">' +
+          '<h3>' + step.title + '</h3>' +
+          '<p>' + step.body + '</p>' +
+          extra +
+          (sig
+            ? '<a class="proof-btn" href="' + solscanTx(sig) + '" target="_blank" rel="noopener noreferrer">' +
+              (step.linkLabel || 'View on Solscan') + ' →</a>'
+            : '<span class="proof-pending">No tx linked yet — run preflight + export script</span>') +
+          '</div>';
+        el.appendChild(row);
+      });
+    }
+
+    function renderProofList(draw) {
+      const links = draw.links || {};
+      const labels = {
+        snapshot: 'take_snapshot',
+        setWinners: 'set_winners',
+        solPayout: 'SOL transfers to winners',
+        onChainPayout: 'payout_winners (state reset)',
+      };
+      const ul = document.getElementById('proof-links');
+      ul.innerHTML = '';
+      Object.entries(labels).forEach(([key, label]) => {
+        const sig = links[key];
+        const li = document.createElement('li');
+        if (sig) {
+          li.innerHTML =
+            '<a href="' + solscanTx(sig) + '" target="_blank" rel="noopener noreferrer">' + label + '</a>' +
+            '<code class="tx-sig">' + shortAddr(sig) + '…</code>';
+        } else {
+          li.innerHTML = '<span style="color:var(--muted)">' + label + ' — not recorded</span>';
+        }
+        ul.appendChild(li);
+      });
+      if (draw.mainWinner?.wallet) {
+        const li = document.createElement('li');
+        li.innerHTML =
+          '<a href="' + solscanAcct(draw.mainWinner.wallet) + '" target="_blank" rel="noopener noreferrer">Main winner wallet</a>' +
+          '<code class="tx-sig">' + shortAddr(draw.mainWinner.wallet) + '</code>';
+        ul.appendChild(li);
+      }
+    }
+
+    async function load() {
+      if (cfg.devnetBanner) {
+        const b = document.getElementById('devnet-banner');
+        b.textContent = cfg.devnetBanner;
+        b.style.display = 'block';
+      }
+      document.getElementById('play-link').href = cfg.playUrl || '#';
+
+      const [flowRes, boardRes] = await Promise.all([
+        fetch('../assets/genesis-flow.json'),
+        fetch('../assets/leaderboard.json'),
+      ]);
+      const flow = await flowRes.json();
+      const board = await boardRes.json();
+      const drawId = flow.drawId || 'latest';
+      const draws = board.draws || [];
+      const draw =
+        drawId === 'latest'
+          ? draws[draws.length - 1]
+          : draws.find((d) => d.id === drawId) ||
+            draws.find((d) => d.roundLabel?.toLowerCase().includes('genesis')) ||
+            draws[draws.length - 1];
+
+      document.getElementById('page-subhead').textContent = flow.subhead || '';
+
+      if (!draw) {
+        document.getElementById('pipeline').innerHTML =
+          '<p style="color:var(--muted)">No draw in leaderboard.json yet. Run preflight, then export-leaderboard-from-preflight.js</p>';
+        return;
+      }
+
+      document.getElementById('hero').style.display = 'block';
+      document.getElementById('hero-title').textContent = draw.roundLabel || flow.headline;
+      document.getElementById('hero-lore').textContent = draw.lore || '';
+      document.getElementById('hero-network').textContent = draw.network || cluster;
+      document.getElementById('pepe-count').textContent = draw.pepeCount ?? '—';
+      const odd = draw.outcome === 'ODD_PAYOUT' || draw.outcome === 'ODD_PAYOUT_COMPLETE';
+      document.getElementById('pepe-verdict').textContent = odd ? 'ODD → PAYOUT' : 'EVEN → ROLLOVER';
+      document.getElementById('hero-outcome').textContent = odd ? 'ODD · PAID' : 'EVEN · ROLLOVER';
+      document.getElementById('hero-outcome').className = 'badge ' + (odd ? 'badge-odd' : 'badge-even');
+
+      const stats = document.getElementById('hero-stats');
+      stats.innerHTML =
+        '<span>' + (draw.date || '') + '</span>' +
+        (draw.jackpotSol != null ? '<span>Jackpot <strong>' + draw.jackpotSol.toFixed(2) + ' SOL</strong></span>' : '') +
+        (draw.participants != null ? '<span><strong>' + draw.participants + '</strong> entrants</span>' : '');
+
+      renderSplitBar(cfg.solPayoutSplit || {});
+      renderPipeline(flow.steps || [], draw);
+      renderProofList(draw);
+
+      const mw = draw.mainWinner || {};
+      document.getElementById('main-winner-card').innerHTML =
+        '<article class="legend-card" style="max-width:28rem">' +
+        '<div class="legend-rank">#1</div>' +
+        '<div class="legend-body">' +
+        '<h3>' + (mw.alias || 'Main winner') + '</h3>' +
+        '<p class="legend-sol">' + (mw.sol != null ? mw.sol.toFixed(4) + ' SOL' : '') + '</p>' +
+        '<p class="legend-wallet"><a href="' + solscanAcct(mw.wallet) + '">' + mw.wallet + '</a></p>' +
+        (mw.tx ? '<p style="margin-top:0.5rem;font-size:0.75rem"><a href="' + solscanTx(mw.tx) + '">Payout tx →</a></p>' : '') +
+        '</div></article>';
+    }
+
+    load().catch((e) => {
+      document.getElementById('page-subhead').textContent = 'Could not load genesis data.';
+      console.error(e);
+    });
+  </script>
+</body>
+</html>

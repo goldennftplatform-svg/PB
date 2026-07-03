@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 /**
- * Merge devnet/game-day-preflight-report.json into site/assets/leaderboard.json
+ * Merge devnet/game-day-preflight-report.json → site/assets/leaderboard.json
+ * Genesis page reads the latest draw automatically (free GitHub Pages — no backend).
  *
  *   node scripts/export-leaderboard-from-preflight.js
  *   node scripts/export-leaderboard-from-preflight.js --label "Mainnet Draw #1"
+ *   node scripts/export-leaderboard-from-preflight.js --label "Draw #2" --genesis
+ *
+ * Then: git add site/assets/leaderboard.json site/assets/genesis-flow.json && git push
+ * Live: https://goldennftplatform-svg.github.io/PB/genesis/
  */
 
 const fs = require('fs');
@@ -11,6 +16,8 @@ const path = require('path');
 
 const REPORT = path.join(__dirname, '..', 'devnet', 'game-day-preflight-report.json');
 const BOARD = path.join(__dirname, '..', 'site', 'assets', 'leaderboard.json');
+const GENESIS_FLOW = path.join(__dirname, '..', 'site', 'assets', 'genesis-flow.json');
+const INFO_SITE = 'https://goldennftplatform-svg.github.io/PB';
 
 function shortAddr(a) {
   if (!a || a.length < 12) return a || '—';
@@ -22,6 +29,7 @@ function main() {
     process.argv.find((a) => a.startsWith('--label='))?.split('=')[1] ||
     process.argv[process.argv.indexOf('--label') + 1] ||
     'Draw';
+  const pinGenesis = process.argv.includes('--genesis');
 
   if (!fs.existsSync(REPORT)) {
     console.error('Missing', REPORT);
@@ -99,9 +107,19 @@ function main() {
 
   board.updatedAt = new Date().toISOString();
   fs.writeFileSync(BOARD, JSON.stringify(board, null, 2), 'utf8');
+
+  if (pinGenesis && fs.existsSync(GENESIS_FLOW)) {
+    const flow = JSON.parse(fs.readFileSync(GENESIS_FLOW, 'utf8'));
+    flow.drawId = id;
+    fs.writeFileSync(GENESIS_FLOW, JSON.stringify(flow, null, 2) + '\n', 'utf8');
+    console.log('✅ Genesis flow pinned to draw:', id);
+  }
+
   console.log('✅ Leaderboard updated:', BOARD);
   console.log('   Main:', shortAddr(winners.main), payout?.mainSol?.toFixed(4), 'SOL');
-  console.log('   Push site/ to refresh GitHub Pages.');
+  console.log('   Push site/ to refresh GitHub Pages (free — no extra hosting).');
+  console.log('   Genesis proof:', INFO_SITE + '/genesis/');
+  console.log('   Hall of Fame:', INFO_SITE + '/leaderboard/');
 }
 
 main();

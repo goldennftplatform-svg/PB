@@ -23,6 +23,24 @@ Edit **`site/assets/config.js`** (public only):
 - `pillars`, `talkingPoints`, `mediaKit` — marketing copy
 - Program IDs / devnet mints for verify page
 
+## Winner data flow (free — GitHub Pages only)
+
+No database or paid API. After each **ODD** payout on devnet/mainnet:
+
+```bash
+node scripts/run-game-day-preflight.js
+node scripts/export-leaderboard-from-preflight.js --label "Draw #2"
+git add site/assets/leaderboard.json && git commit -m "Add draw #2 to Hall of Fame" && git push
+```
+
+| URL | What updates |
+|-----|----------------|
+| `/genesis/` | Latest draw walkthrough + Solscan txs (`drawId: "latest"` in `genesis-flow.json`) |
+| `/leaderboard/` | Full archive + legends timeline |
+
+Pin a specific draw on Genesis (e.g. keep genesis rehearsal visible after mainnet):  
+`--genesis` flag writes that draw's id into `genesis-flow.json`.
+
 ## Deploy
 
 **GitHub Actions:** `.github/workflows/github-pages.yml` — auto-deploys `site/` on push to `main`.
@@ -41,6 +59,7 @@ Or: **Settings → Pages → Deploy from branch → `/site`**
 | `/guides/tokens.html` | Yin/Yang / TRiX |
 | `/guides/liquidity.html` | Tax + LP |
 | `/guides/devnet.html` | Rehearsal checklist |
+| `/genesis/` | Genesis proof — visual flow + Solscan txs for first ODD draw |
 | `/leaderboard/` | Hall of Fame — winners, lore timeline, draw archive |
 | `/verify/` | Programs, PDAs, public wallets |
 | `/community/` | Links + safety |
