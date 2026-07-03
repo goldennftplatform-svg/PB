@@ -48,6 +48,19 @@ $200 + $200 + $100 = **4 tickets**. $500 in each mint ($1,500) = **still 4**.
 
 ---
 
+## SOL jackpot payout split (every ODD round)
+
+| Recipient | % of committed SOL |
+|-----------|---------------------|
+| Main winner | 50% |
+| Secondary ×8 | 5% each (40% total) |
+| Rollover reserve | 8% (stays in jackpot wallet) |
+| Dev | 2% |
+
+**EVEN draw:** no SOL split that round — full commitment rolls forward (draw mechanic).
+
+---
+
 ## Meme stash payout split (one-and-done on ODD)
 
 On **ODD** payout rounds when a callout ran, **100%** of meme tokens pay out — no reserve slice:

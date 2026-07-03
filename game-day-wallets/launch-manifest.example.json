@@ -54,6 +54,10 @@
     "tickets": [1, 2, 4],
     "eligibility": "combined_usd_across_game_mints_not_per_mint"
   },
+  "solJackpot": {
+    "splitPercents": { "main": 50, "secondaryEach": 5, "rollover": 8, "dev": 2 },
+    "note": "ODD payout only — 8% stays in jackpot wallet, 2% to admin"
+  },
   "memeCallout": {
     "enabled": false,
     "frequency": "rare — admin-enabled per round only",

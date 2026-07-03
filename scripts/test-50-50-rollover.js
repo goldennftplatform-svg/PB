@@ -160,7 +160,7 @@ async function test5050Rollover() {
             console.log(`   Simulated Seed: ${simulatedSeed}`);
             console.log(`   Simulated Pepe Ball Count: ${simulatedPepeCount} (${isOdd ? 'ODD' : 'EVEN'})`);
             if (isOdd) {
-                console.log(`   → Would trigger PAYOUT (50% main, 40% minors, 10% house)`);
+                console.log(`   → Would trigger PAYOUT (50% main, 40% minors, 8% rollover, 2% dev)`);
             } else {
                 console.log(`   → Would trigger ROLLOVER (grow jackpot, extend timer)`);
             }
@@ -202,7 +202,7 @@ async function test5050Rollover() {
         if (isOdd) {
             console.log('💰 PAYOUT MODE:');
             console.log('   → Winners can be selected');
-            console.log('   → Payout structure: 50% main, 40% minors (5% each), 10% house');
+            console.log('   → Payout structure: 50% main, 40% minors (5% each), 8% rollover, 2% dev');
             console.log('   → Use helius-winner-indexer.js to find winners');
             console.log('   → Then use secure-payout-tool.js to execute payout\n');
         } else {

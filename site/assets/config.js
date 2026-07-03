@@ -77,6 +77,7 @@ window.PEPEBALL_CONFIG = {
     "Combined USD snapshot — can't game one thin pool for 12 tickets.",
     "Admin can't rug snapshot: hardened program requires game-day admin key.",
     "Every payout tx on Solscan. Verify before you trust.",
+    "Every ODD SOL payout: 50% main, 8×5% minors, 8% rollover reserve, 2% dev.",
     "Rare meme callout: 64% / 4.25%×8 / 2% of token stash on ODD — one-and-done, no meme rollover.",
   ],
 
@@ -97,7 +98,7 @@ window.PEPEBALL_CONFIG = {
     subhead: "Hold meme coins. Win SOL. Provably fair. Built for the culture.",
     hashtags: ["#PEPEBALL", "#Solana", "#OnChainLottery", "#ODDPays"],
     soundbiteOdd: "ODD pays. EVEN rolls. Pepe decides.",
-    soundbiteSol: "Your bags get you in. Winners walk away with SOL.",
+    soundbiteSol: "Your bags get you in. Winners walk away with SOL — 50/5×8/8/2 on ODD.",
     soundbiteMeme: "Rare meme bonus: 64% / 4.25%×8 / 2% — 100% on ODD, no reserve.",
     logoPath: "assets/pepe-ball.png",
     note: "Drop your video/audio links in community page config when ready.",

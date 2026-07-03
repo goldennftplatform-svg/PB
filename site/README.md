@@ -17,6 +17,7 @@ npx --yes serve .
 Edit **`site/assets/config.js`** (public only):
 
 - `playUrl` — live app (`https://pb-n7kx.vercel.app`)
+- `infoSiteUrl` — this hub (`https://goldennftplatform-svg.github.io/PB/`)
 - `repoUrl`, `discordUrl`, `twitterUrl`
 - `publicWallets` — admin + jackpot_tax pubkeys
 - `pillars`, `talkingPoints`, `mediaKit` — marketing copy

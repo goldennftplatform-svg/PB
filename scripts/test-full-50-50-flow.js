@@ -190,7 +190,7 @@ async function runFullTest() {
         console.log('   Run: node scripts/secure-payout-tool.js\n');
         console.log('   This will:');
         console.log('      - Verify security checks');
-        console.log('      - Execute 50/50 payout (50% main, 40% minors, 10% house)');
+        console.log('      - Execute 50/50 payout (50% main, 40% minors, 8% rollover, 2% dev)');
         console.log('      - Distribute SOL to winners\n');
 
         console.log('='.repeat(70));
