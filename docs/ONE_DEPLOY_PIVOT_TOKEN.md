@@ -1,5 +1,7 @@
 # One Program Deploy, Pivot to New Token via Config
 
+> **⚠️ Superseded for mainnet game day.** Production uses **sealed GameRegistry** — see [MASTER_LAUNCH_ARCHITECTURE.md](./MASTER_LAUNCH_ARCHITECTURE.md). Env-only mint flip is for **devnet proof** and emergency ops only, not the launch plan.
+
 You only deploy the **lottery program once** to mainnet. The program is token-agnostic (no mint or tax on-chain). To switch to your new token you change config and point scripts/app at the new mint — no second program deploy.
 
 ## Cost order

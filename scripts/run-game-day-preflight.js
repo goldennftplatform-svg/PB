@@ -36,6 +36,7 @@ const {
   calcPayoutLamports,
   sendSolPayouts,
 } = require('./lib/lottery-raw');
+const ledgerLib = require('./lib/round-ledger');
 
 const RPC_URL = process.env.SOLANA_RPC || process.env.RPC_URL || clusterApiUrl('devnet');
 const OUT = path.join(__dirname, '..', 'devnet', 'game-day-preflight-report.json');
@@ -351,6 +352,24 @@ async function main() {
     );
   }
 
+  try {
+    let { ledger } = ledgerLib.loadLedger();
+    const active = ledgerLib.getActiveRound(ledger);
+    if (!active || ['settled', 'rolled'].includes(active.status)) {
+      ledgerLib.openRound(ledger, {
+        solCommittedLamports: lotBefore.jackpotLamports,
+        notes: 'game-day-preflight',
+      });
+    } else {
+      ledgerLib.setSolCommitted(ledger, lotBefore.jackpotLamports);
+    }
+    ledgerLib.saveLedger(ledger);
+    ledgerLib.exportPublic(ledger);
+    console.log(`\n  📒 Round ledger: ${ledger.activeRoundId}`);
+  } catch (e) {
+    report.warnings.push(`round ledger open: ${e.message}`);
+  }
+
   console.log('\n── Phase 2: Fund hot wallets ──');
   const fundDeployerSig = await ensureFunded(
     connection,
@@ -469,6 +488,28 @@ async function main() {
     solPayoutTx: solPayout.sig,
     onChainPayoutTx: payoutSig,
   };
+
+  try {
+    const { ledger } = ledgerLib.loadLedger();
+    ledgerLib.recordSnapshot(ledger, {
+      pepeBallCount: snap.pepe,
+      snapshotSeed: snap.seed,
+      snapshotTx: snap.tx,
+      preSnapshotLamports: lotOdd.jackpotLamports,
+    });
+    ledgerLib.recordSettlement(ledger, {
+      mainWinner: winners.mainWinner.toBase58(),
+      minorWinners: winners.minorWinners.map((w) => w.toBase58()),
+      solPayoutTx: solPayout.sig,
+      payoutWinnersTx: payoutSig,
+    });
+    ledgerLib.saveLedger(ledger);
+    const exp = ledgerLib.exportPublic(ledger);
+    report.phases.roundLedger = { roundId: ledger.activeRoundId, exportPath: exp.path };
+    console.log('\n  📒 Round ledger updated →', exp.path);
+  } catch (e) {
+    report.warnings.push(`round ledger settle: ${e.message}`);
+  }
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.writeFileSync(OUT, JSON.stringify(report, null, 2));

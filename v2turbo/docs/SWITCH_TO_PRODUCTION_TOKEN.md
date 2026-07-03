@@ -9,6 +9,8 @@ When you’re done testing mechanics with the proof token and have **minted your
 - **Production token mint address (CA)** — the contract address of the token you just minted.
 - **New jackpot / tax wallet address** — the wallet that receives tax and holds jackpot SOL. Use a **new** wallet for production so you’re not reusing the old one (e.g. the 150 SOL you saw was from the previous setup).
 
+**Game day wallets:** Create and verify fresh keypairs **outside the repo** before funding. See [GAME_DAY_WALLETS.md](./GAME_DAY_WALLETS.md) — no private keys in git; run `node scripts/game-day-verify-wallet.js` before sending SOL.
+
 ---
 
 ## 2. Set env and redeploy

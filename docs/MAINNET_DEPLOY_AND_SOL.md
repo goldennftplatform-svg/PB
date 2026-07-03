@@ -1,5 +1,13 @@
 # Deploy to Mainnet + Where to Send REAL SOL
 
+## ⚠️ CRITICAL: Do NOT send SOL to the address below unless you have the keypair
+
+**Read [NEVER_SEND_SOL_WITHOUT_KEYPAIR.md](./NEVER_SEND_SOL_WITHOUT_KEYPAIR.md) first.**
+
+Only send SOL to an address if you have already verified you have the **keypair file** for that address. Run `solana address -k /path/to/keypair.json` and confirm it matches. If you don’t have the keypair, create a **new** keypair, update the repo to use that new address, and send SOL only to the new address. Otherwise the funds can become unrecoverable.
+
+---
+
 ## Address to send REAL SOL to (jackpot / payouts)
 
 **One wallet for everything (tax, manual top-ups, and payouts):**
@@ -12,7 +20,7 @@ FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje
 - Any manual SOL you send (e.g. 0.01 SOL from users or your own top-up) should go here.
 - Payout scripts use the **keypair** that controls this address to sign `set_winners` and `payout_winners` and to send SOL to winners. So this wallet must hold the SOL that gets paid out.
 
-**You need the private key for this address** on the machine that runs snapshot/payout scripts (or use a secure signer). The keypair is what you set as `ANCHOR_WALLET` or `TAX_RECIPIENT_KEYPAIR` when running scripts on mainnet.
+**You MUST have the private key (keypair file) for this address** before sending any SOL. If you are not 100% sure you have it, do not send. Create a new keypair, get its address, update this repo to use that address, then send SOL to the new address only.
 
 ---
 
@@ -116,4 +124,4 @@ node scripts/trigger-snapshot-raw.js
 | **Game snapshot PDA** | `ERyc67uwzGAxAGVUQvoDg74nGmxNssPjVT7eD6yN6FKb` (same seeds as devnet) |
 | **Check if deployed** | `node scripts/check-program-deployed.js` (mainnet RPC) |
 
-Once the program is deployed and the lottery is initialized on mainnet, send REAL SOL to **FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje** and run your snapshot/payout flow with that wallet’s keypair and mainnet RPC.
+Once the program is deployed and the lottery is initialized on mainnet, **only if you have verified you have the keypair for** `FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje` (run `solana address -k <path>` and confirm it matches), send REAL SOL to that address and run your snapshot/payout flow with that wallet’s keypair and mainnet RPC. If you don’t have that keypair, create a new jackpot keypair, update the repo to use the new address, and send SOL only to the new address. See [NEVER_SEND_SOL_WITHOUT_KEYPAIR.md](./NEVER_SEND_SOL_WITHOUT_KEYPAIR.md).

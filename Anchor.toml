@@ -9,20 +9,23 @@ skip-lint = false
 lottery = "8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7"
 lp_manager = "G5WidJNwmdp33kQ6AeTcrsKJdP9rvuecfyZXCmQ6oSNG"
 pepball_token = "HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR"
-tax_harvest = "TaxHrvst1111111111111111111111111111111111111"
+tax_harvest = "Em261K95h8M48f52iuu5YSaTJXJTs1pqjZpRCPYFqXRx"
+game_registry = "CKPXLmT1JZnSuG6QuswUDsVcBt8wCAkyXRyQsNyBKQnR"
 
 [programs.localnet]
 lottery = "8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7"
 lp_manager = "G5WidJNwmdp33kQ6AeTcrsKJdP9rvuecfyZXCmQ6oSNG"
 pepball_token = "HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR"
-tax_harvest = "TaxHrvst1111111111111111111111111111111111111"
+tax_harvest = "Em261K95h8M48f52iuu5YSaTJXJTs1pqjZpRCPYFqXRx"
+game_registry = "CKPXLmT1JZnSuG6QuswUDsVcBt8wCAkyXRyQsNyBKQnR"
 
 [programs.mainnet]
 # Same IDs as devnet when deployed with same program keypairs (anchor deploy --provider.cluster mainnet)
 lottery = "8xdCoGh7WrHrmpxMzqaXLfqJxYxU4mksQ3CBmztn13E7"
 lp_manager = "G5WidJNwmdp33kQ6AeTcrsKJdP9rvuecfyZXCmQ6oSNG"
 pepball_token = "HArmxo4FBfy7RiT3iS7erxvC23L1AreU9AskyXc3iuhR"
-tax_harvest = "TaxHrvst1111111111111111111111111111111111111"
+tax_harvest = "Em261K95h8M48f52iuu5YSaTJXJTs1pqjZpRCPYFqXRx"
+game_registry = "CKPXLmT1JZnSuG6QuswUDsVcBt8wCAkyXRyQsNyBKQnR"
 
 [registry]
 url = "https://api.apr.dev"

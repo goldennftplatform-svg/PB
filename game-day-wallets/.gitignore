@@ -1,0 +1,7 @@
+# Game day — NEVER commit private material
+private/
+private/**
+**/*-keypair.json
+**/*.keypair.json
+public-registry.json
+round-ledger.json

@@ -3,7 +3,8 @@ members = [
     "programs/pepball-token",
     "programs/lottery",
     "programs/lp-manager",
-    "programs/tax-harvest"
+    "programs/tax-harvest",
+    "programs/game-registry"
 ]
 resolver = "2"
 

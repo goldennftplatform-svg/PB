@@ -1,0 +1,8 @@
+{
+  "$schema": "pepeball-round-ledger-v1",
+  "_comment": "Copy to ~/pepeball-game-day/round-ledger.json (outside repo). Use: node scripts/round-ledger.js open --sol 10",
+  "version": 1,
+  "updatedAt": null,
+  "activeRoundId": null,
+  "rounds": []
+}

@@ -1,0 +1,46 @@
+{
+  "address": "CKPXLmT1JZnSuG6QuswUDsVcBt8wCAkyXRyQsNyBKQnR",
+  "version": "0.1.0",
+  "name": "game_registry",
+  "instructions": [
+    {
+      "name": "initializeRegistry",
+      "accounts": [
+        { "name": "registry", "isMut": true, "isSigner": false },
+        { "name": "admin", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "jackpotSolDest", "type": "publicKey" },
+        { "name": "lotteryProgram", "type": "publicKey" },
+        { "name": "pepballTokenProgram", "type": "publicKey" },
+        { "name": "taxHarvestProgram", "type": "publicKey" },
+        { "name": "lpManagerProgram", "type": "publicKey" }
+      ]
+    },
+    {
+      "name": "registerMints",
+      "accounts": [
+        { "name": "registry", "isMut": true, "isSigner": false },
+        { "name": "admin", "isMut": false, "isSigner": true }
+      ],
+      "args": [
+        { "name": "masterMint", "type": "publicKey" },
+        { "name": "pumpShellMint", "type": "publicKey" },
+        { "name": "trixYangMint", "type": "publicKey" },
+        { "name": "trixYinMint", "type": "publicKey" },
+        { "name": "trixBridgeMint", "type": "publicKey" }
+      ]
+    },
+    {
+      "name": "sealRegistry",
+      "accounts": [
+        { "name": "registry", "isMut": true, "isSigner": false },
+        { "name": "admin", "isMut": false, "isSigner": true }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [],
+  "types": []
+}

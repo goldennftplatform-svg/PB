@@ -3,28 +3,29 @@
   "version": "1.0.0",
   "description": "Automated bot scripts for PEPEBALL contract testing",
   "scripts": {
-    "create-wallets": "node create-bot-wallets.js",
-    "fund-wallets": "node fund-bot-wallets.js",
-    "run-bot": "node bot-trader.js",
-    "run-all-bots": "node run-all-bots.js",
-    "test-contracts": "node run-all-bots.js",
-    "test-10m-volume": "node test-10m-volume.js",
-    "payout-status": "node test-automated-payout.js status",
-    "payout-execute": "node test-automated-payout.js payout",
-    "payout-monitor": "node test-automated-payout.js monitor",
-    "secure-init": "node secure-init-lottery.js",
-    "secure-payout-check": "node secure-payout-tool.js check",
-    "secure-payout-execute": "node secure-payout-tool.js payout"
+    "index-winners": "node helius-winner-indexer.js",
+    "check-participant": "node participant-account-helper.js",
+    "tax:status": "node tax-pipeline-status.js",
+    "tax:mint": "node create-devnet-taxed-master-mint.js",
+    "tax:pool": "node create-devnet-taxed-orca-pool.js",
+    "tax:withdraw": "node withdraw-token2022-fees.js",
+    "tax:drip": "node harmonized-drip-settlement.js",
+    "indexer:sync-round": "node indexer/sync-round-from-ledger.js",
+    "indexer:participants": "node indexer/run-index-participants.js",
+    "indexer:holders": "node indexer/run-holder-scan.js",
+    "indexer:gap": "node indexer/run-registration-gap.js",
+    "indexer:manifest": "node indexer/publish-manifest.js",
+    "indexer:daemon": "node indexer/run-daemon.js",
+    "indexer:export": "node -e \"require('./lib/indexer-public-export').exportPublicStatus()\""
   },
   "dependencies": {
-    "@solana/web3.js": "^1.87.0",
+    "@coral-xyz/anchor": "^0.30.1",
+    "@orca-so/common-sdk": "^0.7.1",
+    "@orca-so/whirlpools": "^8.0.1",
+    "@orca-so/whirlpools-sdk": "^0.21.0",
+    "@solana/kit": "^7.0.0",
     "@solana/spl-token": "^0.3.0",
-    "@coral-xyz/anchor": "^0.30.1"
-  },
-  "scripts": {
-    "index-winners": "node helius-winner-indexer.js",
-    "check-participant": "node participant-account-helper.js"
+    "@solana/web3.js": "^1.87.0",
+    "decimal.js": "^10.6.0"
   }
 }
-
-

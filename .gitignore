@@ -37,13 +37,16 @@ Thumbs.db
 # Build artifacts
 dist/
 build/
+target/deploy/*-keypair.json
 
 # Temporary files
 *.tmp
 *.temp
 
-# Solana CLI
-~/.config/solana/
+# Solana CLI (and accidental literal ~ folder in repo — never commit)
+~/
+~/**
+**/~/**
 
 # Anchor
 .anchor/
@@ -57,7 +60,9 @@ Anchor.toml.local
 bots/wallets/*.json
 bots/registry.json
 bots/funding-status.json
-bots/results/*.json# Secrets and private keys (NEVER commit!)
+bots/results/*.json
+
+# Secrets and private keys (NEVER commit!)
 SECRETS.md
 **/secrets/**
 **/*.key
@@ -79,6 +84,17 @@ testnet-key.json
 **/*-key.json
 **/*keypair*.json
 pball-new-keypair.json
+new-jackpot-keypair.json
+jackpot-keypair.json
+**/jackpot-keypair.json
+
+devnet/
+devnet/**
+
+# Game day wallets — public registry local copy + any private material
+game-day-wallets/private/
+game-day-wallets/public-registry.json
+game-day-wallets/**/*-keypair.json
 
 # Internal / personal docs (do not publish)
 GET_DEVNET_SOL.md

@@ -20,6 +20,7 @@ function disc(name) {
 
 const IX = {
   enterUsd: disc('global:enter_lottery_with_usd_value'),
+  updateTickets: disc('global:update_participant_tickets'),
   initializeLottery: disc('global:initialize_lottery'),
   closeLottery: disc('global:close_lottery'),
   takeSnapshot: Buffer.from([183, 210, 251, 68, 140, 132, 191, 140]),
@@ -91,7 +92,7 @@ async function makeEntry(connection, wallet, usdCents) {
     keys: [
       { pubkey: LOTTERY_PDA, isWritable: true, isSigner: false },
       { pubkey: participantPDA, isWritable: true, isSigner: false },
-      { pubkey: wallet.publicKey, isWritable: false, isSigner: true },
+      { pubkey: wallet.publicKey, isWritable: true, isSigner: true },
       { pubkey: SystemProgram.programId, isWritable: false, isSigner: false },
     ],
     data: Buffer.concat([IX.enterUsd, amt]),
@@ -99,6 +100,41 @@ async function makeEntry(connection, wallet, usdCents) {
   const sig = await connection.sendTransaction(tx, [wallet], { skipPreflight: false });
   await connection.confirmTransaction(sig, 'confirmed');
   return sig;
+}
+
+async function updateParticipantTickets(connection, wallet, ticketCount, usdCents) {
+  const [participantPDA] = PublicKey.findProgramAddressSync(
+    [Buffer.from('participant'), LOTTERY_PDA.toBuffer(), wallet.publicKey.toBuffer()],
+    LOTTERY_PROGRAM_ID
+  );
+  const body = Buffer.alloc(12);
+  body.writeUInt32LE(ticketCount, 0);
+  body.writeBigUInt64LE(BigInt(usdCents), 4);
+  const tx = new Transaction().add({
+    programId: LOTTERY_PROGRAM_ID,
+    keys: [
+      { pubkey: LOTTERY_PDA, isWritable: true, isSigner: false },
+      { pubkey: participantPDA, isWritable: true, isSigner: false },
+      { pubkey: wallet.publicKey, isWritable: false, isSigner: true },
+    ],
+    data: Buffer.concat([IX.updateTickets, body]),
+  });
+  const sig = await connection.sendTransaction(tx, [wallet], { skipPreflight: false });
+  await connection.confirmTransaction(sig, 'confirmed');
+  return sig;
+}
+
+async function tryEnterOrUpdate(connection, wallet, usdCents) {
+  const [participantPDA] = PublicKey.findProgramAddressSync(
+    [Buffer.from('participant'), LOTTERY_PDA.toBuffer(), wallet.publicKey.toBuffer()],
+    LOTTERY_PROGRAM_ID
+  );
+  const info = await connection.getAccountInfo(participantPDA);
+  const { ticketsFromUsdCents } = require('./eligibility-tiers');
+  const tickets = ticketsFromUsdCents(usdCents);
+  if (tickets <= 0) throw new Error(`USD cents ${usdCents} below entry threshold`);
+  if (!info) return makeEntry(connection, wallet, usdCents);
+  return updateParticipantTickets(connection, wallet, tickets, usdCents);
 }
 
 async function closeLotteryRaw(connection, admin) {
@@ -300,6 +336,8 @@ module.exports = {
   closeLotteryRaw,
   initializeLotteryRaw,
   makeEntry,
+  updateParticipantTickets,
+  tryEnterOrUpdate,
   takeSnapshot,
   configureTiming,
   setWinnersRaw,

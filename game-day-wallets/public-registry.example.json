@@ -1,0 +1,138 @@
+{
+  "$schema": "pepeball-game-day-public-registry-v2",
+  "_comment": "PUBLIC ADDRESSES ONLY. Copy to public-registry.json (gitignored). Never put keypairs, seeds, or mnemonics here.",
+  "network": "mainnet-beta",
+  "createdAt": null,
+  "secOpModel": "compartmentalized — see GAME_DAY_WALLETS.md § SEC OP",
+  "securityTiers": {
+    "T0_cold": "Master backup — offline only. Never funded for ops. Never in repo, chat, or Vercel.",
+    "T1_treasury": "Jackpot + tax — high value. Sign payouts only. Minimal device exposure.",
+    "T2_admin": "Snapshot / settlement — separate from T1 if possible.",
+    "T3_consolidation": "Receives fee sweeps from T4 before forwarding to T1.",
+    "T4_hot_ops": "Floor buys, LP setup, launch snipes — minimal SOL, burnable if compromised."
+  },
+  "wallets": {
+    "cold_master": {
+      "role": "cold_master",
+      "securityTier": "T0_cold",
+      "purpose": "Encrypted offline backup of T1/T2 recovery — NEVER used for daily txs.",
+      "address": null,
+      "keypairLocation": "Hardware wallet / air-gapped backup ONLY",
+      "envVars": [],
+      "funded": false,
+      "verifiedAt": null
+    },
+    "deployer": {
+      "role": "deployer",
+      "securityTier": "T4_hot_ops",
+      "purpose": "Anchor deploy + one-time program init. Drain remaining SOL after deploy.",
+      "address": null,
+      "keypairLocation": "OUTSIDE REPO",
+      "envVars": [],
+      "funded": false,
+      "verifiedAt": null
+    },
+    "jackpot_tax": {
+      "role": "jackpot_tax",
+      "securityTier": "T1_treasury",
+      "purpose": "Receives token tax SOL; pays winners. Maps to VITE_TAX_RECIPIENT.",
+      "address": null,
+      "keypairLocation": "OUTSIDE REPO — YOU control backup",
+      "envVars": ["VITE_TAX_RECIPIENT"],
+      "funded": false,
+      "verifiedAt": null
+    },
+    "admin": {
+      "role": "admin",
+      "securityTier": "T2_admin",
+      "purpose": "Snapshot, set winners, settlement. Maps to ADMIN_ADDRESS in constants.",
+      "address": null,
+      "keypairLocation": "OUTSIDE REPO",
+      "envVars": [],
+      "note": "Prefer different pubkey from jackpot_tax (compartmentalization).",
+      "funded": false,
+      "verifiedAt": null
+    },
+    "fee_consolidation": {
+      "role": "fee_consolidation",
+      "securityTier": "T3_consolidation",
+      "purpose": "Manual harvest destination — sweep LP/trading fees from all launch coins here, then forward to jackpot_tax.",
+      "address": null,
+      "keypairLocation": "OUTSIDE REPO",
+      "envVars": [],
+      "funded": false,
+      "verifiedAt": null
+    },
+    "floor_buy_ops": {
+      "role": "floor_buy_ops",
+      "securityTier": "T4_hot_ops",
+      "purpose": "Manual floor buys on launch coins (buy the bottom). Keep low SOL balance.",
+      "address": null,
+      "keypairLocation": "OUTSIDE REPO — hot Phantom or burner",
+      "envVars": [],
+      "funded": false,
+      "verifiedAt": null
+    },
+    "lp_ops": {
+      "role": "lp_ops",
+      "securityTier": "T4_hot_ops",
+      "purpose": "Manual LP add/remove on Raydium/Orca/etc. for launch coins.",
+      "address": null,
+      "keypairLocation": "OUTSIDE REPO",
+      "envVars": [],
+      "funded": false,
+      "verifiedAt": null
+    },
+    "trix_launch_yang": {
+      "role": "trix_launch_yang",
+      "securityTier": "T4_hot_ops",
+      "purpose": "TRiX triple launch — Coin 1 (Yang): attention / shell / fair-launch hype.",
+      "address": null,
+      "mint": null,
+      "platform": "trix.market",
+      "keypairLocation": "OUTSIDE REPO",
+      "envVars": [],
+      "funded": false,
+      "verifiedAt": null
+    },
+    "trix_launch_yin": {
+      "role": "trix_launch_yin",
+      "securityTier": "T4_hot_ops",
+      "purpose": "TRiX triple launch — Coin 2 (Yin): 1B core PEPEBALL — lottery-eligible token candidate.",
+      "address": null,
+      "mint": null,
+      "platform": "trix.market",
+      "keypairLocation": "OUTSIDE REPO",
+      "envVars": ["VITE_PEPEBALL_MINT when this becomes active lottery mint"],
+      "funded": false,
+      "verifiedAt": null
+    },
+    "trix_launch_bridge": {
+      "role": "trix_launch_bridge",
+      "securityTier": "T4_hot_ops",
+      "purpose": "TRiX triple launch — Coin 3: 1:1 bridge / discovery mechanic (players figure out the game).",
+      "address": null,
+      "mint": null,
+      "platform": "trix.market",
+      "keypairLocation": "OUTSIDE REPO",
+      "envVars": [],
+      "funded": false,
+      "verifiedAt": null
+    }
+  },
+  "legacyDoNotFund": {
+    "_comment": "Old repo addresses — NEVER fund unless YOU verified keypair on disk.",
+    "FjbPunNH9dveGmNZMPaAwCpZWRYQKP1hqJH8Ua3yVyje": "legacy jackpot — replace on game day",
+    "2QAQ367aBeHgCoHQwHo8x7ga34dANguG5Nu82Rs4ky42": "legacy admin — replace on game day"
+  },
+  "preflightBeforeFunding": [
+    "ALL wallets are NEW — no reuse of legacy addresses",
+    "node scripts/audit-no-wallet-secrets.js — PASS",
+    "node scripts/game-day-create-wallet.js <role> for each role",
+    "YOU backed up every T0–T2 keypair outside repo",
+    "node scripts/game-day-verify-wallet.js <role> — MATCH for each",
+    "Vercel env updated with PUBLIC addresses only",
+    "T4 hot wallets funded with MINIMAL SOL only",
+    "T1 jackpot funded only after verify + cold backup confirmed"
+  ]
+}
